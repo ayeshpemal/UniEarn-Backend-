@@ -13,13 +13,17 @@ git clone https://github.com/ayeshpemal/UniEarn-Backend-.git
 cd UniEarn-Backend-
 ```
 
-### 2. Update application.properties
+### 2. Setup database
 
+ - Install PostgreSQL.<br />
+ - Change credentials in properties as below.
 ```bash
-spring.datasource.url=jdbc:mysql://localhost:3306/UNIEARN?createDatabaseIfNotExist=true
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 ```
+or
+Create user account with given credentials.<br />
+ - Create database "uniearn".
 
 ### 3. Start the Development Server
 
