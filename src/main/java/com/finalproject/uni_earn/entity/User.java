@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "users")
-public abstract class User {
+public class User {
     @Id
     @Column(name = "user_id", updatable = false)
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long userId;
     @Column(name = "user_name", unique = true, nullable = false)
     private String userName;
     @Column(name = "email", unique = true, nullable = false)
