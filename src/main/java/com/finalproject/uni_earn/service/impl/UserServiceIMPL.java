@@ -1,10 +1,13 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
+import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.UserService;
+import com.finalproject.uni_earn.util.JwtUtil;
 import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ public class UserServiceIMPL implements UserService {
     private ModelMapper modelMapper;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -46,11 +51,27 @@ public class UserServiceIMPL implements UserService {
         }
 
         // Hash the password
-        //user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
 
         // Save user to the database
         userRepo.save(user);
 
         return "User registered successfully with username: " + user.getUserName();
+    }
+
+    @Override
+    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
+        User user = userRepo.findByEmail(loginRequestDTO.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        // Validate password
+        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        // Generate JWT token
+        String token = jwtUtil.generateToken(user);
+
+        return new LoginResponseDTO(token, "Login successful");
     }
 }

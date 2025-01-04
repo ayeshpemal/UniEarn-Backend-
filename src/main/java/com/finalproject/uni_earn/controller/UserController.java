@@ -1,5 +1,7 @@
 package com.finalproject.uni_earn.controller;
 
+import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
+import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.service.UserService;
@@ -23,4 +25,14 @@ public class UserController {
                 new StandardResponse(200, "success", message),
                 HttpStatus.OK);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<StandardResponse> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+        LoginResponseDTO response = userService.login(loginRequestDTO);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, response.getMessage(), response.getToken()),
+                HttpStatus.OK
+        );
+    }
+
 }
