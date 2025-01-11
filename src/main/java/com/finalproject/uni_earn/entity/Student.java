@@ -30,8 +30,8 @@ public class Student extends User {
     @Column(name = "home_address")
     private String homeAddress;
 
-    @Column(name = "university_location", columnDefinition = "POINT")
-    private Point universityLocation;
+    /*@Column(name = "university_location", columnDefinition = "POINT")
+    private Point universityLocation;*/
 
     @Column(name = "contact_numbers")
     @JdbcTypeCode(SqlTypes.JSON)
