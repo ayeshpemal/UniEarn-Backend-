@@ -1,9 +1,8 @@
 package com.finalproject.uni_earn.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.Location;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,22 +13,39 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(name="jobs")
 public class Job {
     @Id
-    private int id;
-    private String title;
-    private String description;
-    private String location;
-    private String category;
-    private double payment;
-    private Date startDate;
-    private Date endDate;
-    //private Employer postedBy;
-    @Enumerated(EnumType.STRING) // Store enum as a string in the database
-    private Status status;
+    @Column(name="job_id",length = 20)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int jobId;
 
-    public enum Status {
-        ACTIVE,
-        INACTIVE
-    }
+    @Column(name="job_title",length = 50, nullable = false)
+    private String jobTitle;
+
+    @Column(name = "job_category", length = 50, nullable = false)
+    private JobCategory jobCategory;
+
+    @Column(name="job_description",length = 255)
+    private String jobDescription;
+
+    @Column(name="job_location", nullable = false)
+    private Location jobLocation;
+
+    @Column(name = "job_payment", nullable = false)
+    private double jobPayment;
+
+    @Column(name = "start_date", nullable = false)
+    private Date startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private Date endDate;
+
+    @ManyToOne
+    @JoinColumn(name = "employer", nullable = false)
+    private Employer employer;
+
+    @Column(name = "job_status", columnDefinition = "TINYINT default 0", nullable = false)
+    private boolean jobStatus;
+
 }
