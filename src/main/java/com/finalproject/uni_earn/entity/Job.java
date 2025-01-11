@@ -28,6 +28,10 @@ public class Job {
     @Enumerated(EnumType.STRING) // Store enum as a string in the database
     private Status status;
 
+    public int getJobId() {
+        return this.id;
+    }
+
     public enum Status {
         ACTIVE,
         INACTIVE
