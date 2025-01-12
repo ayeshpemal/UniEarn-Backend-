@@ -47,5 +47,4 @@ public class Job {
 
     @Column(name = "job_status", columnDefinition = "TINYINT default 0", nullable = false)
     private boolean jobStatus;
-
 }
