@@ -1,5 +1,7 @@
 package com.finalproject.uni_earn.entity;
 
+import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.entity.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.List;
+import java.util.Set;
 
 
 @AllArgsConstructor
@@ -23,8 +26,9 @@ public class Employer extends User{
     @Column(name="company_details",nullable = false)
     private String companyDetails;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="location",nullable = false)
-    private String location;
+    private Location location;
 
     @Column(name = "rating")
     @Min(0)
@@ -37,7 +41,11 @@ public class Employer extends User{
 
     @Column(name = "category")
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<String> categories ;
+    @Enumerated(EnumType.STRING)
+    private List<JobCategory> categories ;
+
+    @OneToMany(mappedBy = "employer")
+    private Set<Job> orderDetails;
 
     public Employer() {
 
