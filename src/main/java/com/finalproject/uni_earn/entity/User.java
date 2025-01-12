@@ -36,4 +36,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    private boolean verified = false; // Email verification status
+
+    private String verificationToken; // Token for email verification
 }

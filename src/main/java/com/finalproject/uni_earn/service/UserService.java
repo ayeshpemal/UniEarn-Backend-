@@ -11,4 +11,6 @@ public interface UserService {
     LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
 
     String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO);
+
+    boolean verifyUser(String token);
 }

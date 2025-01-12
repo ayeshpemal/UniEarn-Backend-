@@ -13,8 +13,10 @@ import com.finalproject.uni_earn.exception.DuplicateUserNameException;
 import com.finalproject.uni_earn.exception.InvalidRoleException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
+import com.finalproject.uni_earn.util.TokenUtil;
 import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class UserServiceIMPL implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -60,10 +64,17 @@ public class UserServiceIMPL implements UserService {
         // Hash the password
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
 
+        // Generate verification token
+        String token = TokenUtil.generateToken();
+        user.setVerificationToken(token);
+
         // Save user to the database
         userRepo.save(user);
 
-        return "User registered successfully with username: " + user.getUserName();
+        // Send verification email
+        emailService.sendVerificationEmail(user.getEmail(), token);
+
+        return "User registered successfully with username: " + user.getUserName() + " Please check your email to verify your account.";
     }
 
     @Override
@@ -119,6 +130,21 @@ public class UserServiceIMPL implements UserService {
         userRepo.save(user);
 
         return "User updated successfully with ID: " + userId;
+    }
+
+    @Override
+    public boolean verifyUser(String token) {
+        User user = userRepo.findByVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+
+        if (user.isVerified()) {
+            throw new RuntimeException("Email already verified");
+        }
+
+        user.setVerified(true);
+        user.setVerificationToken(null); // Clear token after verification
+        userRepo.save(user);
+        return true;
     }
 
 

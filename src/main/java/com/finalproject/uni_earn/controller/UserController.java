@@ -48,5 +48,12 @@ public class UserController {
         );
     }
 
-
+    @GetMapping("/verify")
+    public ResponseEntity<StandardResponse> verifyEmail(@RequestParam String token) {
+        boolean verified = userService.verifyUser(token);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Email verified successfully", verified),
+                HttpStatus.OK
+        );
+    }
 }
