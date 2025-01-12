@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
+import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.StandardResponse;
@@ -35,4 +36,24 @@ public class UserController {
         );
     }
 
+    @PostMapping("/update/{userId}")
+    public ResponseEntity<StandardResponse> updateUserDetails(
+            @PathVariable Long userId,
+            @RequestBody UserUpdateRequestDTO userUpdateRequestDTO) {
+
+        String message = userService.updateUserDetails(userId, userUpdateRequestDTO);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "User updated successfully", message),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<StandardResponse> verifyEmail(@RequestParam String token) {
+        boolean verified = userService.verifyUser(token);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Email verified successfully", verified),
+                HttpStatus.OK
+        );
+    }
 }

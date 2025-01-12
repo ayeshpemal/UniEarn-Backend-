@@ -17,6 +17,8 @@ import java.util.List;
 @Entity
 @Table(name = "employers")
 public class Employer extends User{
+    @Column(name="company_name",nullable = false)
+    private String companyName;
 
     @Column(name="company_details",nullable = false)
     private String companyDetails;
