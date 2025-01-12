@@ -33,9 +33,11 @@ public class UserRequestDTO {
 
     // Additional fields for Employer
     private String companyName;
+    private String companyDetails;
+    private List<String> categories;
     private Boolean verificationStatus;
 
     // Common fields for all roles
-    private String address;
+    private String location;
     private List<String> contactNumbers;
 }

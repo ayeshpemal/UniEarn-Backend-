@@ -45,6 +45,6 @@ public class Job {
     @JoinColumn(name = "employer", nullable = false)
     private Employer employer;
 
-    @Column(name = "job_status", columnDefinition = "TINYINT default 0", nullable = false)
+    @Column(name = "job_status", columnDefinition = "BOOLEAN DEFAULT FALSE", nullable = false)
     private boolean jobStatus;
 }

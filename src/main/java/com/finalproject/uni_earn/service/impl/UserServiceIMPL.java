@@ -8,6 +8,8 @@ import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Gender;
+import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
 import com.finalproject.uni_earn.exception.InvalidRoleException;
@@ -111,10 +113,27 @@ public class UserServiceIMPL implements UserService {
                 }
             }
             if (userUpdateRequestDTO.getPreferences() != null) {
-                student.setPreferences(userUpdateRequestDTO.getPreferences());
+                student.clearPreferences(); // Clear existing preferences
+                for(int i = 0; i < userUpdateRequestDTO.getPreferences().size(); i++) {
+                    try {
+                        JobCategory jobCategory = JobCategory.valueOf(userUpdateRequestDTO.getPreferences().get(i).toUpperCase()); // Convert String to Enum
+                        student.addPreference(jobCategory);
+
+                    } catch (IllegalArgumentException e) {
+                        throw new RuntimeException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
+                    }
+                }
             }
             if (userUpdateRequestDTO.getSkills() != null) {
                 student.setSkills(userUpdateRequestDTO.getSkills());
+            }
+            if (userUpdateRequestDTO.getLocation() != null) {
+                try {
+                    Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
+                    student.setLocation(location);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                }
             }
         } else if (user instanceof Employer employer) {
 
@@ -123,6 +142,14 @@ public class UserServiceIMPL implements UserService {
             }
             if (userUpdateRequestDTO.getCompanyDetails() != null) {
                 employer.setCompanyDetails(userUpdateRequestDTO.getCompanyDetails());
+            }
+            if (userUpdateRequestDTO.getLocation() != null) {
+                try {
+                    Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
+                    employer.setLocation(location);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                }
             }
         }
 

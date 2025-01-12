@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class UserUpdateRequestDTO {
-    private String address;
+    private String location;
     private List<String> contactNumber;
 
     // Student-specific fields
