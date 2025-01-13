@@ -6,14 +6,23 @@ import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface JobRepo extends JpaRepository<Job, Integer> {
+@Repository
+@EnableJpaRepositories
+public interface JobRepo extends JpaRepository<Job,Long> {
 
-    Job getJobByJobId(Integer jobId);
+    Job getJobByJobId(Long jobId);
+    boolean existsByJobId(Long jobId);
     List<Job> findAllByJobCategory(JobCategory jobCategory);
     List<Job> findAllByEmployer(Employer employer);
-    List<Job> findAllByJobLocation(Location location);
-    //List<Job> findAllByJobLocationAndCategory(Location location, JobCategory jobCategory);
+    List<Job> findAllByJobLocationsContaining(Location location);
+    List<Job> findAllByJobLocationsContainingAndJobCategoryEquals(Location location, JobCategory jobCategory);
+    List<Job> findAllByJobLocationsContainingAndJobCategoryIn(Location location, List<JobCategory> jobCategoryList);
+
+    @Query(value = "UPDATE Job SET activeStatus = FALSE WHERE job_id = ?1",nativeQuery = true)
+    void setActiveState(Long jobId);
 }

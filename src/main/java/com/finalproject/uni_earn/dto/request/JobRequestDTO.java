@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -17,10 +18,10 @@ public class JobRequestDTO {
     private String jobTitle;
     private JobCategory jobCategory;
     private String jobDescription;
-    private Location jobLocation;
+    private List<Location> jobLocations;
     private double jobPayment;
     private Date startDate;
     private Date endDate;
     private Employer employer;
-    private boolean status;
+
 }

@@ -15,6 +15,7 @@ import java.util.Set;
 
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -45,11 +46,7 @@ public class Employer extends User{
     private List<JobCategory> categories ;
 
     @OneToMany(mappedBy = "employer")
-    private Set<Job> orderDetails;
-
-    public Employer() {
-
-    }
+    private Set<Job> jobs;
 
 }
 
