@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.AddJobResponce;
+import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.JobRequestDTO;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
@@ -27,9 +28,9 @@ public class JobController {
 
     @PostMapping("/addjob")
     public ResponseEntity<StandardResponse> addJob(@RequestBody JobRequestDTO jobRequestDTO) {
-        AddJobResponce addJobResponce = jobServiceIMPL.addJob(jobRequestDTO);
+        String message = jobServiceIMPL.addJob(jobRequestDTO);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(201, "Success..", addJobResponce),
+                new StandardResponse(201, "Success..", message),
                 HttpStatus.CREATED
         );
     }
@@ -117,4 +118,12 @@ public class JobController {
 //    EmployerJobs(e_id)============>
 //    GetJobByCategory(category)========>
 
+
+    @GetMapping("/get-job-by-user/{userId}")
+    public ResponseEntity<StandardResponse> getJobsByUser(@PathVariable Long userId) {
+        List<JobDetailsResponseDTO> jobs = jobServiceIMPL.getJobsByUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", jobs),
+                HttpStatus.OK);
+    }
 }
