@@ -49,6 +49,7 @@ public class Student extends User {
     @Max(5)
     private float rating;
 
+    @ElementCollection
     @Column(name = "preferences")
     @JdbcTypeCode(SqlTypes.JSON)
     @Enumerated(EnumType.STRING)
