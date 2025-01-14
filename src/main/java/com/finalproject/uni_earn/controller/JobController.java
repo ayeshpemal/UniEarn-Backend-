@@ -1,14 +1,18 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.AddJobResponce;
 import com.finalproject.uni_earn.dto.request.JobRequestDTO;
-import com.finalproject.uni_earn.dto.request.SearchJobRequestDTO;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
-import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.impl.JobServiceIMPL;
+import com.finalproject.uni_earn.util.StandardResponse;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jdk.jfr.Category;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,48 +26,84 @@ public class JobController {
     JobServiceIMPL jobServiceIMPL;
 
     @PostMapping("/addjob")
-    public AddJobResponce addJob(@RequestBody JobRequestDTO jobRequestDTO) {
-        return jobServiceIMPL.addJob(jobRequestDTO);
+    public ResponseEntity<StandardResponse> addJob(@RequestBody JobRequestDTO jobRequestDTO) {
+        AddJobResponce addJobResponce = jobServiceIMPL.addJob(jobRequestDTO);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(201, "Success..", addJobResponce),
+                HttpStatus.CREATED
+        );
     }
 
     @DeleteMapping("/deletejob/{jobId}")
-    String deleteJob(@PathVariable Long jobId) {
-        return jobServiceIMPL.deleteJob(jobId);
+    public ResponseEntity<StandardResponse> deleteJob(@PathVariable Long jobId) {
+        String message = jobServiceIMPL.deleteJob(jobId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", message),
+                HttpStatus.OK
+        );
     }
 
     @PutMapping("/updatejob")
-    String updateJobDetails(@RequestBody JobDTO jobDTO) {
-        return jobServiceIMPL.updateJobDetails(jobDTO);
+    public ResponseEntity<StandardResponse> updateJob(@RequestBody JobDTO jobDTO) {
+        String message = jobServiceIMPL.updateJob(jobDTO);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(201, "Success.", message),
+                HttpStatus.CREATED
+        );
     }
 
     @GetMapping("/getjob/{jobId}")
-    JobDTO viewJobDetails(@PathVariable Long jobId) {
-        return jobServiceIMPL.viewJobDetails(jobId);
+    ResponseEntity<StandardResponse> viewJobDetails(@PathVariable Long jobId) {
+        JobDTO job = jobServiceIMPL.viewJobDetails(jobId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", job),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/filterjob/{jobCategory}")
-    List<JobDTO> filterJob(@PathVariable JobCategory jobCategory) {
-        return jobServiceIMPL.filterJob(jobCategory);
+    @GetMapping( path = "/filterbyjobcategory", params = {"jobcategory","page"})
+    ResponseEntity<StandardResponse> filterJobByCategory( @RequestParam(value = "jobcategory") JobCategory jobCategory, @RequestParam(value = "page") Integer page) {
+        PaginatedResponseJobDTO jobList = jobServiceIMPL.filterJobByCategory(jobCategory,page);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", jobList),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/searchjobsbylocation/{location}")
-    List<JobDTO> SearchJobByLocation(@PathVariable Location location) {
-        return jobServiceIMPL.findAllByJobLocationsContaining(location);
+    @GetMapping(path = "/searchjobsbylocation", params = {"location","page"})
+    ResponseEntity<StandardResponse> SearchJobByLocation(@RequestParam(value = "location") Location location, @RequestParam(value = "page") Integer page) {
+        PaginatedResponseJobDTO jobList = jobServiceIMPL.SearchJobByLocation(location,page);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", jobList),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/searchjobsbylocationandcategories")
-    List<JobDTO> SearchJobsByLocationsAndCategories(@RequestBody SearchJobRequestDTO search_job_request_dto) {
-        return jobServiceIMPL.findAllByJobLocationsContainingAndJobCategoryIn(search_job_request_dto);
+    @GetMapping(path = "/searchjobsbylocationandcategories", params = {"location", "categorylist","page"})
+    ResponseEntity<StandardResponse> SearchJobsByLocationAndCategories(@RequestParam(value = "location") Location location, @RequestParam(value = "categorylist") List<JobCategory> categoryList, @RequestParam(value = "page") Integer page) {
+        PaginatedResponseJobDTO jobList = jobServiceIMPL.SearchJobsByLocationAndCategories(location,categoryList,page);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", jobList),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/studentjobs/{student_id}")//this jobs are shown to students
-    List<JobDTO> StudentJobs(@PathVariable Long student_id) {
-        return jobServiceIMPL.studentJobs(student_id);
+    @GetMapping(path = "/studentjobs", params = {"student_id","page"})//this jobs are shown to students
+    ResponseEntity<StandardResponse> StudentJobs(@RequestParam(value = "student_id") long studentId, @RequestParam(value = "page") Integer page) {
+        PaginatedResponseJobDTO jobList = jobServiceIMPL.studentJobs(studentId,page);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", jobList),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("/employerjobs/{employer_id}")//this jobs are belongs to employer
-    List<JobDTO> EmployerJobs(@PathVariable Long employer_id) {
-        return jobServiceIMPL.employerJobs(employer_id);
+    @GetMapping(path = "/employerjobs", params = {"employer_id","page"})//this jobs are belongs to employer
+    ResponseEntity<StandardResponse> EmployerJobs(@RequestParam(value = "employer_id") Long employerId, @RequestParam(value = "page") Integer page) {
+        PaginatedResponseJobDTO jobList = jobServiceIMPL.employerJobs(employerId, page);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", jobList),
+                HttpStatus.OK
+        );
     }
 
 

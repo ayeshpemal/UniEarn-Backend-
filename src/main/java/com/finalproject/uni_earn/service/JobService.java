@@ -1,11 +1,9 @@
 package com.finalproject.uni_earn.service;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.AddJobResponce;
 import com.finalproject.uni_earn.dto.request.JobRequestDTO;
-import com.finalproject.uni_earn.dto.request.SearchJobRequestDTO;
-import com.finalproject.uni_earn.entity.Employer;
-import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 
@@ -16,14 +14,14 @@ public interface JobService {
     //For Employer
     AddJobResponce addJob(JobRequestDTO jobRequestDTO);
     String deleteJob(Long jobId);
-    String updateJobDetails(JobDTO jobDTO);
-    List<JobDTO> employerJobs(Long employerId);
+    String updateJob(JobDTO jobDTO);
+    PaginatedResponseJobDTO employerJobs(Long employerId, Integer page);
 
     //For Student
-    List<JobDTO> studentJobs(Long studentId);
-    List<JobDTO> filterJob(JobCategory jobCategory);
-    List<JobDTO> findAllByJobLocationsContaining(Location location);
-    List<JobDTO> findAllByJobLocationsContainingAndJobCategoryIn(SearchJobRequestDTO searchJobRequestDto);
+    PaginatedResponseJobDTO studentJobs(Long studentId, Integer page);
+    PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page);
+    PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page);
+    PaginatedResponseJobDTO SearchJobsByLocationAndCategories(Location location, List<JobCategory> categoryList, Integer page);
 
     //Common
     JobDTO viewJobDetails(Long jobId);
