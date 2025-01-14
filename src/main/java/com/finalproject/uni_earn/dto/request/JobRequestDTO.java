@@ -21,6 +21,6 @@ public class JobRequestDTO {
     private double jobPayment;
     private Date startDate;
     private Date endDate;
-    private Employer employer;
+    private Long employer;
     private boolean status;
 }

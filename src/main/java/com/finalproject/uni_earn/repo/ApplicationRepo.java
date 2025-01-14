@@ -1,9 +1,14 @@
 package com.finalproject.uni_earn.repo;
 
 import com.finalproject.uni_earn.entity.Application;
-import org.springframework.data.repository.CrudRepository;
+import com.finalproject.uni_earn.entity.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ApplicationRepo extends CrudRepository<Application, Long> {
+import java.util.List;
+
+public interface ApplicationRepo extends JpaRepository<Application, Long> {
     static void Save(Application map) {
     }
+
+    List<Application> getAllByStudent(Student student);
 }
