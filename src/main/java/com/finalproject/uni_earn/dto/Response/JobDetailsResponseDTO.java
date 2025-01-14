@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Data
 public class JobDetailsResponseDTO {
-    private Integer jobId;
+    private long jobId;
     private String jobTitle;
     private String jobCategory;
     private String jobLocation;

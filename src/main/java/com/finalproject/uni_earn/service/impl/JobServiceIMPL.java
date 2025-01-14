@@ -74,7 +74,7 @@ public class JobServiceIMPL implements JobService {
         }
     }
     @Override
-    public JobDTO viewJobDetails(Long jobId){
+    public JobDTO viewJobDetails(long jobId){
         Job job = jobRepo.getJobByJobId(jobId);
         return modelMapper.map(job, JobDTO.class);
     }
@@ -123,48 +123,49 @@ public class JobServiceIMPL implements JobService {
         );
     }
     @Override
-    public List<JobDetailsResponseDTO> getJobsByUser(Long userId) {
+    public List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page) {
         User user = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         List<JobDetailsResponseDTO> jobDetailsResponseDTOS = new ArrayList<>();
 
-        if (user instanceof Student student){
+        if (user instanceof Student student) {
             // Fetch applied jobs for students
-            List<Application> applications = applicationRepo.getAllByStudent(student);
+            Page<Application> applicationList = applicationRepo.getAllByStudent(student,PageRequest.of(page,pageSize));
+            List<Application> applications = modelMapper.map(applicationList, new TypeToken<List<JobDTO>>(){}.getType());
 
             jobDetailsResponseDTOS = applications.stream()
                     .map(application -> {
-                        Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
-                        return new JobDetailsResponseDTO(
-                                job.getJobId(),
-                                job.getJobTitle(),
-                                job.getJobCategory().toString(),
-                                job.getJobLocation().toString(),
-                                job.getStartDate(),
-                                job.getEndDate(),
-                                job.isJobStatus(),
-                                job.getJobPayment(),
-                                application.getStatus().toString()
-                            );
-                        }
+                                Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
+                                return new JobDetailsResponseDTO(
+                                        job.getJobId(),
+                                        job.getJobTitle(),
+                                        job.getJobCategory().toString(),
+                                        job.getJobLocations().toString(),
+                                        job.getStartDate(),
+                                        job.getEndDate(),
+                                        job.isActiveStatus(),
+                                        job.getJobPayment(),
+                                        application.getStatus().toString()
+                                );
+                            }
                     )
                     .collect(Collectors.toList());
         }
 
         if (user instanceof Employer employer) {
             // Fetch posted jobs for employers
-            List<Job> jobs = jobRepo.findAllByEmployer(employer);
+            Page<Job> jobs = jobRepo.findAllByEmployer(employer,PageRequest.of(page,pageSize));
 
             jobDetailsResponseDTOS = jobs.stream()
                     .map(job -> new JobDetailsResponseDTO(
                             job.getJobId(),
                             job.getJobTitle(),
                             job.getJobCategory().toString(),
-                            job.getJobLocation().toString(),
+                            job.getJobLocations().toString(),
                             job.getStartDate(),
                             job.getEndDate(),
-                            job.isJobStatus(),
+                            job.isActiveStatus(),
                             job.getJobPayment(),
                             null // Status is not relevant for posted jobs
                     ))
@@ -172,7 +173,5 @@ public class JobServiceIMPL implements JobService {
         }
         return jobDetailsResponseDTOS;
     }
-
-    //List<Job> findAllByJobLocationAndCategory(Location location, JobCategory jobCategory){};
 
 }
