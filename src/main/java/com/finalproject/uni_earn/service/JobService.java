@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.service;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.JobRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
@@ -19,6 +20,8 @@ public interface JobService {
     List<JobDTO> filterJob(JobCategory jobCategory);
     List<JobDTO> findAllByEmployer(Employer employer);
     List<JobDTO> findAllByJobLocation(Location location);
+
+    List<JobDetailsResponseDTO> getJobsByUser(Long userId);
     //List<Job> findAllByJobLocationAndCategory(Location location, JobCategory jobCategory);
 
 }
