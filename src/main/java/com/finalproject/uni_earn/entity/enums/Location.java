@@ -1,0 +1,13 @@
+package com.finalproject.uni_earn.entity.enums;
+
+public enum Location {
+    NORTHERN_PROVINCE,
+    SOUTHERN_PROVINCE,
+    EASTERN_PROVINCE,
+    WESTERN_PROVINCE,
+    CENTRAL_PROVINCE,
+    NORTH_WESTERN_PROVINCE,
+    NORTH_CENTRAL_PROVINCE,
+    UVA_PROVINCE,
+    SABARAGAMUWA_PROVINCE
+}
