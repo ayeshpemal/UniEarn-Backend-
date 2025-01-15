@@ -119,11 +119,11 @@ public class JobController {
 //    GetJobByCategory(category)========>
 
 
-    @GetMapping("/get-job-by-user/{userId}")
-    public ResponseEntity<StandardResponse> getJobsByUser(@PathVariable Long userId) {
-        List<JobDetailsResponseDTO> jobs = jobServiceIMPL.getJobsByUser(userId);
+    @GetMapping(path = "/get-job-by-user", params = {"user_id","page"})
+    ResponseEntity<StandardResponse> getJobsByUser(@RequestParam(value = "user_id") long userId, @RequestParam(value = "page") Integer page) {
+        List<JobDetailsResponseDTO> jobList = jobServiceIMPL.getJobsByUser(userId,page);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Success", jobs),
+                new StandardResponse(200, "Success", jobList),
                 HttpStatus.OK);
     }
 }

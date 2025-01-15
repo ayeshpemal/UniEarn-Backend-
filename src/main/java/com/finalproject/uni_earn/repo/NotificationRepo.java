@@ -1,10 +1,12 @@
 package com.finalproject.uni_earn.repo;
 
-import com.finalproject.uni_earn.entity.Job;
+import com.finalproject.uni_earn.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.stereotype.Repository;
 
-import javax.management.Notification;
-
+@Repository
+@EnableJpaRepositories
 public interface NotificationRepo extends JpaRepository<Notification, Long> {
 
 }
