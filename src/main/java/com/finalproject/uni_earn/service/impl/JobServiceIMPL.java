@@ -81,16 +81,22 @@ public class JobServiceIMPL implements JobService {
     @Override
     public PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page){
         Page<Job> jobList = jobRepo.findAllByJobCategory(jobCategory, PageRequest.of(page, pageSize));
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
         return new PaginatedResponseJobDTO(
-                modelMapper.map(jobList, new TypeToken<List<JobDTO>>(){}.getType()),
+                jobDTOs,
                 jobRepo.countAllByJobCategory(jobCategory)
         );
     }
     @Override
     public PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page) {
         Page<Job> jobList = jobRepo.findAllByJobLocationsContaining(location, PageRequest.of(page, pageSize));
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
         return new PaginatedResponseJobDTO(
-                modelMapper.map(jobList,new TypeToken<List<JobDTO>>(){}.getType()),
+                jobDTOs,
                 jobRepo.countAllByJobLocationsContaining(location)
         );
     }
@@ -100,16 +106,22 @@ public class JobServiceIMPL implements JobService {
         Location location = student.getLocation();
         List<JobCategory> preferences = student.getPreferences();
         Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location,preferences,PageRequest.of(page,pageSize));
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
         return new PaginatedResponseJobDTO(
-                modelMapper.map(jobList,new TypeToken<List<JobDTO>>(){}.getType()),
+                jobDTOs,
                 jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location,preferences)
         );
     }
     @Override
     public PaginatedResponseJobDTO SearchJobsByLocationAndCategories(Location location, List<JobCategory> categoryList, Integer page) {
         Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location,categoryList,PageRequest.of(page, pageSize));
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
         return new PaginatedResponseJobDTO(
-                modelMapper.map(jobList,new TypeToken<List<JobDTO>>(){}.getType()),
+                jobDTOs,
                 jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location,categoryList)
         );
     }
@@ -117,8 +129,11 @@ public class JobServiceIMPL implements JobService {
     public PaginatedResponseJobDTO employerJobs(Long employerId, Integer page) {
         Employer employer = employerRepo.getEmployerByUserId(employerId);
         Page<Job> jobList = jobRepo.findAllByEmployer(employer, PageRequest.of(page,pageSize));
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
         return new PaginatedResponseJobDTO(
-                modelMapper.map(jobList,new TypeToken<List<JobDTO>>(){}.getType()),
+                jobDTOs,
                 jobRepo.countAllByEmployer(employer)
         );
     }
@@ -132,9 +147,8 @@ public class JobServiceIMPL implements JobService {
         if (user instanceof Student student) {
             // Fetch applied jobs for students
             Page<Application> applicationList = applicationRepo.getAllByStudent(student,PageRequest.of(page,pageSize));
-            List<Application> applications = modelMapper.map(applicationList, new TypeToken<List<JobDTO>>(){}.getType());
 
-            jobDetailsResponseDTOS = applications.stream()
+            jobDetailsResponseDTOS = applicationList.getContent().stream()
                     .map(application -> {
                                 Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
                                 return new JobDetailsResponseDTO(
