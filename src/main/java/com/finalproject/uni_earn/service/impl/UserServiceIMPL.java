@@ -12,14 +12,13 @@ import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidRoleException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
 import com.finalproject.uni_earn.util.TokenUtil;
-import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -60,7 +59,7 @@ public class UserServiceIMPL implements UserService {
                 user = modelMapper.map(userRequestDTO, Admin.class);
                 break;*/
             default:
-                throw new InvalidRoleException("Invalid role: " + userRequestDTO.getRole());
+                throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         }
 
         // Hash the password
@@ -82,11 +81,11 @@ public class UserServiceIMPL implements UserService {
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
         User user = userRepo.findByEmail(loginRequestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Validate password
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidValueException("Invalid email or password");
         }
 
         // Generate JWT token
@@ -109,7 +108,7 @@ public class UserServiceIMPL implements UserService {
                     Gender gender = Gender.valueOf(userUpdateRequestDTO.getGender().toUpperCase()); // Convert String to Enum
                     student.setGender(gender);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid gender value: " + userUpdateRequestDTO.getGender());
+                    throw new InvalidValueException("Invalid gender value: " + userUpdateRequestDTO.getGender());
                 }
             }
             if (userUpdateRequestDTO.getPreferences() != null) {
@@ -120,7 +119,7 @@ public class UserServiceIMPL implements UserService {
                         student.addPreference(jobCategory);
 
                     } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
+                        throw new InvalidValueException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
                     }
                 }
             }
@@ -132,7 +131,7 @@ public class UserServiceIMPL implements UserService {
                     Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
                     student.setLocation(location);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                    throw new InvalidValueException("Invalid location value: " + userUpdateRequestDTO.getLocation());
                 }
             }
         } else if (user instanceof Employer employer) {
@@ -148,7 +147,7 @@ public class UserServiceIMPL implements UserService {
                     Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
                     employer.setLocation(location);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                    throw new InvalidValueException("Invalid location value: " + userUpdateRequestDTO.getLocation());
                 }
             }
         }
@@ -162,7 +161,7 @@ public class UserServiceIMPL implements UserService {
     @Override
     public boolean verifyUser(String token) {
         User user = userRepo.findByVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+                .orElseThrow(() -> new InvalidValueException("Invalid or expired token"));
 
         if (user.isVerified()) {
             throw new RuntimeException("Email already verified");
