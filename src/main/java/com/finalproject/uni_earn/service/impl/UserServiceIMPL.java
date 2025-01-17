@@ -18,6 +18,7 @@ import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
+import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,11 @@ public class UserServiceIMPL implements UserService {
         }
         if (userRepo.existsByEmail(userRequestDTO.getEmail())) {
             throw new DuplicateEmailException("Email already registered: " + userRequestDTO.getEmail());
+        }
+
+        // Validate password complexity
+        if (!PasswordValidator.isValidPassword(userRequestDTO.getPassword())) {
+            throw new InvalidValueException("Password does not meet complexity requirements");
         }
 
         // Determine subclass based on role
@@ -97,7 +103,7 @@ public class UserServiceIMPL implements UserService {
     @Override
     public String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO) {
         // Find the existing user
-        User user = userRepo.findByUserId(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
 
         // Check for specific subclass updates
@@ -171,6 +177,39 @@ public class UserServiceIMPL implements UserService {
         user.setVerificationToken(null); // Clear token after verification
         userRepo.save(user);
         return true;
+    }
+
+    @Override
+    public String deleteUser(Long userId) {
+        userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        userRepo.deleteById(userId);
+        return "User deleted successfully with ID: " + userId;
+    }
+
+    @Override
+    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+        // Validate user existence
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        // Validate old password
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        // Validate new password complexity
+        if (!PasswordValidator.isValidPassword(newPassword)) {
+            throw new InvalidValueException("Password does not meet complexity requirements");
+        }
+
+        // Hash the new password
+        String hashedPassword = passwordEncoder.encode(newPassword);
+
+        // Update the user's password
+        user.setPassword(hashedPassword);
+        userRepo.save(user);
     }
 
 
