@@ -30,9 +30,9 @@ public class ReportServiceIMPL implements ReportService {
         this.reportMapper = reportMapper;
     }
 
-//    Here we take input as int ,due to user table have int as id, but in report table it is long
+
     @Override
-    public Reports submitReport(int reporterId, int reportedUserId, String feedback) {
+    public Reports submitReport(long reporterId, long reportedUserId, String feedback) {
         Reports report = new Reports();
         report.setReporter(userRepository.findById(reporterId).orElseThrow());
         report.setReportedUser(userRepository.findById(reportedUserId).orElseThrow());
@@ -66,6 +66,7 @@ public class ReportServiceIMPL implements ReportService {
         return null;
     }
 
+//    wrong name, this gives the reports by reported user id
     @Override
     public PaginatedReportDTO getallReportsByCount(int id,int page, int size) {
         Page<Reports> reports = reportRepository.findAllByReportedUser_UserId(id,PageRequest.of(page, size));
