@@ -48,5 +48,8 @@ public class Employer extends User{
     @OneToMany(mappedBy = "employer")
     private Set<Job> jobs;
 
+    public Long getEmployerId() {
+        return getUserId();
+    }
 }
 
