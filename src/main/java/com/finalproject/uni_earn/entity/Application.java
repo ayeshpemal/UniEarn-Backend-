@@ -32,7 +32,4 @@ public class Application {
 
 
     private Date appliedDate;
-
-    public void setSelected(boolean b) {
-    }
 }
