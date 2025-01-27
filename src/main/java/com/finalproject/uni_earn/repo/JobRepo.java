@@ -30,4 +30,6 @@ public interface JobRepo extends JpaRepository<Job,Long> {
 
     @Query(value = "UPDATE Job SET activeStatus = FALSE WHERE job_id = ?1",nativeQuery = true)
     void setActiveState(Long jobId);
+
+    boolean existsByJobIdAndActiveStatusAndEmployer_UserId(Long jobId, boolean activeStatus, Long userId);
 }
