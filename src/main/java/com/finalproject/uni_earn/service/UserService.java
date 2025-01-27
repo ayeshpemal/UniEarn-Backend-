@@ -13,4 +13,8 @@ public interface UserService {
     String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO);
 
     boolean verifyUser(String token);
+
+    String deleteUser(Long userId);
+
+    void updatePassword(Long userId, String oldPassword, String newPassword);
 }
