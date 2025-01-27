@@ -126,7 +126,7 @@ public class RatingServiceIMPL implements RatingService {
     }
 
     //Saying the rating
-    RatingResponseBasicDTO saveRating(ReatingRequestDTO reatingRequestDTO) {
+    public RatingResponseBasicDTO saveRating(ReatingRequestDTO reatingRequestDTO) {
 //        don't allow rating if rating is already made by that user, to that user, by his that job
         if (ratingRepo.existsByRaterRatedAndJob(reatingRequestDTO.getRaterId(),
                 reatingRequestDTO.getRatedId(), reatingRequestDTO.getJobId())) {
@@ -184,7 +184,7 @@ public class RatingServiceIMPL implements RatingService {
     }
 
     // updating the rating
-    RatingResponseBasicDTO updateRating(UpdateRatingRequestDTO updateRatingRequestDTO) {
+    public RatingResponseBasicDTO updateRating(UpdateRatingRequestDTO updateRatingRequestDTO) {
         /*here we first use the function to
         1) we don't allow peoples to change or delete the rating all the time
         * so we must calculate the rating creat time with time when request came
@@ -225,7 +225,7 @@ public class RatingServiceIMPL implements RatingService {
     }
 
 
-    RatingResponseBasicDTO deleteRating(UpdateRatingRequestDTO updateRatingRequestDTO) {
+    public RatingResponseBasicDTO deleteRating(UpdateRatingRequestDTO updateRatingRequestDTO) {
         /*here we first use the function to
         1) we don't allow peoples to change or delete the rating all the time
         * so we must calculate the rating creat time with time when request came
@@ -264,12 +264,12 @@ public class RatingServiceIMPL implements RatingService {
         return responseDTO;
     }
 
-    PaginatedRatingDTO getAllReceivedRatings (long UserId,int page,int size)
+    public PaginatedRatingDTO getAllReceivedRatings (long UserId,int page,int size)
     {
         Page<UserRatingDetailsResponseDTO> allReceivedRatings = ratingRepo.findAllRatingsReceivedByUser(UserId, PageRequest.of(page, size));
         return new PaginatedRatingDTO(allReceivedRatings.getContent(), ratingRepo.countAllByRatedUserId(UserId));
     }
-    PaginatedRatingDTO getAllGivenRatings (long UserId,int page,int size)
+    public PaginatedRatingDTO getAllGivenRatings (long UserId,int page,int size)
     {
         Page<UserRatingDetailsResponseDTO> allReceivedRatings = ratingRepo.findAllRatingsGivenByUser(UserId, PageRequest.of(page, size));
         return new PaginatedRatingDTO(allReceivedRatings.getContent(), ratingRepo.countAllByRaterUserId(UserId));
