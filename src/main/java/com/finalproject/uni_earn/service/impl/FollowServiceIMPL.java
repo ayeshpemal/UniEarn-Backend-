@@ -25,7 +25,7 @@ public class FollowServiceIMPL implements FollowService {
 
     public String followEmployer(Long studentId, Long employerId) {
         // Fetch the student (User acting as Student)
-        User studentUser = userRepo.findById(Math.toIntExact(studentId))
+        User studentUser = userRepo.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Student not found with ID: " + studentId));
 
         if (!(studentUser instanceof Student student)) {
@@ -33,7 +33,7 @@ public class FollowServiceIMPL implements FollowService {
         }
 
         // Fetch the employer (User acting as Employer)
-        User employerUser = userRepo.findById(Math.toIntExact(employerId))
+        User employerUser = userRepo.findById(employerId)
                 .orElseThrow(() -> new NotFoundException("Employer not found with ID: " + employerId));
 
         if (!(employerUser instanceof Employer employer)) {
@@ -56,7 +56,7 @@ public class FollowServiceIMPL implements FollowService {
 
     public String unfollowEmployer(Long studentId, Long employerId) {
         // Fetch the student (User acting as Student)
-        User studentUser = userRepo.findById(Math.toIntExact(studentId))
+        User studentUser = userRepo.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Student not found with ID: " + studentId));
 
         if (!(studentUser instanceof Student student)) {
@@ -64,7 +64,7 @@ public class FollowServiceIMPL implements FollowService {
         }
 
         // Fetch the employer (User acting as Employer)
-        User employerUser = userRepo.findById(Math.toIntExact(employerId))
+        User employerUser = userRepo.findById(employerId)
                 .orElseThrow(() -> new NotFoundException("Employer not found with ID: " + employerId));
 
         if (!(employerUser instanceof Employer employer)) {

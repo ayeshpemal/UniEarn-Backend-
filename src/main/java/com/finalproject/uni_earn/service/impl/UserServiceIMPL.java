@@ -93,7 +93,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepo.findByEmail(loginRequestDTO.getEmail())
+        User user = userRepo.findByEmailAndIsDeletedFalse(loginRequestDTO.getEmail())
                 .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Validate password
@@ -202,6 +202,17 @@ public class UserServiceIMPL implements UserService {
         userRepo.save(user);
         return "User deleted successfully with ID: " + userId;
     }
+
+    @Override
+    public String restoreUser(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        user.setDeleted(false);
+        userRepo.save(user);
+        return "User restored successfully with ID: " + userId;
+    }
+
 
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
