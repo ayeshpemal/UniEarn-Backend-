@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
+import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Gender;
@@ -14,6 +15,7 @@ import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
@@ -24,6 +26,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceIMPL implements UserService {
@@ -37,6 +42,8 @@ public class UserServiceIMPL implements UserService {
     private JwtUtil jwtUtil;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private JobRepo jobRepo;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -86,7 +93,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepo.findByEmail(loginRequestDTO.getEmail())
+        User user = userRepo.findByEmailAndIsDeletedFalse(loginRequestDTO.getEmail())
                 .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Validate password
@@ -181,12 +188,31 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public String deleteUser(Long userId) {
-        userRepo.findById(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
 
-        userRepo.deleteById(userId);
+        if (user instanceof Employer employer) {
+            Optional<Job> jobs = jobRepo.findAllByEmployer(employer);
+            jobs.ifPresent(job -> {
+                jobRepo.setActiveState(job.getJobId());
+            });
+        }
+
+        user.setDeleted(true);
+        userRepo.save(user);
         return "User deleted successfully with ID: " + userId;
     }
+
+    @Override
+    public String restoreUser(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        user.setDeleted(false);
+        userRepo.save(user);
+        return "User restored successfully with ID: " + userId;
+    }
+
 
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {

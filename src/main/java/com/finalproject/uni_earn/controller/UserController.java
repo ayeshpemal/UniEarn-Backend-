@@ -57,13 +57,23 @@ public class UserController {
         );
     }
 
-    @DeleteMapping("/delete/{userId}")
+    @DeleteMapping("users/{userId}/delete")
     public ResponseEntity<StandardResponse> DeleteUser(
             @PathVariable Long userId) {
 
         String message = userService.deleteUser(userId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "User deleted successfully", message),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping("/users/{userId}/restore")
+    public ResponseEntity<StandardResponse> restoreUser(
+            @PathVariable Long userId) {
+        String message = userService.restoreUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "User successfully restored.", message),
                 HttpStatus.OK
         );
     }
