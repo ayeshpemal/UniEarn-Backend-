@@ -20,7 +20,7 @@ import java.util.List;
 public class Job {
     @Id
     @Column(name="job_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long jobId;
 
     @Column(name="job_title",length = 50, nullable = false)
@@ -33,12 +33,18 @@ public class Job {
     @Column(name="job_description",length = 255)
     private String jobDescription;
 
-    @Column(name="job_locations", nullable = false)
+//    @Enumerated(EnumType.STRING)
+//    @ElementCollection
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(name="job_locations", nullable = false)
+//    private List<Location> jobLocations;
+//    //If job has many locations....
+
+    @Column(name = "job_locations",nullable = false)
     @ElementCollection
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Location> jobLocations;
-    //If job has many locations....
 
     @Column(name = "job_payment", nullable = false)
     private double jobPayment;

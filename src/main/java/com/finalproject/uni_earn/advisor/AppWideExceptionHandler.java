@@ -1,9 +1,6 @@
 package com.finalproject.uni_earn.advisor;
 
-import com.finalproject.uni_earn.exception.DuplicateEmailException;
-import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidRoleException;
-import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.exception.*;
 import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +32,13 @@ public class AppWideExceptionHandler {
 
     @ExceptionHandler(InvalidRoleException.class)
     public ResponseEntity<StandardResponse> handleInvalidRole(InvalidRoleException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(400, ex.getMessage(), null),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidParametersException.class)
+    public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(400, ex.getMessage(), null),
                 HttpStatus.BAD_REQUEST);
