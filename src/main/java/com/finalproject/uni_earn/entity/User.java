@@ -40,4 +40,6 @@ public class User {
     private boolean verified = false; // Email verification status
 
     private String verificationToken; // Token for email verification
+
+    private boolean isDeleted = false; // Soft delete status
 }

@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
+import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Gender;
@@ -12,18 +13,22 @@ import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidRoleException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
+import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
-import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceIMPL implements UserService {
@@ -37,6 +42,8 @@ public class UserServiceIMPL implements UserService {
     private JwtUtil jwtUtil;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private JobRepo jobRepo;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -45,6 +52,11 @@ public class UserServiceIMPL implements UserService {
         }
         if (userRepo.existsByEmail(userRequestDTO.getEmail())) {
             throw new DuplicateEmailException("Email already registered: " + userRequestDTO.getEmail());
+        }
+
+        // Validate password complexity
+        if (!PasswordValidator.isValidPassword(userRequestDTO.getPassword())) {
+            throw new InvalidValueException("Password does not meet complexity requirements");
         }
 
         // Determine subclass based on role
@@ -60,7 +72,7 @@ public class UserServiceIMPL implements UserService {
                 user = modelMapper.map(userRequestDTO, Admin.class);
                 break;*/
             default:
-                throw new InvalidRoleException("Invalid role: " + userRequestDTO.getRole());
+                throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         }
 
         // Hash the password
@@ -81,12 +93,12 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepo.findByEmail(loginRequestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        User user = userRepo.findByEmailAndIsDeletedFalse(loginRequestDTO.getEmail())
+                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Validate password
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidValueException("Invalid email or password");
         }
 
         // Generate JWT token
@@ -98,7 +110,7 @@ public class UserServiceIMPL implements UserService {
     @Override
     public String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO) {
         // Find the existing user
-        User user = userRepo.findByUserId(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
 
         // Check for specific subclass updates
@@ -109,7 +121,7 @@ public class UserServiceIMPL implements UserService {
                     Gender gender = Gender.valueOf(userUpdateRequestDTO.getGender().toUpperCase()); // Convert String to Enum
                     student.setGender(gender);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid gender value: " + userUpdateRequestDTO.getGender());
+                    throw new InvalidValueException("Invalid gender value: " + userUpdateRequestDTO.getGender());
                 }
             }
             if (userUpdateRequestDTO.getPreferences() != null) {
@@ -120,7 +132,7 @@ public class UserServiceIMPL implements UserService {
                         student.addPreference(jobCategory);
 
                     } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
+                        throw new InvalidValueException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
                     }
                 }
             }
@@ -132,7 +144,7 @@ public class UserServiceIMPL implements UserService {
                     Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
                     student.setLocation(location);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                    throw new InvalidValueException("Invalid location value: " + userUpdateRequestDTO.getLocation());
                 }
             }
         } else if (user instanceof Employer employer) {
@@ -148,7 +160,7 @@ public class UserServiceIMPL implements UserService {
                     Location location = Location.valueOf(userUpdateRequestDTO.getLocation().toUpperCase()); // Convert String to Enum
                     employer.setLocation(location);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Invalid location value: " + userUpdateRequestDTO.getLocation());
+                    throw new InvalidValueException("Invalid location value: " + userUpdateRequestDTO.getLocation());
                 }
             }
         }
@@ -162,7 +174,7 @@ public class UserServiceIMPL implements UserService {
     @Override
     public boolean verifyUser(String token) {
         User user = userRepo.findByVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+                .orElseThrow(() -> new InvalidValueException("Invalid or expired token"));
 
         if (user.isVerified()) {
             throw new RuntimeException("Email already verified");
@@ -172,6 +184,58 @@ public class UserServiceIMPL implements UserService {
         user.setVerificationToken(null); // Clear token after verification
         userRepo.save(user);
         return true;
+    }
+
+    @Override
+    public String deleteUser(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        if (user instanceof Employer employer) {
+            Optional<Job> jobs = jobRepo.findAllByEmployer(employer);
+            jobs.ifPresent(job -> {
+                jobRepo.setActiveState(job.getJobId());
+            });
+        }
+
+        user.setDeleted(true);
+        userRepo.save(user);
+        return "User deleted successfully with ID: " + userId;
+    }
+
+    @Override
+    public String restoreUser(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        user.setDeleted(false);
+        userRepo.save(user);
+        return "User restored successfully with ID: " + userId;
+    }
+
+
+    @Override
+    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+        // Validate user existence
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        // Validate old password
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        // Validate new password complexity
+        if (!PasswordValidator.isValidPassword(newPassword)) {
+            throw new InvalidValueException("Password does not meet complexity requirements");
+        }
+
+        // Hash the new password
+        String hashedPassword = passwordEncoder.encode(newPassword);
+
+        // Update the user's password
+        user.setPassword(hashedPassword);
+        userRepo.save(user);
     }
 
 
