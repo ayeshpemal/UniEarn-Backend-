@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 
@@ -36,42 +37,55 @@ public class ApplicationServiceIMPL implements ApplicationService {
         Job job = jobRepository.findById(applicationDTO.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
+
         User user = userRepository.findById(Math.toIntExact(applicationDTO.getUserId()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
 
+        if (!Role.STUDENT.equals(user.getRole())) { // Compare with the Role enum
+            throw new RuntimeException("Only students can apply for jobs.");
+        }
+
+
         Application application = new Application();
         application.setJob(job);
-        application.setStudent(user);
+        application.setStudent(user); // Assign the user to the application
         application.setStatus(ApplicationStatus.valueOf(applicationDTO.getStatus()));
         application.setAppliedDate(applicationDTO.getAppliedDate());
 
-
         applicationRepository.save(application);
-
 
         return applicationDTO;
     }
+
+
     public ApplicationDTO updateStatus(Long applicationId, ApplicationStatus status) {
-        Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
 
-        if (applicationOptional.isPresent()) {
-            Application application = applicationOptional.get();
-            application.setStatus(status);
-            applicationRepository.save(application);
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
-            // Convert Application entity to DTO and return it
-            ApplicationDTO applicationDTO = new ApplicationDTO();
-            applicationDTO.setApplicationId(application.getApplicationId());
-            applicationDTO.setJobId(application.getJob().getJobId());
-            applicationDTO.setUserId(application.getStudent().getUserId());
-            applicationDTO.setStatus(application.getStatus().name());
-            applicationDTO.setAppliedDate(application.getAppliedDate());
 
-            return applicationDTO;
-        } else {
-            throw new RuntimeException("Application not found");
+        Job job = application.getJob();
+        User employer = job.getEmployer(); // Assuming the Job entity has an associated employer
+
+
+        if (!"EMPLOYER".equalsIgnoreCase(String.valueOf(employer.getRole()))) {
+            throw new RuntimeException("Only employers can change the application status.");
         }
+
+
+        application.setStatus(status);
+        applicationRepository.save(application);
+
+
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setApplicationId(application.getApplicationId());
+        applicationDTO.setJobId(application.getJob().getJobId());
+        applicationDTO.setUserId(application.getStudent().getUserId());
+        applicationDTO.setStatus(application.getStatus().name());
+        applicationDTO.setAppliedDate(application.getAppliedDate());
+
+        return applicationDTO;
     }
 
     public ApplicationDTO viewApplicationDetails(Long applicationId) {
@@ -80,7 +94,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         if (applicationOptional.isPresent()) {
             Application application = applicationOptional.get();
 
-            // Convert Application entity to DTO
+
             ApplicationDTO applicationDTO = new ApplicationDTO();
             applicationDTO.setApplicationId(application.getApplicationId());
             applicationDTO.setJobId(application.getJob().getJobId());
@@ -97,26 +111,33 @@ public class ApplicationServiceIMPL implements ApplicationService {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
 
         if (applicationOptional.isPresent()) {
-            // Delete the application
+
             applicationRepository.deleteById(applicationId);
         } else {
             throw new RuntimeException("Application not found");
         }
     }
 
-    // Function to update an application
+
     public ApplicationDTO updateApplication(Long applicationId, ApplicationDTO applicationDTO) {
+
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        // Update application fields
+
+        User user = application.getStudent();
+
+
+        if (!"STUDENT".equalsIgnoreCase(String.valueOf(user.getRole()))) {
+            throw new RuntimeException("Only students can update applications.");
+        }
+
         application.setStatus(ApplicationStatus.valueOf(applicationDTO.getStatus()));
         application.setAppliedDate(applicationDTO.getAppliedDate());
 
-        // Save the updated application
         applicationRepository.save(application);
 
-        // Return the updated ApplicationDTO
+
         applicationDTO.setApplicationId(application.getApplicationId());
         applicationDTO.setJobId(application.getJob().getJobId());
         applicationDTO.setUserId(application.getStudent().getUserId());
@@ -125,6 +146,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         return applicationDTO;
     }
+
 }
 
 
