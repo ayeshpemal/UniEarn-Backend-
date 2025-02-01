@@ -60,7 +60,13 @@ public class Student extends User {
     private List<String> skills;
 
     @OneToMany(mappedBy = "student")
-    private Set<Application> orderDetails;
+    private Set<Application> applications;
+
+    @OneToMany(mappedBy = "leader")
+    private Set<Team> leadingTeams;
+
+    @ManyToMany(mappedBy = "members")
+    private Set<Team> teams;
 
     public void addPreference(JobCategory preference) {
         preferences.add(preference);

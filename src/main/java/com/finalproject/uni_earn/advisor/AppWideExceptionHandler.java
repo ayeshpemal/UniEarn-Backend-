@@ -41,6 +41,12 @@ public class AppWideExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AlreadyExistException.class)
+    public ResponseEntity<StandardResponse> handleAlreadyExist(AlreadyExistException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+				
     @ExceptionHandler(InvalidParametersException.class)
     public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {
         return new ResponseEntity<StandardResponse>(
