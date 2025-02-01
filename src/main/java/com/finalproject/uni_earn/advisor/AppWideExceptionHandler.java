@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.advisor;
 
+import com.finalproject.uni_earn.exception.*;
 import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -35,6 +36,13 @@ public class AppWideExceptionHandler {
 
     @ExceptionHandler(InvalidValueException.class)
     public ResponseEntity<StandardResponse> handleInvalidValue(InvalidValueException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(400, ex.getMessage(), null),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidParametersException.class)
+    public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(400, ex.getMessage(), null),
                 HttpStatus.BAD_REQUEST);
