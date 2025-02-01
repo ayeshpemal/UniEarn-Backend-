@@ -169,7 +169,7 @@ public class JobServiceIMPL implements JobService {
 
     @Override
     public List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page) {
-        User user = userRepo.findByUserId(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         List<JobDetailsResponseDTO> jobDetailsResponseDTOS = new ArrayList<>();

@@ -36,7 +36,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         Job job = jobRepository.findById(applicationDTO.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        User user = userRepository.findById(Math.toIntExact(applicationDTO.getUserId()))
+        User user = userRepository.findById(applicationDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
 

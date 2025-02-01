@@ -23,8 +23,8 @@ public class UserController {
     public ResponseEntity<StandardResponse> registerUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         String message = userService.registerUser(userRequestDTO);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "success", message),
-                HttpStatus.OK);
+                new StandardResponse(201, "success", message),
+                HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -55,5 +55,36 @@ public class UserController {
                 new StandardResponse(200, "Email verified successfully", verified),
                 HttpStatus.OK
         );
+    }
+
+    @DeleteMapping("users/{userId}/delete")
+    public ResponseEntity<StandardResponse> DeleteUser(
+            @PathVariable Long userId) {
+
+        String message = userService.deleteUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "User deleted successfully", message),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping("/users/{userId}/restore")
+    public ResponseEntity<StandardResponse> restoreUser(
+            @PathVariable Long userId) {
+        String message = userService.restoreUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "User successfully restored.", message),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping("/update-password/{userId}")
+    public ResponseEntity<StandardResponse> updatePassword(
+            @PathVariable Long userId,
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword) {
+
+        userService.updatePassword(userId, oldPassword, newPassword);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", "Password updated successfully"));
     }
 }

@@ -62,4 +62,6 @@ public class Job {
     @Column(name = "active_status", columnDefinition = "BOOLEAN DEFAULT TRUE", nullable = false)
     private boolean activeStatus;
 
+
+   
 }
