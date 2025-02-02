@@ -19,13 +19,14 @@ public interface UserRepo extends JpaRepository<User, Long>{
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByUserName(String userName);
+
     Optional<User> findByVerificationToken(String token);
 
     @Query("SELECT u FROM User u WHERE u.isDeleted = false")
     List<User> findAllActiveUsers();
 
-    Optional<User> findByEmailAndIsDeletedFalse(String email);
-
+    Optional<User> findByUserNameAndAndIsDeletedFalse(String username);
     boolean existsByUserId(Long userId);
 
     @Query("select u.role from User u where u.userId = :userId")

@@ -37,12 +37,4 @@ public class Team {
     public void addMember(Student student) {
         this.members.add(student);
     }
-
-    public void removeMember(Student student) {
-        this.members.remove(student);
-    }
-
-    public void clearMembers() {
-        this.members.clear();
-    }
 }
