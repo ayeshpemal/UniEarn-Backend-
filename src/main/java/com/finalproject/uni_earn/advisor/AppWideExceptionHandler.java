@@ -46,6 +46,7 @@ public class AppWideExceptionHandler {
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(409, ex.getMessage(), null),
                 HttpStatus.CONFLICT);
+    }
 				
     @ExceptionHandler(InvalidParametersException.class)
     public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {

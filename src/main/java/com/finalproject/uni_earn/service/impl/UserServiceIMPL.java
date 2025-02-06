@@ -24,6 +24,9 @@ import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +47,8 @@ public class UserServiceIMPL implements UserService {
     private EmailService emailService;
     @Autowired
     private JobRepo jobRepo;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -93,13 +98,16 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepo.findByEmailAndIsDeletedFalse(loginRequestDTO.getEmail())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
-
-        // Validate password
-        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.getUserName(), loginRequestDTO.getPassword())
+            );
+        }catch (BadCredentialsException e) {
             throw new InvalidValueException("Invalid email or password");
         }
+
+        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user);

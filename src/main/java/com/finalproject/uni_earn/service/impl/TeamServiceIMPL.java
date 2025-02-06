@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.request.TeamRequestDTO;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.StudentRepo;
 import com.finalproject.uni_earn.repo.TeamRepo;
@@ -63,7 +64,7 @@ public class TeamServiceIMPL implements TeamService {
             throw new NotFoundException("Student is not a member of this team.");
         }
         if(team.getLeader().equals(student)){
-            throw new RuntimeException("Leader cannot be removed from the team");
+            throw new InvalidValueException("Leader cannot be removed from the team");
         }
 
         teamRepository.removeStudentFromTeam(teamId, studentId);
@@ -74,11 +75,6 @@ public class TeamServiceIMPL implements TeamService {
     public String deleteTeam(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("Team not found"));
-
-        // Remove all members before deleting the team
-        /*team.clearMembers();
-        System.out.println(team);
-        teamRepository.save(team);*/
 
         teamRepository.removeAllMembersFromTeam(teamId);
         teamRepository.deleteById(teamId);
