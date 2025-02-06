@@ -17,6 +17,7 @@ import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.JobService;
+import com.finalproject.uni_earn.service.NotificationService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +52,22 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private ApplicationRepo applicationRepo;
 
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public String addJob(JobRequestDTO jobRequestDTO) {
         Job job = modelMapper.map(jobRequestDTO, Job.class);
         job.setEmployer(employerRepo.getReferenceById(jobRequestDTO.getEmployer()));
         jobRepo.save(job);
-        return jobRequestDTO.getJobTitle()+" is saved. ";
+
+        // Create follow notification after a new job is posted
+        Employer employer = employerRepo.getReferenceById(jobRequestDTO.getEmployer());
+        notificationService.createFollowNotification(employer, job); // Notify students about the new job
+
+        return jobRequestDTO.getJobTitle() + " is saved. ";
     }
+
     @Override
     public String deleteJob(Long jobId){
         jobRepo.deleteById(jobId);

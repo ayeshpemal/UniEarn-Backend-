@@ -1,6 +1,5 @@
 package com.finalproject.uni_earn.service.impl;
 
-import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.NotificationService;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class NotificationServiceIMPL implements NotificationService {
@@ -33,6 +33,9 @@ public class NotificationServiceIMPL implements NotificationService {
 
     @Autowired
     private  ApplicationRepo applicationRepo;
+
+    @Autowired
+    private FollowRepo followRepo;
 
 
     public void createNotification(Long applicationId) {
@@ -74,6 +77,33 @@ public class NotificationServiceIMPL implements NotificationService {
 
 
         System.out.println("Generated Notification Message: " + message);
+    }
+
+    public String createFollowNotification(Employer employer, Job job) {
+        List<Follow> followers = followRepo.findAllByEmployer(employer);
+
+        String message = String.format(
+                "A new %s job has been posted by %s: %s. Check it out!",
+                job.getJobCategory(), // Assuming Job has a category field
+                employer.getCompanyName(),
+                job.getJobTitle()
+        );
+
+        for (Follow follow : followers) {
+            Student student = follow.getStudent();
+
+            Notification notification = new Notification();
+            notification.setMessage(message);
+            notification.setRecipient(student);
+            notification.setJob(job);
+            notification.setSentDate(new Date());
+            notification.setIsRead(false);
+
+            notificationRepo.save(notification);
+            System.out.println("Notification sent to student: " + student.getUserName());
+        }
+
+        return message; // Return only the message
     }
 
 

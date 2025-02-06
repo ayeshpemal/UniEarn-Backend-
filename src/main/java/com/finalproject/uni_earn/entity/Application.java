@@ -24,7 +24,7 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private User student; // Many applications can be made by one student
+    private Student student;// Many applications can be made by one student
 
 
     @Enumerated(EnumType.STRING)
