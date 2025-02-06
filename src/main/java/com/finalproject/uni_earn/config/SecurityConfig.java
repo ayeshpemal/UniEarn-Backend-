@@ -27,12 +27,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("**").permitAll()  // Public endpoints
+                        .requestMatchers("**").permitAll()
+                        // Public endpoints
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        /*.requestMatchers("/api/admin/**").hasRole("ADMIN")  // Only admins can access
+                        /*.requestMatchers("/follows/**").hasRole("STUDENT")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")  // Only admins can access
                         .requestMatchers("/api/employer/**").hasRole("EMPLOYER")  // Only employers
-                        .requestMatchers("/api/student/**").hasRole("STUDENT")  // Only students
-                        .anyRequest().authenticated()  // Secure all other endpoints*/
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")  // Only students*/
+                        .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
