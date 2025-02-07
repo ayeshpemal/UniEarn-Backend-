@@ -75,4 +75,12 @@ public class Student extends User {
     public void clearPreferences() {
         preferences.clear();
     }
+
+    public void addContactNumber(String contactNumber) {
+        contactNumbers.add(contactNumber);
+    }
+
+    public void clearContactNumbers() {
+        contactNumbers.clear();
+    }
 }

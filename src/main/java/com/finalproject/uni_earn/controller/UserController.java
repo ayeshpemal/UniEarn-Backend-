@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,7 +36,7 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
@@ -85,6 +86,9 @@ public class UserController {
             @RequestParam String newPassword) {
 
         userService.updatePassword(userId, oldPassword, newPassword);
-        return ResponseEntity.ok(new StandardResponse(200, "Success", "Password updated successfully"));
+        return new  ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", "Password updated successfully"),
+                HttpStatus.OK
+        );
     }
 }
