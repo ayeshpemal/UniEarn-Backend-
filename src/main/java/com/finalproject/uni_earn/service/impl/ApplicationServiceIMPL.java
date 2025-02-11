@@ -10,6 +10,7 @@ import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.StudentRepo;
 import com.finalproject.uni_earn.service.ApplicationService;
+import com.finalproject.uni_earn.service.UpdateNotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,19 +34,21 @@ public class ApplicationServiceIMPL implements ApplicationService {
     @Autowired
     private StudentRepo studentRepository;
 
+    @Autowired
+    private UpdateNotificationService updateNotificationService; // Inject notification service
+
+
 
     public ApplicationDTO addApplication(ApplicationDTO applicationDTO) {
 
         Job job = jobRepository.findById(applicationDTO.getJobId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job not found"));
 
-
         Optional<Student> studentOpt = studentRepository.findById(applicationDTO.getUserId());
         if (studentOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user: Only students can apply for jobs");
         }
         Student student = studentOpt.get();
-
 
         ApplicationStatus status;
         try {
@@ -54,11 +57,9 @@ public class ApplicationServiceIMPL implements ApplicationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + applicationDTO.getStatus());
         }
 
-
         Date appliedDate = (applicationDTO.getAppliedDate() != null)
                 ? applicationDTO.getAppliedDate()
                 : new Date();
-
 
         Application application = new Application();
         application.setJob(job);
@@ -66,11 +67,13 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setStatus(status);
         application.setAppliedDate(appliedDate);
 
-        applicationRepository.save(application);
+        Application savedApplication = applicationRepository.save(application);
+
+        // Call notification service to notify the employer
+        updateNotificationService.createNotification(savedApplication.getApplicationId());
 
         return applicationDTO;
     }
-
 
     public ApplicationDTO updateStatus(Long applicationId, ApplicationStatus status) {
 
