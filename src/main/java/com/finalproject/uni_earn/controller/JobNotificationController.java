@@ -1,14 +1,10 @@
 package com.finalproject.uni_earn.controller;
 
-import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.repo.EmployerRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.service.impl.JobServiceIMPL;
-import com.finalproject.uni_earn.service.impl.NotificationServiceIMPL;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
+import com.finalproject.uni_earn.service.impl.JobNotificationServiceIMPL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +15,9 @@ import java.util.Map;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/api/v1/Notification/")
-public class NotificationController {
+public class JobNotificationController {
     @Autowired
-    private NotificationServiceIMPL notificationService;
+    private JobNotificationServiceIMPL notificationService;
 
     @Autowired
     private JobRepo jobRepo;
@@ -31,17 +27,6 @@ public class NotificationController {
 
 
 
-    @PostMapping("/createtoEmployee/{applicationId}")
-    public ResponseEntity<String> createNotification(@PathVariable Long applicationId) {
-        try {
-            notificationService.createNotification(applicationId);
-            return ResponseEntity.ok("Notification created successfully.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
-        }
-    }
 
     @PutMapping("/{id}/mark-as-read")
     public ResponseEntity<String> markNotificationAsRead(@PathVariable Long id) {
