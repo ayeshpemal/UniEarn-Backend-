@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequestMapping(value = "/api/v1/report/")
 public class ReportController {
-    private ReportServiceIMPL reportServiceIMPL;
+    final private ReportServiceIMPL reportServiceIMPL;
 
     @Autowired
     public ReportController(ReportServiceIMPL reportServiceIMPL) {
@@ -23,13 +23,13 @@ public class ReportController {
 
     @GetMapping(value = "/getall", params = {"page", "size"})
     public ResponseEntity<StandardResponse> getAllReports(@RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
-        PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getallReports(page, size);
+        PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getAllReports(page, size);
         return (ResponseEntity<StandardResponse>) ResponseEntity.ok(new StandardResponse(200, "Success", paginatedreportdto));
     }
 //to get the id of the reported user
     @GetMapping(value = "/getall-by-id", params = {"Id,page", "size"})
     public ResponseEntity<StandardResponse> getAllReportsByCount(@RequestParam(value = "ID") int id, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
-        PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getallReportsByCount(id,page, size);
+        PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getAllReportsById(id,page, size);
         return (ResponseEntity<StandardResponse>) ResponseEntity.ok(new StandardResponse(200, "Success", paginatedreportdto));
     }
 
