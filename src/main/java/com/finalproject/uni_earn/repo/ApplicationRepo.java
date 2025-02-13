@@ -19,4 +19,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     boolean existsByStudent_UserIdAndJob_JobIdAndStatus(Long userId, Long jobId, ApplicationStatus status);
 
     Application findByStudent_UserIdAndJob_JobId(Long userId, Long jobId);
+
+    boolean existsByJob_JobIdAndTeam_Id(Long jobId, Long teamId);
+
+    boolean existsByJob_JobIdAndStudent_UserId(Long jobId, Long studentId);
 }

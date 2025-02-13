@@ -34,6 +34,9 @@ public class Team {
     )
     private Set<Student> members = new HashSet<>();
 
+    @OneToMany(mappedBy = "team")
+    private Set<Application> applications;
+
     public void addMember(Student student) {
         this.members.add(student);
     }

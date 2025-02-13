@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.entity;
 
+import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.*;
@@ -48,6 +49,15 @@ public class Job {
 
     @Column(name = "job_payment", nullable = false)
     private double jobPayment;
+
+    @Column(name = "required_workers", nullable = false)
+    private int requiredWorkers;
+
+    @Column(name = "required_gender", nullable = false)
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Gender> requiredGender;
 
     @Column(name = "start_date", nullable = false)
     private Date startDate;

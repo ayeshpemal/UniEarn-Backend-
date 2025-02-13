@@ -1,6 +1,8 @@
 package com.finalproject.uni_earn.repo;
 
+import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
+import com.finalproject.uni_earn.entity.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +27,7 @@ public interface TeamRepo extends JpaRepository<Team, Long> {
     @Modifying
     @Query(value = "DELETE FROM team_members WHERE team_id = :teamId", nativeQuery = true)
     void removeAllMembersFromTeam(@Param("teamId") Long teamId);
+
+    @Query(value = "SELECT COUNT(student_id) FROM team_members WHERE team_id = :teamId", nativeQuery = true)
+    Long findMembersCountByTeamId(@Param("teamId") Long teamId);
 }

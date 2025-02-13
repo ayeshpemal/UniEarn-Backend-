@@ -1,19 +1,20 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
-import com.finalproject.uni_earn.entity.Application;
-import com.finalproject.uni_earn.entity.Job;
-import com.finalproject.uni_earn.entity.Student;
-import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.exception.AlreadyExistException;
+import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.StudentRepo;
+import com.finalproject.uni_earn.repo.TeamRepo;
 import com.finalproject.uni_earn.service.ApplicationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.NotAcceptableStatusException;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -32,47 +33,64 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private StudentRepo studentRepository;
+    
+    @Autowired
+    private TeamRepo teamRepository;
 
+    @Override
+    public String applyAsStudent(Long studentId, Long jobId) {
 
-    public ApplicationDTO addApplication(ApplicationDTO applicationDTO) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found"));
 
-        Job job = jobRepository.findById(applicationDTO.getJobId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job not found"));
-
-
-        Optional<Student> studentOpt = studentRepository.findById(applicationDTO.getUserId());
-        if (studentOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user: Only students can apply for jobs");
-        }
-        Student student = studentOpt.get();
-
-
-        ApplicationStatus status;
-        try {
-            status = ApplicationStatus.valueOf(applicationDTO.getStatus());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + applicationDTO.getStatus());
+        if(job.getRequiredWorkers() != 1) {
+            throw new NotAcceptableStatusException("This job requires a team, please apply as a team.");
         }
 
-
-        Date appliedDate = (applicationDTO.getAppliedDate() != null)
-                ? applicationDTO.getAppliedDate()
-                : new Date();
-
+        if (applicationRepository.existsByJob_JobIdAndStudent_UserId(jobId, studentId)) {
+            throw new RuntimeException("You have already applied for this job.");
+        }
 
         Application application = new Application();
         application.setJob(job);
         application.setStudent(student);
-        application.setStatus(status);
-        application.setAppliedDate(appliedDate);
+        application.setAppliedDate(new Date());
+        application.setStatus(ApplicationStatus.PENDING);
 
         applicationRepository.save(application);
-
-        return applicationDTO;
+        return "Student application submitted successfully!";
     }
 
+    @Override
+    public String applyAsTeam(Long teamId, Long jobId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NotFoundException("Team not found"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found"));
 
-    public ApplicationDTO updateStatus(Long applicationId, ApplicationStatus status) {
+        if (applicationRepository.existsByJob_JobIdAndTeam_Id(jobId, teamId)) {
+            throw new AlreadyExistException("This team has already applied for this job.");
+        }
+
+        if (teamRepository.findMembersCountByTeamId(teamId) != job.getRequiredWorkers()) {
+            throw new RuntimeException("Team size does not match required workers.");
+        }
+
+
+        Application application = new Application();
+        application.setJob(job);
+        application.setTeam(team);
+        application.setAppliedDate(new Date());
+        application.setStatus(ApplicationStatus.PENDING);
+
+        applicationRepository.save(application);
+        return "Team application submitted successfully!";
+    }
+
+    @Override
+    public String updateStatus(Long applicationId, ApplicationStatus status) {
 
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -95,9 +113,10 @@ public class ApplicationServiceIMPL implements ApplicationService {
         applicationDTO.setStatus(application.getStatus().name());
         applicationDTO.setAppliedDate(application.getAppliedDate());
 
-        return applicationDTO;
+        return "Application status updated to " + status;
     }
 
+    @Override
     public ApplicationDTO viewApplicationDetails(Long applicationId) {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
 
@@ -117,6 +136,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         }
     }
 
+    @Override
     public void deleteApplication(Long applicationId) {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
 
@@ -127,6 +147,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         }
     }
 
+    @Override
     public ApplicationDTO updateApplication(Long applicationId, ApplicationDTO applicationDTO) {
 
         Application application = applicationRepository.findById(applicationId)
