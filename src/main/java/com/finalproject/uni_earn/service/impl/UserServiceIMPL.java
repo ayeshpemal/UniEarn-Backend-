@@ -30,7 +30,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -65,20 +64,12 @@ public class UserServiceIMPL implements UserService {
         }
 
         // Determine subclass based on role
-        User user;
-        switch (userRequestDTO.getRole().toString().toUpperCase()) {
-            case "STUDENT":
-                user = modelMapper.map(userRequestDTO, Student.class);
-                break;
-            case "EMPLOYER":
-                user = modelMapper.map(userRequestDTO, Employer.class);
-                break;
-            /*case "ADMIN":
-                user = modelMapper.map(userRequestDTO, Admin.class);
-                break;*/
-            default:
-                throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
-        }
+        User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
+            case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
+            case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
+            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
+        };
 
         // Hash the password
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
@@ -142,6 +133,12 @@ public class UserServiceIMPL implements UserService {
                     } catch (IllegalArgumentException e) {
                         throw new InvalidValueException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
                     }
+                }
+            }
+            if(userUpdateRequestDTO.getContactNumber() != null){
+                student.clearContactNumbers(); // Clear existing contact numbers
+                for(int i = 0; i < userUpdateRequestDTO.getContactNumber().size(); i++) {
+                    student.addContactNumber(userUpdateRequestDTO.getContactNumber().get(i));
                 }
             }
             if (userUpdateRequestDTO.getSkills() != null) {
