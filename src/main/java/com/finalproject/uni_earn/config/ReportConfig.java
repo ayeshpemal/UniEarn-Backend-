@@ -11,12 +11,12 @@ import org.springframework.context.annotation.Configuration;
 @NoArgsConstructor
 @Data
 public class ReportConfig {
-    @Value("${report.threshold.warning}")
-    private int warningThreshold = 3;
+    @Value("${report.threshold.warning:3}")
+    private int warningThreshold;
 
-    @Value("${report.threshold.critical}")
-    private int criticalThreshold = 5;
+    @Value("${report.threshold.critical:5}")
+    private int criticalThreshold;
 
-    @Value("${report.threshold.timeWindow}")
-    private int timeWindowHours = 24;
+    @Value("${report.threshold.timeWindow:24}")
+    private int timeWindowHours;
 }
