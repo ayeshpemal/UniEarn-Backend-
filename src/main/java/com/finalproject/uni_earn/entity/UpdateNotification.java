@@ -11,7 +11,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Notification {
+public class UpdateNotification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +25,8 @@ public class Notification {
     private User recipient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = false)
-    private Job job;
+    @JoinColumn(name = "application_id", nullable = false)
+    private Application application;
 
     @Column(nullable = false)
     private Boolean isRead = false;
@@ -34,4 +35,6 @@ public class Notification {
     @Column(nullable = false)
     private Date sentDate;
 
+    public void save(UpdateNotification notification) {
+    }
 }

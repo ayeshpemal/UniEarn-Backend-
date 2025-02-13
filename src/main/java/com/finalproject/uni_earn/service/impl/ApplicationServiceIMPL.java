@@ -10,6 +10,7 @@ import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.StudentRepo;
 import com.finalproject.uni_earn.repo.TeamRepo;
 import com.finalproject.uni_earn.service.ApplicationService;
+import com.finalproject.uni_earn.service.UpdateNotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,13 +38,17 @@ public class ApplicationServiceIMPL implements ApplicationService {
     @Autowired
     private TeamRepo teamRepository;
 
+    // Inject notification service
+    @Autowired
+    private UpdateNotificationService updateNotificationService;
+
     @Override
     public String applyAsStudent(Long studentId, Long jobId) {
 
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new NotFoundException("Student not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user: Only students can apply for jobs"));
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new NotFoundException("Job not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job not found"));
 
         if(job.getRequiredWorkers() != 1) {
             throw new NotAcceptableStatusException("This job requires a team, please apply as a team.");
