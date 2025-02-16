@@ -17,7 +17,6 @@ import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
-import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
 import com.finalproject.uni_earn.util.PasswordValidator;
@@ -82,7 +81,9 @@ public class UserServiceIMPL implements UserService {
         userRepo.save(user);
 
         // Send verification email
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String emailBody = "Please click the following link to verify your email: " + verifyUrl;
+        emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
 
         return "User registered successfully with username: " + user.getUserName() + " Please check your email to verify your account.";
     }
