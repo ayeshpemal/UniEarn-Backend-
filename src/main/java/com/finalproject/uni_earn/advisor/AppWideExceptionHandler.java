@@ -54,4 +54,11 @@ public class AppWideExceptionHandler {
                 new StandardResponse(400, ex.getMessage(), null),
                 HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(EmailNotSendException.class)
+    public ResponseEntity<StandardResponse> handleEmailNotSend(EmailNotSendException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500, ex.getMessage(), null),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
