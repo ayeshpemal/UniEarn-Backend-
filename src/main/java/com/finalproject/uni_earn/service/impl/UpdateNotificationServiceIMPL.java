@@ -1,49 +1,37 @@
 package com.finalproject.uni_earn.service.impl;
 
-import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
-import com.finalproject.uni_earn.repo.*;
-import com.finalproject.uni_earn.service.NotificationService;
-import org.modelmapper.ModelMapper;
+import com.finalproject.uni_earn.repo.ApplicationRepo;
+import com.finalproject.uni_earn.repo.UpdateNoRepo;
+import com.finalproject.uni_earn.service.UpdateNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
 @Service
-public class NotificationServiceIMPL implements NotificationService {
+public class UpdateNotificationServiceIMPL implements UpdateNotificationService {
 
     @Autowired
-    private JobRepo jobRepo;
+    private ApplicationRepo applicationRepo;
 
     @Autowired
-    private StudentRepo studentRepo;
+    private UpdateNoRepo notificationRepo;
 
-    @Autowired
-    private EmployerRepo employerRepo;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private NotificationRepo notificationRepo;
-
-    @Autowired
-    private  ApplicationRepo applicationRepo;
-
-
+    @Override
     public void createNotification(Long applicationId) {
 
         Application application = applicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
-
         Job job = application.getJob();
         if (job == null) {
             throw new IllegalArgumentException("Job not found for the application");
+        }
+
+        Employer employer = job.getEmployer();
+        if (employer == null) {
+            throw new IllegalArgumentException("Employer not found for the job");
         }
 
         User student = application.getStudent();
@@ -51,7 +39,6 @@ public class NotificationServiceIMPL implements NotificationService {
             throw new IllegalArgumentException("User is not a student");
         }
         Student studentDetails = (Student) student;
-
 
         String university = studentDetails.getUniversity() != null ? studentDetails.getUniversity() : "Unknown University";
         String message = String.format(
@@ -63,30 +50,15 @@ public class NotificationServiceIMPL implements NotificationService {
         );
 
 
-        Notification notification = new Notification();
+        UpdateNotification notification = new UpdateNotification();
         notification.setMessage(message);
-        notification.setRecipient(job.getEmployer());
-        notification.setJob(job);
+        notification.setRecipient(employer); // Employer is the recipient
+        notification.setApplication(application);
         notification.setSentDate(new Date());
         notification.setIsRead(false);
 
         notificationRepo.save(notification);
 
-
-        System.out.println("Generated Notification Message: " + message);
-    }
-
-
-
-    public boolean markAsRead(Long id) {
-        return notificationRepo.findById(id).map(notification -> {
-            if (!notification.getIsRead()) {
-                notification.setIsRead(true);
-                notificationRepo.save(notification);
-                return true;
-            }
-            return false;
-        }).orElse(false);
+        System.out.println("Notification sent to employer: " + message);
     }
 }
-

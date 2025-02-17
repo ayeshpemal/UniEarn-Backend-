@@ -17,17 +17,18 @@ import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
-import com.finalproject.uni_earn.service.EmailService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
 import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,8 @@ public class UserServiceIMPL implements UserService {
     private EmailService emailService;
     @Autowired
     private JobRepo jobRepo;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -60,20 +63,12 @@ public class UserServiceIMPL implements UserService {
         }
 
         // Determine subclass based on role
-        User user;
-        switch (userRequestDTO.getRole().toString().toUpperCase()) {
-            case "STUDENT":
-                user = modelMapper.map(userRequestDTO, Student.class);
-                break;
-            case "EMPLOYER":
-                user = modelMapper.map(userRequestDTO, Employer.class);
-                break;
-            /*case "ADMIN":
-                user = modelMapper.map(userRequestDTO, Admin.class);
-                break;*/
-            default:
-                throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
-        }
+        User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
+            case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
+            case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
+            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
+        };
 
         // Hash the password
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
@@ -86,20 +81,25 @@ public class UserServiceIMPL implements UserService {
         userRepo.save(user);
 
         // Send verification email
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String emailBody = "Please click the following link to verify your email: " + verifyUrl;
+        emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
 
         return "User registered successfully with username: " + user.getUserName() + " Please check your email to verify your account.";
     }
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepo.findByEmailAndIsDeletedFalse(loginRequestDTO.getEmail())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
-
-        // Validate password
-        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.getUserName(), loginRequestDTO.getPassword())
+            );
+        }catch (BadCredentialsException e) {
             throw new InvalidValueException("Invalid email or password");
         }
+
+        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user);
@@ -134,6 +134,12 @@ public class UserServiceIMPL implements UserService {
                     } catch (IllegalArgumentException e) {
                         throw new InvalidValueException("Invalid preferences value: " + userUpdateRequestDTO.getPreferences().get(i));
                     }
+                }
+            }
+            if(userUpdateRequestDTO.getContactNumber() != null){
+                student.clearContactNumbers(); // Clear existing contact numbers
+                for(int i = 0; i < userUpdateRequestDTO.getContactNumber().size(); i++) {
+                    student.addContactNumber(userUpdateRequestDTO.getContactNumber().get(i));
                 }
             }
             if (userUpdateRequestDTO.getSkills() != null) {

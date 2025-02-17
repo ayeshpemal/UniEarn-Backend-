@@ -41,10 +41,24 @@ public class AppWideExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AlreadyExistException.class)
+    public ResponseEntity<StandardResponse> handleAlreadyExist(AlreadyExistException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+    }
+				
     @ExceptionHandler(InvalidParametersException.class)
     public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(400, ex.getMessage(), null),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailNotSendException.class)
+    public ResponseEntity<StandardResponse> handleEmailNotSend(EmailNotSendException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500, ex.getMessage(), null),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
