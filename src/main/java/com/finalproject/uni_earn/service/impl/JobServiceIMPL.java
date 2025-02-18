@@ -65,7 +65,7 @@ public class JobServiceIMPL implements JobService {
         jobRepo.save(job);
 
         // Create follow notification after a new job is posted
-        Employer employer = employerRepo.getReferenceById(jobRequestDTO.getEmployer());
+        Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
         notificationService.createFollowNotification(employer, job); // Notify students about the new job
         return addJobRequestDTO.getJobTitle() + " is saved. ";
     }
