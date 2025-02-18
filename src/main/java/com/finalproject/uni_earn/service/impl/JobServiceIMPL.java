@@ -18,6 +18,7 @@ import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.NotificationService;
 import com.finalproject.uni_earn.specification.JobSpecification;
@@ -56,7 +57,7 @@ public class JobServiceIMPL implements JobService {
     private ApplicationRepo applicationRepo;
 
     @Autowired
-    private NotificationService notificationService;
+    private JobNotificationService jobNotificationService;
 
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
@@ -66,7 +67,7 @@ public class JobServiceIMPL implements JobService {
 
         // Create follow notification after a new job is posted
         Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
-        notificationService.createFollowNotification(employer, job); // Notify students about the new job
+        jobNotificationService.createFollowNotification(employer, job); // Notify students about the new job
         return addJobRequestDTO.getJobTitle() + " is saved. ";
     }
 
