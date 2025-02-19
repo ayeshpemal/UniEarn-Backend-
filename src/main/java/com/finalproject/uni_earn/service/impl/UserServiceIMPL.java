@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
@@ -105,6 +106,13 @@ public class UserServiceIMPL implements UserService {
         String token = jwtUtil.generateToken(user);
 
         return new LoginResponseDTO(token, "Login successful");
+    }
+
+    @Override
+    public UserResponseDTO getUser(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+        return modelMapper.map(user, UserResponseDTO.class);
     }
 
     @Override
