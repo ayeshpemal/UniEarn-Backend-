@@ -12,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.locationtech.jts.geom.Point;
 
 import java.util.List;
 import java.util.Set;
@@ -74,5 +73,13 @@ public class Student extends User {
 
     public void clearPreferences() {
         preferences.clear();
+    }
+
+    public void addContactNumber(String contactNumber) {
+        contactNumbers.add(contactNumber);
+    }
+
+    public void clearContactNumbers() {
+        contactNumbers.clear();
     }
 }
