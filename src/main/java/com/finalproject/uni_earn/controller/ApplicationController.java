@@ -20,7 +20,7 @@ public class ApplicationController {
 
     @PostMapping("/apply/student")
     public ResponseEntity<StandardResponse> addApplication(@RequestParam Long studentId, @RequestParam Long jobId) {
-        String message = applicationService.applyAsStudent(studentId,jobId);
+        String message = applicationService.applyAsStudent(studentId, jobId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "success", message),
                 HttpStatus.CREATED);
@@ -59,13 +59,4 @@ public class ApplicationController {
                 new StandardResponse(200, "Success", "Application deleted successfully"),
                 HttpStatus.OK);
     }
-
-    @PutMapping("/updateApplication/{applicationId}")
-    public ResponseEntity<StandardResponse> updateApplication(@PathVariable Long applicationId, @RequestBody ApplicationDTO applicationDTO) {
-        ApplicationDTO returnApplicationDTO = applicationService.updateApplication(applicationId, applicationDTO);
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Success", returnApplicationDTO),
-                HttpStatus.OK);
-    }
 }
-

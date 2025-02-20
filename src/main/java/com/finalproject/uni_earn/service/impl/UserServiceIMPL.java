@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class UserServiceIMPL implements UserService {
+public class  UserServiceIMPL implements UserService {
     @Autowired
     private UserRepo userRepo;
     @Autowired
