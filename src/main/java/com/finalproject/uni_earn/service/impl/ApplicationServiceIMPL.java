@@ -65,6 +65,8 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         applicationRepository.save(application);
+
+
         return "Student application submitted successfully!";
     }
 
@@ -114,7 +116,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
         ApplicationDTO applicationDTO = new ApplicationDTO();
         applicationDTO.setApplicationId(application.getApplicationId());
         applicationDTO.setJobId(application.getJob().getJobId());
-        applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
+        if(application.getStudent()!=null){
+            applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
+        }
+        else if(application.getTeam()!=null){
+            applicationDTO.setUserId(application.getTeam().getLeader().getUserId());
+        }
         applicationDTO.setStatus(application.getStatus().name());
         applicationDTO.setAppliedDate(application.getAppliedDate());
 
