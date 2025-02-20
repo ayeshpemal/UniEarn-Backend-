@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.entity;
 
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,16 +24,29 @@ public class Application {
     private Job job; // Many applications can apply to one job
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
-    private User student; // Many applications can be made by one student
+    @JoinColumn(name = "student_id", nullable = true)
+    private Student student;// Many applications can be made by one student
 
+    @ManyToOne
+    @JoinColumn(name = "team_id", nullable = true)
+    private Team team;
 
     @Enumerated(EnumType.STRING)
-    private ApplicationStatus status;
+    @Column(nullable = false)
+    private ApplicationStatus status = ApplicationStatus.PENDING;
 
-
-    private Date appliedDate;
+    @Column(nullable = false)
+    private Date appliedDate = new Date();
 
     public void setSelected(boolean b) {
+    }
+
+    // Ensure only one of student or team is set
+    @PrePersist
+    @PreUpdate
+    private void validateApplicant() {
+        if ((student == null && team == null) || (student != null && team != null)) {
+            throw new InvalidValueException("An application must have either a student OR a team, not both.");
+        }
     }
 }

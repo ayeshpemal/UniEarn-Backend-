@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +38,16 @@ public class UserController {
         );
     }
 
+    @GetMapping("/get-user-by-id/{userId}")
+    public ResponseEntity<StandardResponse> getUserById(@PathVariable Long userId){
+        UserResponseDTO userResponseDTO = userService.getUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", userResponseDTO),
+                HttpStatus.OK
+        );
+    }
+
+    //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
@@ -57,13 +69,23 @@ public class UserController {
         );
     }
 
-    @DeleteMapping("/delete/{userId}")
+    @DeleteMapping("users/{userId}/delete")
     public ResponseEntity<StandardResponse> DeleteUser(
             @PathVariable Long userId) {
 
         String message = userService.deleteUser(userId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "User deleted successfully", message),
+                HttpStatus.OK
+        );
+    }
+
+    @PutMapping("/users/{userId}/restore")
+    public ResponseEntity<StandardResponse> restoreUser(
+            @PathVariable Long userId) {
+        String message = userService.restoreUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "User successfully restored.", message),
                 HttpStatus.OK
         );
     }
@@ -75,6 +97,9 @@ public class UserController {
             @RequestParam String newPassword) {
 
         userService.updatePassword(userId, oldPassword, newPassword);
-        return ResponseEntity.ok(new StandardResponse(200, "Success", "Password updated successfully"));
+        return new  ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", "Password updated successfully"),
+                HttpStatus.OK
+        );
     }
 }

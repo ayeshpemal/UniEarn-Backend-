@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.entity;
 
+import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.*;
@@ -20,7 +21,7 @@ import java.util.List;
 public class Job {
     @Id
     @Column(name="job_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long jobId;
 
     @Column(name="job_title",length = 50, nullable = false)
@@ -33,15 +34,30 @@ public class Job {
     @Column(name="job_description",length = 255)
     private String jobDescription;
 
-    @Column(name="job_locations", nullable = false)
+//    @Enumerated(EnumType.STRING)
+//    @ElementCollection
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(name="job_locations", nullable = false)
+//    private List<Location> jobLocations;
+//    //If job has many locations....
+
+    @Column(name = "job_locations",nullable = false)
     @ElementCollection
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Location> jobLocations;
-    //If job has many locations....
 
     @Column(name = "job_payment", nullable = false)
     private double jobPayment;
+
+    @Column(name = "required_workers", nullable = false)
+    private int requiredWorkers;
+
+    @Column(name = "required_gender", nullable = false)
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Gender> requiredGender;
 
     @Column(name = "start_date", nullable = false)
     private Date startDate;

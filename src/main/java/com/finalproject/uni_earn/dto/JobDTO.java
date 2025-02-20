@@ -28,4 +28,5 @@ public class JobDTO {
     private Date endDate;
     private Employer employer;
     private boolean activeStatus;
+
 }

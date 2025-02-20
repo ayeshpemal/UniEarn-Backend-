@@ -1,6 +1,5 @@
 package com.finalproject.uni_earn.dto.request;
 
-import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import lombok.AllArgsConstructor;
@@ -10,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class JobRequestDTO {
-
+@AllArgsConstructor
+@Data
+public class UpdateJobRequestDTO {
+    private Long jobId;
     private String jobTitle;
     private JobCategory jobCategory;
     private String jobDescription;

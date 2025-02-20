@@ -1,5 +1,7 @@
-package com.finalproject.uni_earn.service;
+package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.exception.EmailNotSendException;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,18 +18,17 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendVerificationEmail(String toEmail, String token) {
+    public void sendEmail(@Email String email, String subject, String emailBody) {
         try {
-            String link = verificationUrl + "?token=" + token;
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(toEmail);
-            message.setSubject("Verify Your Email");
-            message.setText("Please click the following link to verify your email: " + link);
+            message.setTo(email);
+            message.setSubject(subject);
+            message.setText(emailBody);
             mailSender.send(message);
-            System.out.println("Verification email sent successfully to " + toEmail);
+            System.out.println("Email sent successfully to " + email);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to send verification email to " + toEmail, e);
+            throw new EmailNotSendException("Failed to send email to " + email);
         }
     }
 }

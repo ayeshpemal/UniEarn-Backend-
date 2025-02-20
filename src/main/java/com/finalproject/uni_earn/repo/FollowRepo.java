@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.entity.Follow;
 import com.finalproject.uni_earn.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FollowRepo extends JpaRepository<Follow,Long> {
@@ -13,4 +14,5 @@ public interface FollowRepo extends JpaRepository<Follow,Long> {
     Optional<Object> findByStudentAndEmployer(Student student, Employer employer);
 
 
+    List<Follow> findAllByEmployer(Employer employer);
 }
