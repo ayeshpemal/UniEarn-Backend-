@@ -2,6 +2,8 @@ package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.Paginated.PaginatedReportDTO;
 import com.finalproject.uni_earn.dto.ReportDTO;
+import com.finalproject.uni_earn.dto.request.ReportRequestDTO;
+import com.finalproject.uni_earn.entity.Reports;
 import com.finalproject.uni_earn.entity.enums.ReportState;
 import com.finalproject.uni_earn.service.impl.ReportServiceIMPL;
 import com.finalproject.uni_earn.util.StandardResponse;
@@ -19,6 +21,12 @@ public class ReportController {
     @Autowired
     public ReportController(ReportServiceIMPL reportServiceIMPL) {
         this.reportServiceIMPL = reportServiceIMPL;
+    }
+
+    @PostMapping(value = "/submit")
+    public ResponseEntity<StandardResponse> submitReport(@RequestBody ReportRequestDTO reportDTO) {
+        Reports report = reportServiceIMPL.submitReport(reportDTO);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", report));
     }
 
     @GetMapping(value = "/getall", params = {"page", "size"})
