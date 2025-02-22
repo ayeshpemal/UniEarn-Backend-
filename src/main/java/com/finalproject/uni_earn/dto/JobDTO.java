@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.dto;
 
 import com.finalproject.uni_earn.entity.Employer;
+import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +26,8 @@ public class JobDTO {
     private String jobDescription;
     private List<Location> jobLocations;
     private double jobPayment;
+    private int requiredWorkers;
+    private Set<String> requiredGender;
     private Date startDate;
     private Date endDate;
     private Employer employer;

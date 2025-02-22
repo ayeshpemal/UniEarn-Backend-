@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Entity
+@EqualsAndHashCode(exclude = {"leader", "members", "applications"})
 @Table(name = "team")
 public class Team {
     @Id

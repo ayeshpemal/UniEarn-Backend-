@@ -67,7 +67,7 @@ public class UserServiceIMPL implements UserService {
         User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
             case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
             case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
-            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            //case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
             default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         };
 

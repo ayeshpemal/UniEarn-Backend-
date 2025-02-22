@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.request.UpdateRatingRequestDTO;
 import com.finalproject.uni_earn.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +26,7 @@ public class RatingController {
      * Test endpoint for creating a new rating
      * Sample request: POST /api/v1/rating/test/create
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/test/create")
     public ResponseEntity<RatingResponseBasicDTO> testCreateRating() {
         // Create a test rating request
@@ -43,6 +45,7 @@ public class RatingController {
      * Test endpoint for updating an existing rating
      * Sample request: PUT /api/v1/rating/test/update
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/test/update")
     public ResponseEntity<RatingResponseBasicDTO> testUpdateRating() {
         // Create a test update rating request
@@ -62,6 +65,7 @@ public class RatingController {
      * Test endpoint for deleting a rating
      * Sample request: DELETE /api/v1/rating/test/delete
      */
+
     @DeleteMapping("/test/delete")
     public ResponseEntity<RatingResponseBasicDTO> testDeleteRating() {
         // Create a test delete rating request
@@ -81,6 +85,7 @@ public class RatingController {
      * Test endpoint for getting all received ratings for a user
      * Sample request: GET /api/v1/rating/test/received/11?page=0&size=10
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/test/received/{userId}")
     public ResponseEntity<PaginatedRatingDTO> testGetReceivedRatings(
             @PathVariable Long userId,
@@ -94,6 +99,7 @@ public class RatingController {
      * Test endpoint for getting all given ratings by a user
      * Sample request: GET /api/v1/rating/test/given/1?page=0&size=10
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/test/given/{userId}")
     public ResponseEntity<PaginatedRatingDTO> testGetGivenRatings(
             @PathVariable Long userId,
