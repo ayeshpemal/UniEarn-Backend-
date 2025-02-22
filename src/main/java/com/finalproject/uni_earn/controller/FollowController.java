@@ -9,6 +9,7 @@ import com.finalproject.uni_earn.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +25,7 @@ public class FollowController {
         this.followService = followService;
     }
 
-
+    //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{employerId}/follow")
     public ResponseEntity<String> followEmployer(
             @RequestParam Long studentId,
@@ -33,6 +34,7 @@ public class FollowController {
         return ResponseEntity.ok(responseMessage);
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("unfollow")
     public ResponseEntity<String> unfollowEmployer(@RequestBody UnfollowRequestDTO unfollowRequestDTO) {
         String responseMessage = followService.unfollowEmployer(unfollowRequestDTO.getStudentId(), unfollowRequestDTO.getEmployerId());
