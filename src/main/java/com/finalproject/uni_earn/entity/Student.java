@@ -19,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"teams", "applications", "leadingTeams"})
 @Entity
 @Table(name = "students")
 public class Student extends User {
