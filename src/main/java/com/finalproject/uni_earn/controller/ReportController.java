@@ -9,6 +9,7 @@ import com.finalproject.uni_earn.service.impl.ReportServiceIMPL;
 import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 //this contains admin functions , not for the user
@@ -23,24 +24,28 @@ public class ReportController {
         this.reportServiceIMPL = reportServiceIMPL;
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping(value = "/submit")
     public ResponseEntity<StandardResponse> submitReport(@RequestBody ReportRequestDTO reportDTO) {
         Reports report = reportServiceIMPL.submitReport(reportDTO);
         return ResponseEntity.ok(new StandardResponse(200, "Success", report));
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/getall", params = {"page", "size"})
     public ResponseEntity<StandardResponse> getAllReports(@RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
         PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getAllReports(page, size);
         return (ResponseEntity<StandardResponse>) ResponseEntity.ok(new StandardResponse(200, "Success", paginatedreportdto));
     }
 //to get the id of the reported user
+    //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/getall-by-id", params = {"Id,page", "size"})
     public ResponseEntity<StandardResponse> getAllReportsByCount(@RequestParam(value = "ID") int id, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
         PaginatedReportDTO paginatedreportdto = reportServiceIMPL.getAllReportsById(id,page, size);
         return (ResponseEntity<StandardResponse>) ResponseEntity.ok(new StandardResponse(200, "Success", paginatedreportdto));
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/resolve", params = {"reportId", "status"})
     public ResponseEntity<StandardResponse> resolveReport(@RequestParam(value = "reportId") Long reportId, @RequestParam(value = "status") ReportState status) {
         ReportDTO updatedReportDTO = reportServiceIMPL.resolveReport(reportId, status);

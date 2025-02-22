@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.TeamDTO;
 import com.finalproject.uni_earn.dto.request.TeamRequestDTO;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
@@ -79,6 +80,14 @@ public class TeamServiceIMPL implements TeamService {
         teamRepository.removeAllMembersFromTeam(teamId);
         teamRepository.deleteById(teamId);
         return "Team deleted successfully with ID: " + teamId;
+    }
+
+    @Override
+    public String getTeam(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NotFoundException("Team not found"));
+        //System.out.println(team);
+        return team.getTeamName();
     }
 
 
