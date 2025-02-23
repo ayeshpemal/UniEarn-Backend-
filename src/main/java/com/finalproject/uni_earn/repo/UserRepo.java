@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.repo;
 
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -41,4 +42,5 @@ public interface UserRepo extends JpaRepository<User, Long>{
     String findMostActiveStudent();
 
 
+    List<User> findByRole(Role role);
 }
