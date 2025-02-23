@@ -41,4 +41,13 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     Optional<Job> findAllByEmployer(Employer employer);
 
     boolean existsByJobIdAndActiveStatusAndEmployer_UserId(Long jobId, boolean activeStatus, Long userId);
+
+    // Most applied job (based on number of applications)
+    @Query("SELECT j.jobTitle FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) DESC LIMIT 3")
+    List<String> findMostAppliedJob();
+
+    // Least applied job
+    @Query("SELECT j.jobTitle FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
+    List<String> findLeastAppliedJob();
+
 }

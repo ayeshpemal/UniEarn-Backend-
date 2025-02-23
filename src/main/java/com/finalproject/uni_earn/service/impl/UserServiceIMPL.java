@@ -99,8 +99,8 @@ public class UserServiceIMPL implements UserService {
             throw new InvalidValueException("Invalid email or password");
         }
 
-        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
+        User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new NotFoundException("User not found with user name: " + loginRequestDTO.getUserName()));
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user);

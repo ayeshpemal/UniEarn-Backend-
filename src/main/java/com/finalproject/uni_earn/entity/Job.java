@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
@@ -12,6 +13,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -68,6 +70,11 @@ public class Job {
     @ManyToOne
     @JoinColumn(name = "employer_id", nullable = false)
     private Employer employer;
+
+    // ✅ Add the One-To-Many Relationship with Applications
+    @JsonIgnore
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Application> applications;
 
     @Column(name = "active_status", columnDefinition = "BOOLEAN DEFAULT TRUE", nullable = false)
     private boolean activeStatus;
