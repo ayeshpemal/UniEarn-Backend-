@@ -26,10 +26,19 @@ public interface UserRepo extends JpaRepository<User, Long>{
     @Query("SELECT u FROM User u WHERE u.isDeleted = false")
     List<User> findAllActiveUsers();
 
-    Optional<User> findByUserNameAndAndIsDeletedFalse(String username);
+    Optional<User> findByUserNameAndIsDeletedFalse(String username);
     boolean existsByUserId(Long userId);
 
     @Query("select u.role from User u where u.userId = :userId")
     Optional <String> findRoleByUserId(@Param("userId") Long userId);
+
+    // Top employer (most jobs posted)
+    @Query("SELECT e.companyName FROM Employer e ORDER BY SIZE(e.jobs) DESC LIMIT 1")
+    String findTopEmployer();
+
+    // Most active student (most applications submitted)
+    @Query(value = "SELECT u.email FROM users u ORDER BY (SELECT COUNT(a.application_id) FROM application a WHERE a.student_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
+    String findMostActiveStudent();
+
 
 }
