@@ -66,7 +66,7 @@ public class  UserServiceIMPL implements UserService {
         User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
             case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
             case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
-            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            //case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
             default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         };
 
@@ -98,8 +98,8 @@ public class  UserServiceIMPL implements UserService {
             throw new InvalidValueException("Invalid email or password");
         }
 
-        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
+        User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new NotFoundException("User not found with user name: " + loginRequestDTO.getUserName()));
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user);

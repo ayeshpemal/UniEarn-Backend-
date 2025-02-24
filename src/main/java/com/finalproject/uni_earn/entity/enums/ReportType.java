@@ -2,7 +2,7 @@ package com.finalproject.uni_earn.entity.enums;
 
 public enum ReportType {
     /*
-     * penalty: 0.9
+     * penalty: 8
      * - Sexual Harassment
      * - Verbal Abuse
      * - Threatening Behavior
@@ -13,7 +13,7 @@ public enum ReportType {
     Harassment_and_Safety_Issues,
 
     /*
-     * penalty: 0.8
+     * penalty: 7
      * - Non-payment for Work
      * - Delayed Payments
      * - Payment Amount Disputes
@@ -24,7 +24,7 @@ public enum ReportType {
     Fraud_and_Payment_Issues,
 
     /*
-     * penalty: 0.8
+     * penalty: 6
      * - Inappropriate Images/Videos
      * - Offensive Language
      * - Adult Content
@@ -35,7 +35,7 @@ public enum ReportType {
     Inappropriate_Content,
 
     /*
-     * penalty: 0.7
+     * penalty: 5
      * - Fake Company/Business
      * - False University Affiliation
      * - Impersonating Another User
@@ -46,7 +46,7 @@ public enum ReportType {
     Identity_Misrepresentation,
 
     /*
-     * penalty: 0.6
+     * penalty: 4
      * - False Job Description
      * - Hidden Job Requirements
      * - Misleading Salary Information
@@ -57,7 +57,7 @@ public enum ReportType {
     Job_Misrepresentation,
 
     /*
-     * penalty: 0.5
+     * penalty: 3
      * - No-show at Work
      * - Unprofessional Communication
      * - Excessive Personal Questions
@@ -68,7 +68,7 @@ public enum ReportType {
     Professional_Conduct_Issues,
 
     /*
-     * penalty: 0.4
+     * penalty: 2
      * - Miscommunication
      * - Schedule Conflicts
      * - Task Completion Disagreements
@@ -78,7 +78,7 @@ public enum ReportType {
     Work_Environment_Concerns,
 
     /*
-     * penalty: Base 0.5 (evaluated case by case)
+     * penalty: Base 1
      * For any issues that don't fit into above categories
      */
     Other
