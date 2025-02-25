@@ -27,7 +27,7 @@ public class JobDTO {
     private List<Location> jobLocations;
     private double jobPayment;
     private int requiredWorkers;
-    private Set<String> requiredGender;
+    private Gender requiredGender;
     private Date startDate;
     private Date endDate;
     private Employer employer;

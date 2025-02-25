@@ -20,7 +20,7 @@ public interface JobService {
     String setStatus(Long jobId, boolean status);
 
     //For Student
-    PaginatedResponseJobDTO studentJobs(Long studentId, Integer page);
+    PaginatedResponseJobDTO jobsForStudent(Long studentId, Integer page);
     PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page);
     PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page);
     PaginatedResponseJobDTO searchJobByKeyword(String keyWord, Integer page);

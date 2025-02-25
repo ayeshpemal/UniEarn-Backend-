@@ -20,7 +20,6 @@ import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.service.JobService;
-import com.finalproject.uni_earn.service.NotificationService;
 import com.finalproject.uni_earn.specification.JobSpecification;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,28 +151,27 @@ public class JobServiceIMPL implements JobService {
     }
 
     @Override
-    public PaginatedResponseJobDTO studentJobs(Long studentId, Integer page) {
+    public PaginatedResponseJobDTO jobsForStudent(Long studentId, Integer page) {
         Student student = studentRepo.getStudentByUserId(studentId);
-        if (student != null) {
-            Location location = student.getLocation();
-            List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location, preferences, PageRequest.of(page, pageSize));
-            if (jobList.getSize() > 0) {
-                List<JobDTO> jobDTOs = jobList.getContent().stream()
-                        .map(job -> modelMapper.map(job, JobDTO.class))
-                        .collect(Collectors.toList());
-                return new PaginatedResponseJobDTO(
-                        jobDTOs,
-                        jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location, preferences)
-                );
-            } else {
-                throw new NotFoundException("No Jobs Found...!!");
-            }
-        } else {
+        if (student == null)
             throw new NotFoundException("No Student Found In That ID...!!");
-        }
-    }
+        Location location = student.getLocation();
+        System.out.println(location);
+        List<JobCategory> preferences = student.getPreferences();
+        System.out.println(preferences);
+        Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location, preferences, PageRequest.of(page, pageSize));
+        if (!(jobList.getSize() > 0))
+            throw new NotFoundException("No Jobs Found...!!");
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
+        return new PaginatedResponseJobDTO(
+                jobDTOs,
+                jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location, preferences)
+        );
 
+
+    }
 
     @Override
     public List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page) {
@@ -226,8 +224,6 @@ public class JobServiceIMPL implements JobService {
         return jobDetailsResponseDTOS;
     }
 
-
-
     @Override
     public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page) {
         Specification<Job> spec = JobSpecification.filterJobs(location, categories, keyword);
@@ -249,6 +245,7 @@ public class JobServiceIMPL implements JobService {
         }
     }
 
+    @Override
     public String setStatus(Long jobId, boolean status){
         if (!jobRepo.existsById(jobId)) {
             throw new NotFoundException("No Job Found with ID: " + jobId);

@@ -105,7 +105,7 @@ public class JobController {
     //student sugessions
     @GetMapping(path = "/studentpreferedjobs", params = {"student_id","page"})//this jobs are shown to students
     ResponseEntity<StandardResponse> StudentPreferedJobs(@RequestParam(value = "student_id") long studentId, @RequestParam(value = "page") Integer page) {
-        PaginatedResponseJobDTO jobList = jobService.studentJobs(studentId,page);
+        PaginatedResponseJobDTO jobList = jobService.jobsForStudent(studentId,page);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success.", jobList),
                 HttpStatus.OK
