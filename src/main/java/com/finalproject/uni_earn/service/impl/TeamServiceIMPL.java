@@ -83,11 +83,10 @@ public class TeamServiceIMPL implements TeamService {
     }
 
     @Override
-    public String getTeam(Long teamId) {
+    public TeamDTO getTeam(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("Team not found"));
-        //System.out.println(team);
-        return team.getTeamName();
+        return modelMapper.map(team, TeamDTO.class);
     }
 
 
