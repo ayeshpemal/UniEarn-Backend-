@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.dto;
 
+import com.finalproject.uni_earn.dto.Response.StudentResponseDTO;
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
 import lombok.AllArgsConstructor;
@@ -16,5 +17,6 @@ import java.util.Set;
 public class TeamDTO {
     private long id;
     private String teamName;
-    private Student leader;
+    private StudentResponseDTO leader;
+    private Set<StudentResponseDTO> members;
 }

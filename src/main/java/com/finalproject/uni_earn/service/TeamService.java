@@ -10,5 +10,5 @@ public interface TeamService {
     public String removeMember(Long teamId, Long studentId);
     public String deleteTeam(Long teamId);
 
-    String getTeam(Long teamId);
+    TeamDTO getTeam(Long teamId);
 }

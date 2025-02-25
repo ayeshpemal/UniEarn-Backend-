@@ -30,7 +30,7 @@ public class TeamController {
     //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/{teamId}")
     public ResponseEntity<StandardResponse> getTeam(@PathVariable Long teamId) {
-        String team = teamService.getTeam(teamId);
+        TeamDTO team = teamService.getTeam(teamId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", team),
                 HttpStatus.OK);
