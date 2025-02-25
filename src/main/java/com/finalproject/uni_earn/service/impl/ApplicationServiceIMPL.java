@@ -3,9 +3,7 @@ package com.finalproject.uni_earn.service.impl;
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
-import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
-import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
@@ -19,7 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
 import org.springframework.web.server.ResponseStatusException;
-
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -35,7 +34,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private StudentRepo studentRepository;
-
+    
     @Autowired
     private TeamRepo teamRepository;
 
@@ -67,7 +66,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         applicationRepository.save(application);
 
-        updateNotificationService.createNotification(application.getApplicationId());
+
         return "Student application submitted successfully!";
     }
 
@@ -94,41 +93,39 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         applicationRepository.save(application);
-
-
-        updateNotificationService.createNotification(application.getApplicationId());
         return "Team application submitted successfully!";
     }
+
     @Override
-    public void updateStatus(Long applicationId, ApplicationStatus newStatus, User user) {
+    public String updateStatus(Long applicationId, ApplicationStatus status) {
+
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("Application not found"));
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
+        Job job = application.getJob();
 
-        if (user.getRole() == Role.EMPLOYER) {
-            if (newStatus == ApplicationStatus.ACCEPTED || newStatus == ApplicationStatus.REJECTED) {
-                application.setStatus(newStatus);
-            } else {
-                throw new InvalidValueException("Employer can only accept or reject applications.");
-            }
+        User employer = job.getEmployer();
+
+        if (!"EMPLOYER".equalsIgnoreCase(String.valueOf(employer.getRole()))) {
+            throw new RuntimeException("Only employers can change the application status.");
         }
 
-
-        else if (user.getRole() == Role.STUDENT) {
-            if (application.getStatus() == ApplicationStatus.ACCEPTED && newStatus == ApplicationStatus.CONFIRMED) {
-                application.setStatus(newStatus);
-            } else {
-                throw new InvalidValueException("Student can only confirm an accepted application.");
-            }
-        }
-
-
-        else {
-            throw new InvalidValueException("Invalid user role.");
-        }
-
+        application.setStatus(status);
         applicationRepository.save(application);
-        updateNotificationService.createNotification(applicationId);
+
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setApplicationId(application.getApplicationId());
+        applicationDTO.setJobId(application.getJob().getJobId());
+        if(application.getStudent()!=null){
+            applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
+        }
+        else if(application.getTeam()!=null){
+            applicationDTO.setUserId(application.getTeam().getLeader().getUserId());
+        }
+        applicationDTO.setStatus(application.getStatus().name());
+        applicationDTO.setAppliedDate(application.getAppliedDate());
+
+        return "Application status updated to " + status;
     }
 
     @Override
