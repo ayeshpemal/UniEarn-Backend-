@@ -116,7 +116,14 @@ public class UserServiceIMPL implements UserService {
     public UserResponseDTO getUser(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
-        return modelMapper.map(user, UserResponseDTO.class);
+
+        String profilePictureUrl = user.getProfilePictureUrl() != null
+                ? s3Service.generatePresignedUrl(user.getProfilePictureUrl())
+                : null;
+
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        userResponseDTO.setProfilePictureUrl(profilePictureUrl);
+        return userResponseDTO;
     }
 
     @Override
