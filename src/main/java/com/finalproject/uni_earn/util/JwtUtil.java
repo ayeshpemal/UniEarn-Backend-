@@ -23,6 +23,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(user.getUserName())
                 .claim("role", user.getRole().toString()) // Store role in JWT
+                .claim("user_id", user.getUserId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -41,6 +42,11 @@ public class JwtUtil {
 
     public boolean validateToken(String token, String username) {
         return extractUsername(token).equals(username) && !isTokenExpired(token);
+    }
+    
+    public Long extractUserId(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody().get("user_id", Long.class);
     }
 
     private boolean isTokenExpired(String token) {
