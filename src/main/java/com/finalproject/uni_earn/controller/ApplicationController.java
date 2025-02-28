@@ -21,10 +21,8 @@ public class ApplicationController {
 
     //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/student")
-
     public ResponseEntity<StandardResponse> applyAsStudent(@RequestParam Long studentId, @RequestParam Long jobId) {
         String message = applicationService.applyAsStudent(studentId,jobId);
->>>>>>> 0efba69c22a196348c733881f36c94d44d0065d4
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "success", message),
                 HttpStatus.CREATED);
