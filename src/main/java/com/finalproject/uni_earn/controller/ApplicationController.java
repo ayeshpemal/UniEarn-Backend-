@@ -2,7 +2,11 @@ package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.exception.InvalidValueException;
+import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.impl.ApplicationServiceIMPL;
 import com.finalproject.uni_earn.util.StandardResponse;
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class ApplicationController {
     @Autowired
     ApplicationServiceIMPL applicationService;
+    @Autowired
+    UserRepo userRepository;
 
     //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/student")
@@ -38,13 +44,26 @@ public class ApplicationController {
     }
 
     //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PutMapping("/updateStatus/{applicationId}")
-    public ResponseEntity<StandardResponse> updateStatus(@PathVariable Long applicationId, @RequestBody ApplicationStatus status) {
-        // Call the service to update the application status
-        String message = applicationService.updateStatus(applicationId, status);
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Success", message),
-                HttpStatus.OK);
+    @PutMapping("/{applicationId}/status")
+    public ResponseEntity<String> updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestParam ApplicationStatus newStatus,
+            @RequestHeader("userId") Long userId) {
+
+        // Assuming you have a method to fetch the user by userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        try {
+            applicationService.updateStatus(applicationId, newStatus, user);
+            return ResponseEntity.ok("Application status updated successfully.");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidValueException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+        }
     }
 
     //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
