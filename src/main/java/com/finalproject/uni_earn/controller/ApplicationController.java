@@ -65,13 +65,4 @@ public class ApplicationController {
                 new StandardResponse(200, "Success", "Application deleted successfully"),
                 HttpStatus.OK);
     }
-
-    @PutMapping("/updateApplication/{applicationId}")
-    public ResponseEntity<StandardResponse> updateApplication(@PathVariable Long applicationId, @RequestBody ApplicationDTO applicationDTO) {
-        ApplicationDTO returnApplicationDTO = applicationService.updateApplication(applicationId, applicationDTO);
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Success", returnApplicationDTO),
-                HttpStatus.OK);
-    }
 }
-

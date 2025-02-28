@@ -1,10 +1,10 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
-import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Service
-public class UserServiceIMPL implements UserService {
+public class  UserServiceIMPL implements UserService {
     @Autowired
     private UserRepo userRepo;
     @Autowired

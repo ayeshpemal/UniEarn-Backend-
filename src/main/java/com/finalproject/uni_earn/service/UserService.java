@@ -13,7 +13,7 @@ public interface UserService {
     String registerUser(UserRequestDTO userRequestDTO);
 
     LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
-
+    
     UserResponseDTO getUser(Long userId);
 
     String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO);
