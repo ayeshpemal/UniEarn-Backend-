@@ -37,46 +37,67 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
         String message;
         User recipient;
 
-        if (application.getStatus() == ApplicationStatus.PENDING) {
-            // Notify employer about a new application
-            message = String.format(
-                    "New application received from %s. Status: %s. Applied for: %s.",
-                    application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
-                    application.getStatus(),
-                    job.getJobTitle()
-            );
-            recipient = employer;
-        } else if (application.getStatus() == ApplicationStatus.ACCEPTED || application.getStatus() == ApplicationStatus.REJECTED) {
-            // Notify student or team about their application status
-            if (application.getStudent() != null) {
-                recipient = application.getStudent();
+        switch (application.getStatus()) {
+            case PENDING:
+                // Notify employer about a new application
                 message = String.format(
-                        "Your application for %s has been %s.",
-                        job.getJobTitle(),
-                        application.getStatus().name().toLowerCase()
+                        "New application received from %s for job: %s.",
+                        application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
+                        job.getJobTitle()
                 );
-            } else if (application.getTeam() != null) {
-                recipient = application.getTeam().getLeader(); // Assuming a team has a leader to notify
-                message = String.format(
-                        "Your team's application for %s has been %s.",
-                        job.getJobTitle(),
-                        application.getStatus().name().toLowerCase()
-                );
-            } else {
-                throw new IllegalArgumentException("Application does not belong to a student or team");
-            }
-        } else if (application.getStatus() == ApplicationStatus.CONFIRMED) {
-            // Notify employer when a student confirms the job
-            recipient = employer;
-            message = String.format(
-                    "Student %s has confirmed the job for %s.",
-                    application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
-                    job.getJobTitle()
-            );
-        } else {
-            throw new IllegalArgumentException("Invalid application status");
-        }
+                recipient = employer;
+                break;
+            case ACCEPTED:
+                // Notify student or team about application acceptance
+                if (application.getStudent() != null) {
+                    recipient = application.getStudent();
+                    message = String.format(
+                            "Congratulations! Your application for %s has been accepted.",
+                            job.getJobTitle()
+                    );
+                } else if (application.getTeam() != null) {
+                    recipient = application.getTeam().getLeader(); // Notify team leader
+                    message = String.format(
+                            "Congratulations! Your team's application for %s has been accepted.",
+                            job.getJobTitle()
+                    );
+                } else {
+                    throw new IllegalArgumentException("Application does not belong to a student or team");
+                }
+                break;
 
+            case REJECTED:
+                // Notify student or team about application rejection
+                if (application.getStudent() != null) {
+                    recipient = application.getStudent();
+                    message = String.format(
+                            "Your application for %s has been rejected.",
+                            job.getJobTitle()
+                    );
+                } else if (application.getTeam() != null) {
+                    recipient = application.getTeam().getLeader(); // Notify team leader
+                    message = String.format(
+                            "Your team's application for %s has been rejected.",
+                            job.getJobTitle()
+                    );
+                } else {
+                    throw new IllegalArgumentException("Application does not belong to a student or team");
+                }
+                break;
+
+            case CONFIRMED:
+                // Notify employer when a student confirms the job
+                recipient = employer;
+                message = String.format(
+                        "Student %s has confirmed the job for %s.",
+                        application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
+                        job.getJobTitle()
+                );
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid application status");
+        }
         // Save notification
         UpdateNotification notification = new UpdateNotification();
         notification.setMessage(message);
