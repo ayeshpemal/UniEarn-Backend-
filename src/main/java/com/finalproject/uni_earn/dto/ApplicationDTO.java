@@ -19,6 +19,7 @@ public class ApplicationDTO {
     private Long applicationId;
     private Long jobId; // Assume this is mapped to Job entity
     private Long userId; // Assume this is mapped to User entity
+    private Long teamId;
     private String status; // String representation of ApplicationStatus
     private Date appliedDate;
 
