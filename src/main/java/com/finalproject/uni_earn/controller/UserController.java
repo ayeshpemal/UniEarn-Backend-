@@ -46,7 +46,7 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
+    
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
