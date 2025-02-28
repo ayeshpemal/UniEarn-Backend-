@@ -16,6 +16,7 @@ public class UserResponseDTO {
     @NotBlank
     private String userName;
 
+    private String profilePictureUrl;
     @Email
     @NotBlank
     private String email;
