@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
@@ -36,6 +37,16 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("/get-user-by-id/{userId}")
+    public ResponseEntity<StandardResponse> getUserById(@PathVariable Long userId){
+        UserResponseDTO userResponseDTO = userService.getUser(userId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", userResponseDTO),
+                HttpStatus.OK
+        );
+    }
+    
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
