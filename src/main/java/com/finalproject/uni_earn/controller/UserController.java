@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -46,7 +47,7 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
+    
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
@@ -58,6 +59,40 @@ public class UserController {
                 new StandardResponse(200, "User updated successfully", message),
                 HttpStatus.OK
         );
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PostMapping("/{userId}/profile-picture")
+    public ResponseEntity<StandardResponse> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = userService.uploadProfilePicture(userId, file);
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(201,"Image uploaded successfully", imageUrl),
+                    HttpStatus.CREATED
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(400,"Failed to upload profile picture: " + e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @GetMapping("/{userId}/profile-picture")
+    public ResponseEntity<StandardResponse> getProfilePicture(@PathVariable Long userId) {
+        try {
+            String imageUrl = userService.getProfilePicture(userId);
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"Image retrieve successfully", imageUrl),
+                    HttpStatus.OK
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(400,"Failed to retrieve profile picture: " + e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
     @GetMapping("/verify")

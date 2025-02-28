@@ -9,6 +9,7 @@ import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,14 +19,16 @@ public class ApplicationController {
     @Autowired
     ApplicationServiceIMPL applicationService;
 
+    //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/student")
-    public ResponseEntity<StandardResponse> addApplication(@RequestParam Long studentId, @RequestParam Long jobId) {
+    public ResponseEntity<StandardResponse> applyAsStudent(@RequestParam Long studentId, @RequestParam Long jobId) {
         String message = applicationService.applyAsStudent(studentId,jobId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "success", message),
                 HttpStatus.CREATED);
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/team")
     public ResponseEntity<StandardResponse> applyAsTeam(@RequestParam Long teamId, @RequestParam Long jobId) {
         String message = applicationService.applyAsTeam(teamId, jobId);
@@ -34,6 +37,7 @@ public class ApplicationController {
                 HttpStatus.CREATED);
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/updateStatus/{applicationId}")
     public ResponseEntity<StandardResponse> updateStatus(@PathVariable Long applicationId, @RequestBody ApplicationStatus status) {
         // Call the service to update the application status
@@ -43,6 +47,7 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/viewApplicationDetails/{applicationId}")
     public ResponseEntity<StandardResponse> viewApplicationDetails(@PathVariable Long applicationId) {
         // Call the service to fetch application details
@@ -52,6 +57,7 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @DeleteMapping("/deleteApplication/{applicationId}")
     public ResponseEntity<StandardResponse> deleteApplication(@PathVariable Long applicationId) {
         applicationService.deleteApplication(applicationId);
@@ -59,13 +65,4 @@ public class ApplicationController {
                 new StandardResponse(200, "Success", "Application deleted successfully"),
                 HttpStatus.OK);
     }
-
-    @PutMapping("/updateApplication/{applicationId}")
-    public ResponseEntity<StandardResponse> updateApplication(@PathVariable Long applicationId, @RequestBody ApplicationDTO applicationDTO) {
-        ApplicationDTO returnApplicationDTO = applicationService.updateApplication(applicationId, applicationDTO);
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Success", returnApplicationDTO),
-                HttpStatus.OK);
-    }
 }
-

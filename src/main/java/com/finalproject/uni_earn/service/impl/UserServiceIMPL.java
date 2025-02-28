@@ -1,10 +1,10 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
-import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
@@ -29,11 +29,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
-public class UserServiceIMPL implements UserService {
+public class  UserServiceIMPL implements UserService {
     @Autowired
     private UserRepo userRepo;
     @Autowired
@@ -48,6 +50,8 @@ public class UserServiceIMPL implements UserService {
     private JobRepo jobRepo;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -67,7 +71,7 @@ public class UserServiceIMPL implements UserService {
         User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
             case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
             case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
-            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            //case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
             default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         };
 
@@ -99,8 +103,8 @@ public class UserServiceIMPL implements UserService {
             throw new InvalidValueException("Invalid email or password");
         }
 
-        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
+        User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new NotFoundException("User not found with user name: " + loginRequestDTO.getUserName()));
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user);
@@ -112,7 +116,14 @@ public class UserServiceIMPL implements UserService {
     public UserResponseDTO getUser(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
-        return modelMapper.map(user, UserResponseDTO.class);
+
+        String profilePictureUrl = user.getProfilePictureUrl() != null
+                ? s3Service.generatePresignedUrl(user.getProfilePictureUrl())
+                : null;
+
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        userResponseDTO.setProfilePictureUrl(profilePictureUrl);
+        return userResponseDTO;
     }
 
     @Override
@@ -183,6 +194,40 @@ public class UserServiceIMPL implements UserService {
         userRepo.save(user);
 
         return "User updated successfully with ID: " + userId;
+    }
+
+    /**
+     * Uploads and sets a user's profile picture.
+     */
+    public String uploadProfilePicture(Long userId, MultipartFile file) throws IOException {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found!");
+        }
+
+        User user = userOptional.get();
+        String fileName = s3Service.uploadFile(file);
+        user.setProfilePictureUrl(fileName);
+        userRepo.save(user);
+
+        return s3Service.generatePresignedUrl(fileName);
+    }
+
+    /**
+     * Retrieves the pre-signed URL for a user's profile picture.
+     */
+    public String getProfilePicture(Long userId) {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found!");
+        }
+
+        User user = userOptional.get();
+        if (user.getProfilePictureUrl() == null) {
+            throw new RuntimeException("No profile picture uploaded!");
+        }
+
+        return s3Service.generatePresignedUrl(user.getProfilePictureUrl());
     }
 
     @Override
