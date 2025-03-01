@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/api/v1/application/")
@@ -84,4 +86,14 @@ public class ApplicationController {
                 new StandardResponse(200, "Success", "Application deleted successfully"),
                 HttpStatus.OK);
     }
+
+    @GetMapping("/student/{userId}/summary")
+    public ResponseEntity<Map<String, Object>> getStudentApplicationsSummary(@PathVariable Long userId) {
+
+        Map<String, Object> summary = applicationService.getStudentApplicationsSummary(userId);
+
+
+        return ResponseEntity.ok(summary);
+    }
 }
+

@@ -46,5 +46,5 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     String findLeastAppliedJob();
 
 
-
+    List<Application> findByStudent(Student student);
 }
