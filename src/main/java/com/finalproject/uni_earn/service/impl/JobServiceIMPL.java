@@ -10,14 +10,11 @@ import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.InvalidParametersException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
-import com.finalproject.uni_earn.repo.EmployerRepo;
-import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.repo.StudentRepo;
+import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.entity.*;
-import com.finalproject.uni_earn.repo.ApplicationRepo;
-import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.specification.JobSpecification;
@@ -30,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,21 +56,62 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private JobNotificationService notificationService;
 
+    @Autowired
+    private JobGroupMappingRepo jobGroupMappingRepo;
+
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
-        Job job = modelMapper.map(addJobRequestDTO, Job.class);
+        if (addJobRequestDTO.getJobLocations() == null || addJobRequestDTO.getJobLocations().isEmpty()) {
+            throw new InvalidValueException("At least one location is required.");
+        }
 
-        Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer()); // Fix variable name
-        job.setEmployer(employer);
+        if (addJobRequestDTO.getJobLocations().size() == 1) {
+            Job job = modelMapper.map(addJobRequestDTO, Job.class);
 
-        jobRepo.save(job);
+            Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer()); // Fix variable name
+            job.setEmployer(employer);
 
-        // Create follow notification after a new job is posted
-        notificationService.createFollowNotification(employer, job); // Notify students about the new job
+            jobRepo.save(job);
+
+            // Create follow notification after a new job is posted
+            notificationService.createFollowNotification(employer, job); // Notify students about the new job
+        }
+
+        if (addJobRequestDTO.getJobLocations().size() > 1) {
+            // Generate a unique ID for the group
+            String groupJobId = UUID.randomUUID().toString();
+
+            for (Location location : addJobRequestDTO.getJobLocations()) {
+                Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
+                // Create a new Job for each location
+                Job job = new Job();
+                job.setJobTitle(addJobRequestDTO.getJobTitle());
+                job.setJobCategory(addJobRequestDTO.getJobCategory());
+                job.setJobDescription(addJobRequestDTO.getJobDescription());
+                job.setJobPayment(addJobRequestDTO.getJobPayment());
+                job.setRequiredWorkers(addJobRequestDTO.getRequiredWorkers());
+                job.setRequiredGender(addJobRequestDTO.getRequiredGender());
+                job.setStartDate(addJobRequestDTO.getStartDate());
+                job.setEndDate(addJobRequestDTO.getEndDate());
+                job.setEmployer(employer);
+                job.setJobLocations(List.of(location));
+                job.setActiveStatus(true);
+
+                Job savedJob = jobRepo.save(job);
+
+                // Create follow notification after a new job is posted
+                notificationService.createFollowNotification(employer, job); // Notify students about the new job
+
+                // Store the Job-Group mapping
+                JobGroupMapping mapping = new JobGroupMapping();
+                mapping.setGroupJobId(groupJobId);
+                mapping.setJob(savedJob);
+                jobGroupMappingRepo.save(mapping);
+            }
+        }
 
         return addJobRequestDTO.getJobTitle() + " is saved.";
     }
-
 
     @Override
     public String deleteJob(Long jobId) {
