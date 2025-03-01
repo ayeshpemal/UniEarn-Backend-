@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.service.impl;
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -19,10 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
 import org.springframework.web.server.ResponseStatusException;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Optional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -36,7 +36,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private StudentRepo studentRepository;
-    
+
     @Autowired
     private TeamRepo teamRepository;
 
@@ -52,7 +52,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job not found"));
 
-        if(job.getRequiredWorkers() != 1) {
+        if (job.getRequiredWorkers() != 1) {
             throw new NotAcceptableStatusException("This job requires a team, please apply as a team.");
         }
 
@@ -109,13 +109,13 @@ public class ApplicationServiceIMPL implements ApplicationService {
             } else {
                 throw new InvalidValueException("Employer can only accept or reject applications.");
             }
-        }else if (user.getRole() == Role.STUDENT) {
+        } else if (user.getRole() == Role.STUDENT) {
             if (application.getStatus() == ApplicationStatus.ACCEPTED && newStatus == ApplicationStatus.CONFIRMED) {
                 application.setStatus(newStatus);
             } else {
                 throw new InvalidValueException("Student can only confirm an accepted application.");
             }
-        }else {
+        } else {
             throw new InvalidValueException("Invalid user role.");
         }
 
@@ -154,6 +154,47 @@ public class ApplicationServiceIMPL implements ApplicationService {
         }
     }
 
+    @Override
+    public Map<String, Object> getStudentApplicationsSummary(Long userId) {
+        
+        Student student = studentRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
 
 
+        List<Application> applications = applicationRepository.findByStudent(student);
+
+
+        Map<ApplicationStatus, Long> statusCounts = applications.stream()
+                .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));
+
+
+        long totalApplications = applications.size();
+
+
+        Map<String, Double> statusPercentages = new HashMap<>();
+        statusCounts.forEach((status, count) -> {
+            double percentage = (count * 100.0) / totalApplications;
+            statusPercentages.put(status.name(), percentage);
+        });
+
+
+        Map<JobCategory, Long> categoryBreakdown = applications.stream()
+                .collect(Collectors.groupingBy(
+                        application -> application.getJob().getJobCategory(), // Group by JobCategory enum
+                        Collectors.counting() // Count the number of applications in each category
+                ));
+
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalApplications", totalApplications);
+        response.put("pending", statusCounts.getOrDefault(ApplicationStatus.PENDING, 0L));
+        response.put("accepted", statusCounts.getOrDefault(ApplicationStatus.ACCEPTED, 0L));
+        response.put("rejected", statusCounts.getOrDefault(ApplicationStatus.REJECTED, 0L));
+        response.put("confirmed", statusCounts.getOrDefault(ApplicationStatus.CONFIRMED, 0L)); // Added CONFIRMED status
+        response.put("statusPercentages", statusPercentages);
+        response.put("categoryBreakdown", categoryBreakdown);
+
+        return response;
+    }
 }
+

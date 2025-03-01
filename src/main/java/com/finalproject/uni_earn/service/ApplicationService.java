@@ -4,6 +4,8 @@ import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 
+import java.util.Map;
+
 public interface ApplicationService {
     String applyAsStudent(Long studentId, Long jobId);
     String applyAsTeam(Long teamId, Long jobId);
@@ -11,4 +13,5 @@ public interface ApplicationService {
     public ApplicationDTO viewApplicationDetails(Long applicationId);
     public void deleteApplication(Long applicationId);
 
+    Map<String, Object> getStudentApplicationsSummary(Long studentId);
 }
