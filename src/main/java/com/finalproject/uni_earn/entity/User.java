@@ -45,5 +45,5 @@ public class User {
 
     private boolean isDeleted = false; // Soft delete status
 
-    private boolean flagged = false; // Flagged status
+    //private boolean flagged = false; // Flagged status
 }
