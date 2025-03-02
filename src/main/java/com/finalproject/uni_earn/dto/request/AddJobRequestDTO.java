@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.dto.request;
 
+import com.finalproject.uni_earn.dto.LocationDTO;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
@@ -18,12 +19,10 @@ public class AddJobRequestDTO {
     private String jobTitle;
     private JobCategory jobCategory;
     private String jobDescription;
-    private List<Location> jobLocations;
+    private List<LocationDTO> jobLocations;
     private double jobPayment;
     private int requiredWorkers;
     private List<Gender> requiredGender;
-    private Date startDate;
-    private Date endDate;
     private Long employer;
     private boolean status;
 }

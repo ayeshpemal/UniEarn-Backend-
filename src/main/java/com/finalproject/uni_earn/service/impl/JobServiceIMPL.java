@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.LocationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
@@ -66,10 +67,19 @@ public class JobServiceIMPL implements JobService {
         }
 
         if (addJobRequestDTO.getJobLocations().size() == 1) {
-            Job job = modelMapper.map(addJobRequestDTO, Job.class);
-
-            Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer()); // Fix variable name
+            Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
+            Job job = new Job();
+            job.setJobTitle(addJobRequestDTO.getJobTitle());
+            job.setJobCategory(addJobRequestDTO.getJobCategory());
+            job.setJobDescription(addJobRequestDTO.getJobDescription());
+            job.setJobPayment(addJobRequestDTO.getJobPayment());
+            job.setRequiredWorkers(addJobRequestDTO.getRequiredWorkers());
+            job.setRequiredGender(addJobRequestDTO.getRequiredGender());
+            job.setStartDate(addJobRequestDTO.getJobLocations().get(0).getStartDate());
+            job.setEndDate(addJobRequestDTO.getJobLocations().get(0).getEndDate());
             job.setEmployer(employer);
+            job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
+            job.setActiveStatus(true);
 
             jobRepo.save(job);
 
@@ -81,7 +91,7 @@ public class JobServiceIMPL implements JobService {
             // Generate a unique ID for the group
             String groupJobId = UUID.randomUUID().toString();
 
-            for (Location location : addJobRequestDTO.getJobLocations()) {
+            for (LocationDTO locationDTO : addJobRequestDTO.getJobLocations()) {
                 Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
                 // Create a new Job for each location
                 Job job = new Job();
@@ -91,10 +101,10 @@ public class JobServiceIMPL implements JobService {
                 job.setJobPayment(addJobRequestDTO.getJobPayment());
                 job.setRequiredWorkers(addJobRequestDTO.getRequiredWorkers());
                 job.setRequiredGender(addJobRequestDTO.getRequiredGender());
-                job.setStartDate(addJobRequestDTO.getStartDate());
-                job.setEndDate(addJobRequestDTO.getEndDate());
+                job.setStartDate(locationDTO.getStartDate());
+                job.setEndDate(locationDTO.getEndDate());
                 job.setEmployer(employer);
-                job.setJobLocations(List.of(location));
+                job.setJobLocations(List.of(locationDTO.getLocation()));
                 job.setActiveStatus(true);
 
                 Job savedJob = jobRepo.save(job);
