@@ -77,6 +77,8 @@ public class JobServiceIMPL implements JobService {
             job.setRequiredGender(addJobRequestDTO.getRequiredGender());
             job.setStartDate(addJobRequestDTO.getJobLocations().get(0).getStartDate());
             job.setEndDate(addJobRequestDTO.getJobLocations().get(0).getEndDate());
+            job.setStartTime(addJobRequestDTO.getStartTime());
+            job.setEndTime(addJobRequestDTO.getEndTime());
             job.setEmployer(employer);
             job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
             job.setActiveStatus(true);
@@ -103,6 +105,8 @@ public class JobServiceIMPL implements JobService {
                 job.setRequiredGender(addJobRequestDTO.getRequiredGender());
                 job.setStartDate(locationDTO.getStartDate());
                 job.setEndDate(locationDTO.getEndDate());
+                job.setStartTime(addJobRequestDTO.getStartTime());
+                job.setEndTime(addJobRequestDTO.getEndTime());
                 job.setEmployer(employer);
                 job.setJobLocations(List.of(locationDTO.getLocation()));
                 job.setActiveStatus(true);
@@ -245,11 +249,16 @@ public class JobServiceIMPL implements JobService {
                                         job.getJobId(),
                                         job.getJobTitle(),
                                         job.getJobCategory().toString(),
+                                        job.getJobDescription(),
                                         job.getJobLocations().toString(),
                                         job.getStartDate(),
                                         job.getEndDate(),
+                                        job.getStartTime(),
+                                        job.getEndTime(),
                                         job.isActiveStatus(),
                                         job.getJobPayment(),
+                                        job.getRequiredWorkers(),
+                                        job.getRequiredGender(),
                                         application.getStatus().toString()
                                 );
                             }
@@ -266,11 +275,16 @@ public class JobServiceIMPL implements JobService {
                             job.getJobId(),
                             job.getJobTitle(),
                             job.getJobCategory().toString(),
+                            job.getJobDescription(),
                             job.getJobLocations().toString(),
                             job.getStartDate(),
                             job.getEndDate(),
+                            job.getStartTime(),
+                            job.getEndTime(),
                             job.isActiveStatus(),
                             job.getJobPayment(),
+                            job.getRequiredWorkers(),
+                            job.getRequiredGender(),
                             null // Status is not relevant for posted jobs
                     ))
                     .collect(Collectors.toList());

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class AddJobRequestDTO {
     private JobCategory jobCategory;
     private String jobDescription;
     private List<LocationDTO> jobLocations;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private double jobPayment;
     private int requiredWorkers;
     private List<Gender> requiredGender;
