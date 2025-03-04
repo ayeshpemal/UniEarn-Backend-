@@ -47,4 +47,6 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
 
 
     List<Application> findByStudent(Student student);
+
+    long countByStudent(Student student);
 }

@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.LocationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
@@ -139,14 +140,24 @@ public class JobServiceIMPL implements JobService {
 
     @Override
     public String updateJob(UpdateJobRequestDTO updateJobRequestDTO) {
-        if (jobRepo.existsByJobId(updateJobRequestDTO.getJobId())) {
-            Job job = modelMapper.map(updateJobRequestDTO, Job.class);
-            job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
-            jobRepo.save(job);
-            return updateJobRequestDTO.getJobTitle() + " is updated...";
-        } else {
-            throw new NotFoundException("No Job Found In That ID...!!");
-        }
+        Job job = jobRepo.findById(updateJobRequestDTO.getJobId())
+                .orElseThrow(() -> new NotFoundException("No Job Found In That ID...!!"));
+        job.setJobTitle(updateJobRequestDTO.getJobTitle());
+        job.setJobCategory(updateJobRequestDTO.getJobCategory());
+        job.setJobDescription(updateJobRequestDTO.getJobDescription());
+        job.setJobPayment(updateJobRequestDTO.getJobPayment());
+        job.setRequiredWorkers(updateJobRequestDTO.getRequiredWorkers());
+        job.setRequiredGender(updateJobRequestDTO.getRequiredGender());
+        job.setStartDate(updateJobRequestDTO.getJobLocations().get(0).getStartDate());
+        job.setEndDate(updateJobRequestDTO.getJobLocations().get(0).getEndDate());
+        job.setStartTime(updateJobRequestDTO.getStartTime());
+        job.setEndTime(updateJobRequestDTO.getEndTime());
+        job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
+        job.setJobLocations(new ArrayList<>(List.of(updateJobRequestDTO.getJobLocations().get(0).getLocation())));
+        job.setActiveStatus(true);
+        jobRepo.save(job);
+
+        return updateJobRequestDTO.getJobTitle() + " is updated...";
     }
 
     @Override
@@ -232,45 +243,51 @@ public class JobServiceIMPL implements JobService {
 
 
     @Override
-    public List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page) {
+    public PaginatedJobDetailsResponseDTO getJobsByUser(long userId, Integer page) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         List<JobDetailsResponseDTO> jobDetailsResponseDTOS = new ArrayList<>();
+        long dataCount = 0;
 
         if (user instanceof Student student) {
-            // Fetch applied jobs for students
+            // Fetch all applied jobs count for students
+            dataCount = applicationRepo.countByStudent(student);
+
+            // Fetch paginated applied jobs for students
             Page<Application> applicationList = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize));
 
             jobDetailsResponseDTOS = applicationList.getContent().stream()
                     .map(application -> {
-                                Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
-                                return new JobDetailsResponseDTO(
-                                        job.getJobId(),
-                                        job.getJobTitle(),
-                                        job.getJobCategory().toString(),
-                                        job.getJobDescription(),
-                                        job.getJobLocations().toString(),
-                                        job.getStartDate(),
-                                        job.getEndDate(),
-                                        job.getStartTime(),
-                                        job.getEndTime(),
-                                        job.isActiveStatus(),
-                                        job.getJobPayment(),
-                                        job.getRequiredWorkers(),
-                                        job.getRequiredGender(),
-                                        application.getStatus().toString()
-                                );
-                            }
-                    )
+                        Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
+                        return new JobDetailsResponseDTO(
+                                job.getJobId(),
+                                job.getJobTitle(),
+                                job.getJobCategory().toString(),
+                                job.getJobDescription(),
+                                job.getJobLocations().toString(),
+                                job.getStartDate(),
+                                job.getEndDate(),
+                                job.getStartTime(),
+                                job.getEndTime(),
+                                job.isActiveStatus(),
+                                job.getJobPayment(),
+                                job.getRequiredWorkers(),
+                                job.getRequiredGender(),
+                                application.getStatus().toString()
+                        );
+                    })
                     .collect(Collectors.toList());
         }
 
         if (user instanceof Employer employer) {
-            // Fetch posted jobs for employers
+            // Fetch all posted jobs count for employers
+            dataCount = jobRepo.countByEmployer(employer);
+
+            // Fetch paginated posted jobs for employers
             Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
 
-            jobDetailsResponseDTOS = jobs.stream()
+            jobDetailsResponseDTOS = jobs.getContent().stream()
                     .map(job -> new JobDetailsResponseDTO(
                             job.getJobId(),
                             job.getJobTitle(),
@@ -289,8 +306,10 @@ public class JobServiceIMPL implements JobService {
                     ))
                     .collect(Collectors.toList());
         }
-        return jobDetailsResponseDTOS;
+
+        return new PaginatedJobDetailsResponseDTO(jobDetailsResponseDTOS, dataCount);
     }
+
 
 
 
