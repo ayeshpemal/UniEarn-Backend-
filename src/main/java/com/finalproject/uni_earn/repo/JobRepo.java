@@ -50,4 +50,5 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     @Query("SELECT j.jobTitle FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
     List<String> findLeastAppliedJob();
 
+    long countByEmployer(Employer employer);
 }

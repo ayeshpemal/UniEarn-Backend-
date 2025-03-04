@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,8 @@ public class JobDTO {
     private Set<String> requiredGender;
     private Date startDate;
     private Date endDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Employer employer;
     private boolean activeStatus;
 
