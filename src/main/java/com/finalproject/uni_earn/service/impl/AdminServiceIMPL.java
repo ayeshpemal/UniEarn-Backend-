@@ -1,7 +1,9 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Response.AdminResponseDTO;
 import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
+import com.finalproject.uni_earn.dto.UserDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
@@ -10,15 +12,15 @@ import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.AdminService;
+import com.finalproject.uni_earn.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +30,9 @@ public class AdminServiceIMPL implements AdminService {
     private final ApplicationRepo applicationRepository;
     private final UserRepo userRepository;
     private final ModelMapper modelMapper;
+
+    @Autowired
+    private JobService jobService;
 
     @Transactional
     public String makeUserAdmin(Long userId) {
@@ -99,30 +104,55 @@ public class AdminServiceIMPL implements AdminService {
 
         try {
             // Most applied job
-            response.setMostAppliedJob(jobRepository.findMostAppliedJob());
+            for (Long id : jobRepository.findMostAppliedJob()) {
+                JobDTO jobDTO = jobService.viewJobDetails(id);
+                if (response.getMostAppliedJob() == null) {
+                    response.setMostAppliedJob(new ArrayList<>());
+                }
+                response.getMostAppliedJob().add(jobDTO);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the most applied job.", e);
         }
 
         try {
             // Least applied job
-            response.setLeastAppliedJob(jobRepository.findLeastAppliedJob());
+            for (Long id : jobRepository.findLeastAppliedJob()) {
+                JobDTO jobDTO = jobService.viewJobDetails(id);
+                if (response.getLeastAppliedJob() == null) {
+                    response.setLeastAppliedJob(new ArrayList<>());
+                }
+                response.getLeastAppliedJob().add(jobDTO);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the least applied job.", e);
         }
 
         try {
             // Top employer (by job count)
-            String topEmployer = userRepository.findTopEmployer();
-            response.setTopEmployer(topEmployer != null ? topEmployer : "No employer found.");
+            Optional<UserDTO> topEmployer = userRepository.findTopEmployer()
+                    .map(tuple -> new UserDTO(
+                            tuple.get("userId", Long.class),
+                            tuple.get("userName", String.class),
+                            tuple.get("email", String.class),
+                            tuple.get("role", String.class)
+                    ));
+            response.setTopEmployer(Objects.equals(topEmployer.get().getRole(), "EMPLOYER") ? topEmployer.get() : null);
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the top employer.", e);
         }
 
         try {
             // Most active student (by applications)
-            String mostActiveStudent = userRepository.findMostActiveStudent();
-            response.setMostActiveStudent(mostActiveStudent != null ? mostActiveStudent : "No active students found.");
+            Optional<UserDTO> mostActiveStudent = userRepository.findMostActiveStudent()
+                    .map(tuple -> new UserDTO(
+                            tuple.get("userId", Long.class),
+                            tuple.get("userName", String.class),
+                            tuple.get("email", String.class),
+                            tuple.get("role", String.class)
+                    ));
+
+            response.setMostActiveStudent(Objects.equals(mostActiveStudent.get().getRole(), "STUDENT") ? mostActiveStudent.get() : null);
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the most active student.", e);
         }

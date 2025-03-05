@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.repo;
 
+import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -43,12 +44,12 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     boolean existsByJobIdAndActiveStatusAndEmployer_UserId(Long jobId, boolean activeStatus, Long userId);
 
     // Most applied job (based on number of applications)
-    @Query("SELECT j.jobTitle FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) DESC LIMIT 3")
-    List<String> findMostAppliedJob();
+    @Query("SELECT j.jobId FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) DESC LIMIT 3")
+    List<Long> findMostAppliedJob();
 
     // Least applied job
-    @Query("SELECT j.jobTitle FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
-    List<String> findLeastAppliedJob();
+    @Query("SELECT j.jobId FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
+    List<Long> findLeastAppliedJob();
 
     long countByEmployer(Employer employer);
 }
