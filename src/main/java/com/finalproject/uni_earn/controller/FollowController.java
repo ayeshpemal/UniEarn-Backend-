@@ -1,16 +1,21 @@
 package com.finalproject.uni_earn.controller;
 
+import com.finalproject.uni_earn.dto.UserDTO;
 import com.finalproject.uni_earn.dto.request.UnfollowRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.service.FollowService;
 import com.finalproject.uni_earn.service.UserService;
+import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/follows")
@@ -34,10 +39,53 @@ public class FollowController {
         return ResponseEntity.ok(responseMessage);
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    //@PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("unfollow")
     public ResponseEntity<String> unfollowEmployer(@RequestBody UnfollowRequestDTO unfollowRequestDTO) {
         String responseMessage = followService.unfollowEmployer(unfollowRequestDTO.getStudentId(), unfollowRequestDTO.getEmployerId());
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/{studentId}/followingemployers")
+    public ResponseEntity<StandardResponse> getFollowingEmployers(
+            @PathVariable Long studentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Successfully retrieved following employers.", followService.getFollowingEmployers(studentId, PageRequest.of(page, size))),
+                HttpStatus.OK
+        );
+    }
+
+    // Endpoint for following another student
+    @PostMapping("/{studentId}/followstudents/{targetStudentId}")
+    public ResponseEntity<StandardResponse> followStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
+        followService.followStudent(studentId, targetStudentId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Successfully followed student.", null),
+                HttpStatus.OK
+        );
+    }
+
+    // Endpoint for unfollowing another student
+    @PostMapping("/{studentId}/unfollowstudents/{targetStudentId}")
+    public ResponseEntity<StandardResponse> unfollowStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
+        followService.unfollowStudent(studentId, targetStudentId);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Successfully unfollowed student.", null),
+                HttpStatus.OK
+        );
+    }
+
+    // Endpoint for getting all students that the current student is following with pagination
+    @GetMapping("/{studentId}/followingstudents")
+    public ResponseEntity<StandardResponse> getFollowingStudents(
+            @PathVariable Long studentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Successfully retrieved following students.", followService.getFollowingStudents(studentId, PageRequest.of(page, size))),
+                HttpStatus.OK
+        );
     }
 }
