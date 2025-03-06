@@ -98,8 +98,17 @@ public class UserController {
 
     @GetMapping("/verify")
     public RedirectView verifyEmail(@RequestParam String token) {
-        Long userId = userService.verifyUser(token);
-        return new RedirectView("http://localhost:3000/verify/" + userId);
+        String url = userService.verifyUser(token);
+        return new RedirectView(url);
+    }
+
+    @GetMapping("/resend-verification-email")
+    public ResponseEntity<StandardResponse> resendVerificationEmail(@RequestParam String username) {
+        String message = userService.resendVerificationEmail(username);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", message),
+                HttpStatus.OK
+        );
     }
 
     @DeleteMapping("users/{userId}/delete")

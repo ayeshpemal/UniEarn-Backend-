@@ -22,7 +22,9 @@ public interface UserService {
 
     String getProfilePicture(Long userId);
 
-    Long verifyUser(String token);
+    String verifyUser(String token);
+
+    String resendVerificationEmail(String username);
 
     String deleteUser(Long userId);
 
