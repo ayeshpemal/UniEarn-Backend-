@@ -63,7 +63,7 @@ public class UserController {
     }
 
     //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/{userId}/profile-picture")
+    @PutMapping("/{userId}/profile-picture")
     public ResponseEntity<StandardResponse> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
         try {
             String imageUrl = userService.uploadProfilePicture(userId, file);
