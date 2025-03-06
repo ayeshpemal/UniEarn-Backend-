@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.JobNotificationService;
@@ -63,19 +64,26 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
 
             notificationRepo.save(notification);
 
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    message,
+                    job.getJobId(),
+                    notification.getIsRead(),
+                    notification.getSentDate()
+            );
+
             // Send real-time notification to the specific student
-//            messagingTemplate.convertAndSendToUser(
-//                    student.getUserName(),
-//                    "/topic/notifications",
-//                    notification
-//            );
+            messagingTemplate.convertAndSendToUser(
+                    student.getUserName(),
+                    "/topic/notifications",
+                    notificationDTO
+            );
 
             System.out.println("Notification sent to student: " + student.getUserName());
         }
 
         return message; // Return only the message
     }
-
 
 
     public boolean markAsRead(Long id) {

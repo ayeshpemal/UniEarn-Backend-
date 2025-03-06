@@ -233,7 +233,7 @@ public class  UserServiceIMPL implements UserService {
     }
 
     @Override
-    public boolean verifyUser(String token) {
+    public Long verifyUser(String token) {
         User user = userRepo.findByVerificationToken(token)
                 .orElseThrow(() -> new InvalidValueException("Invalid or expired token"));
 
@@ -244,7 +244,7 @@ public class  UserServiceIMPL implements UserService {
         user.setVerified(true);
         user.setVerificationToken(null); // Clear token after verification
         userRepo.save(user);
-        return true;
+        return user.getUserId();
     }
 
     @Override

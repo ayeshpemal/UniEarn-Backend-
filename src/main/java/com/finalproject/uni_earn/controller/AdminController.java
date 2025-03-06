@@ -52,5 +52,39 @@ public class AdminController {
         );
     }
 
+    @PostMapping("notification/broadcast")
+    public ResponseEntity<StandardResponse> broadcastNotification(@RequestBody String message) {
+        String response = adminService.broadcastNotification(message);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Notification broadcast successfully.", response),
+                HttpStatus.OK
+        );
+    }
 
+    @PostMapping("notification/send-to-user/{userId}")
+    public ResponseEntity<StandardResponse> sendNotificationToUser(@PathVariable Long userId, @RequestBody String message) {
+        String response = adminService.sendNotificationToUser(userId, message);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Notification sent successfully.", response),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("notification/send-to-all-employers")
+    public ResponseEntity<StandardResponse> sendNotificationAllEmployers(@RequestBody String message) {
+        String response = adminService.sendNotificationAllEmployers(message);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Notification sent to all employers successfully.", response),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("notification/send-to-all-students")
+    public ResponseEntity<StandardResponse> sendNotificationAllStudents(@RequestBody String message) {
+        String response = adminService.sendNotificationAllStudents(message);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Notification sent to all students successfully.", response),
+                HttpStatus.OK
+        );
+    }
 }

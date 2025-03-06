@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @CrossOrigin
@@ -49,7 +50,7 @@ public class UserController {
     }
     
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/update/{userId}")
+    @PutMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
             @RequestBody UserUpdateRequestDTO userUpdateRequestDTO) {
@@ -96,12 +97,9 @@ public class UserController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<StandardResponse> verifyEmail(@RequestParam String token) {
-        boolean verified = userService.verifyUser(token);
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Email verified successfully", verified),
-                HttpStatus.OK
-        );
+    public RedirectView verifyEmail(@RequestParam String token) {
+        Long userId = userService.verifyUser(token);
+        return new RedirectView("http://localhost:3000/verify/" + userId);
     }
 
     @DeleteMapping("users/{userId}/delete")
