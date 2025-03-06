@@ -212,6 +212,7 @@ public class  UserServiceIMPL implements UserService {
         String fileName = s3Service.uploadFile(file);
         user.setProfilePictureUrl(fileName);
         userRepo.save(user);
+        System.out.println("Profile picture uploaded successfully for user: " + userId);
 
         return s3Service.generatePresignedUrl(fileName);
     }
