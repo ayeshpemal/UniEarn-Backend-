@@ -64,15 +64,9 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
 
             notificationRepo.save(notification);
 
-            String notificationMessage = String.format(
-                    "New job notification from %s: %s",
-                    employer.getCompanyName(),
-                    job.getJobTitle()
-            );
-
             NotificationDTO notificationDTO = new NotificationDTO(
                     notification.getId(),
-                    notificationMessage,
+                    message,
                     job.getJobId(),
                     notification.getIsRead(),
                     notification.getSentDate()
@@ -90,7 +84,6 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
 
         return message; // Return only the message
     }
-
 
 
     public boolean markAsRead(Long id) {

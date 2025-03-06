@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PaginatedEmployerResponseDTO {
-    private List<UserResponseDTO> employers;
-    private long totalEmployers;
+public class PaginatedUserResponseDTO {
+    private List<UserResponseDTO> users;
+    private long totalUsers;
 }

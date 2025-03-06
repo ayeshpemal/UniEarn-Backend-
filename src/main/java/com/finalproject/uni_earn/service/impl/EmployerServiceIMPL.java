@@ -1,6 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
-import com.finalproject.uni_earn.dto.Paginated.PaginatedEmployerResponseDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Employer;
@@ -61,7 +61,7 @@ public class EmployerServiceIMPL implements EmployerService {
     }
 
     @Override
-    public PaginatedEmployerResponseDTO getAllEmployers(int page) {
+    public PaginatedUserResponseDTO getAllEmployers(int page) {
         Page<Employer> employerPage = employerRepo.findAll(PageRequest.of(page, PAGE_SIZE));
         List<UserResponseDTO> employers =employerPage.getContent()
                 .stream()
@@ -70,7 +70,7 @@ public class EmployerServiceIMPL implements EmployerService {
 
         long totalEmployers = employerRepo.count();
 
-        return new PaginatedEmployerResponseDTO(employers, totalEmployers);
+        return new PaginatedUserResponseDTO(employers, totalEmployers);
     }
 
 

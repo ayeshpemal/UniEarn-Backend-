@@ -1,14 +1,10 @@
 package com.finalproject.uni_earn.controller;
 
-import com.finalproject.uni_earn.dto.JobDTO;
-import com.finalproject.uni_earn.dto.Paginated.PaginatedEmployerResponseDTO;
-import com.finalproject.uni_earn.entity.Job;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.service.EmployerService;
-import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,7 +24,7 @@ public class EmployerController {
     //@PreAuthorize("hasRole('STUDENT') or  hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<StandardResponse> getAllEmployers(@RequestParam(defaultValue = "0") int page) {
-        PaginatedEmployerResponseDTO responseDTO = employerService.getAllEmployers(page);
+        PaginatedUserResponseDTO responseDTO = employerService.getAllEmployers(page);
         return ResponseEntity.ok(new StandardResponse(200, "Success", responseDTO));
     }
 }
