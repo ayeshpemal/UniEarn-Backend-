@@ -84,9 +84,9 @@ public class AdminServiceIMPL implements AdminService {
         try {
             // Total jobs posted
             long jobCount = jobRepository.count();
-            if (jobCount == 0) {
-                throw new NotFoundException("No jobs found on the platform.");
-            }
+//            if (jobCount == 0) {
+//                throw new NotFoundException("No jobs found on the platform.");
+//            }
             response.setTotalJobsPosted((int) jobCount);
         } catch (DataAccessException e) {
             throw new RuntimeException("Database error while counting jobs.", e);
@@ -107,12 +107,17 @@ public class AdminServiceIMPL implements AdminService {
 
         try {
             // Most applied job
-            for (Long id : jobRepository.findMostAppliedJob()) {
-                JobDTO jobDTO = jobService.viewJobDetails(id);
-                if (response.getMostAppliedJob() == null) {
-                    response.setMostAppliedJob(new ArrayList<>());
+            List<Long> mostAppliedJobs = jobRepository.findMostAppliedJob();
+            if (mostAppliedJobs.isEmpty()) {
+                response.setMostAppliedJob(null);  // Assign null if empty
+            } else {
+                for (Long id : mostAppliedJobs) {
+                    JobDTO jobDTO = jobService.viewJobDetails(id);
+                    if (response.getMostAppliedJob() == null) {
+                        response.setMostAppliedJob(new ArrayList<>());
+                    }
+                    response.getMostAppliedJob().add(jobDTO);
                 }
-                response.getMostAppliedJob().add(jobDTO);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the most applied job.", e);
@@ -120,16 +125,22 @@ public class AdminServiceIMPL implements AdminService {
 
         try {
             // Least applied job
-            for (Long id : jobRepository.findLeastAppliedJob()) {
-                JobDTO jobDTO = jobService.viewJobDetails(id);
-                if (response.getLeastAppliedJob() == null) {
-                    response.setLeastAppliedJob(new ArrayList<>());
+            List<Long> leastAppliedJobs = jobRepository.findLeastAppliedJob();
+            if (leastAppliedJobs.isEmpty()) {
+                response.setLeastAppliedJob(null);  // Assign null if empty
+            } else {
+                for (Long id : leastAppliedJobs) {
+                    JobDTO jobDTO = jobService.viewJobDetails(id);
+                    if (response.getLeastAppliedJob() == null) {
+                        response.setLeastAppliedJob(new ArrayList<>());
+                    }
+                    response.getLeastAppliedJob().add(jobDTO);
                 }
-                response.getLeastAppliedJob().add(jobDTO);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the least applied job.", e);
         }
+
 
         try {
             // Top employer (by job count)
@@ -140,7 +151,7 @@ public class AdminServiceIMPL implements AdminService {
                             tuple.get("email", String.class),
                             tuple.get("role", String.class)
                     ));
-            response.setTopEmployer(Objects.equals(topEmployer.get().getRole(), "EMPLOYER") ? topEmployer.get() : null);
+            response.setTopEmployer(topEmployer.isPresent() && Objects.equals(topEmployer.get().getRole(), "EMPLOYER") ? topEmployer.get() : null);
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the top employer.", e);
         }
@@ -154,8 +165,7 @@ public class AdminServiceIMPL implements AdminService {
                             tuple.get("email", String.class),
                             tuple.get("role", String.class)
                     ));
-
-            response.setMostActiveStudent(Objects.equals(mostActiveStudent.get().getRole(), "STUDENT") ? mostActiveStudent.get() : null);
+            response.setMostActiveStudent(mostActiveStudent.isPresent() && Objects.equals(mostActiveStudent.get().getRole(), "STUDENT") ? mostActiveStudent.get() : null);
         } catch (Exception e) {
             throw new RuntimeException("Error while retrieving the most active student.", e);
         }
