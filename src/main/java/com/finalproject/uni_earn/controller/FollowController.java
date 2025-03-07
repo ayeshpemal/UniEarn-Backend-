@@ -46,6 +46,7 @@ public class FollowController {
         return ResponseEntity.ok(responseMessage);
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/{studentId}/followingemployers")
     public ResponseEntity<StandardResponse> getFollowingEmployers(
             @PathVariable Long studentId,
@@ -57,6 +58,7 @@ public class FollowController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     // Endpoint for following another student
     @PostMapping("/{studentId}/followstudents/{targetStudentId}")
     public ResponseEntity<StandardResponse> followStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
@@ -67,8 +69,9 @@ public class FollowController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     // Endpoint for unfollowing another student
-    @PostMapping("/{studentId}/unfollowstudents/{targetStudentId}")
+    @DeleteMapping("/{studentId}/unfollowstudents/{targetStudentId}")
     public ResponseEntity<StandardResponse> unfollowStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
         followService.unfollowStudent(studentId, targetStudentId);
         return new ResponseEntity<StandardResponse>(
@@ -77,6 +80,7 @@ public class FollowController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     // Endpoint for getting all students that the current student is following with pagination
     @GetMapping("/{studentId}/followingstudents")
     public ResponseEntity<StandardResponse> getFollowingStudents(

@@ -24,6 +24,7 @@ public class UserResponseDTO {
     private Role role; // STUDENT, EMPLOYER, ADMIN
 
     // Additional fields for Student
+    private String displayName;
     private String university;
     private String gender;
     private List<String> skills;
