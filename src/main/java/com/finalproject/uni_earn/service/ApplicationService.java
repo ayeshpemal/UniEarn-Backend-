@@ -14,4 +14,8 @@ public interface ApplicationService {
     public void deleteApplication(Long applicationId);
 
     Map<String, Object> getStudentApplicationsSummary(Long studentId);
+
+    boolean hasStudentAppliedForJob(Long studentId, Long jobId);
+
+
 }

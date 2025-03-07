@@ -196,5 +196,21 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         return response;
     }
+
+    public boolean hasStudentAppliedForJob(Long studentId, Long jobId) {
+        if(!studentRepository.existsById(studentId)) {
+            throw new NotFoundException("Student not found with ID: " + studentId);
+        }
+        if(!jobRepository.existsById(jobId)) {
+            throw new NotFoundException("Job not found with ID: " + jobId);
+        }
+        // Check if student applied individually
+        if (applicationRepository.existsByJob_JobIdAndStudent_UserId(jobId, studentId)) {
+            return true;
+        }
+
+        // Check if student is in a team that applied
+        return applicationRepository.isStudentInAppliedTeam(jobId, studentId);
+    }
 }
 

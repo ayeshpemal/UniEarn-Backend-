@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class UserResponseDTO {
+    private Long userId;
     @NotBlank
     private String userName;
 

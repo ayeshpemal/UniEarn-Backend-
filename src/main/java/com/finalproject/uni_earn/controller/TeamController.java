@@ -21,9 +21,9 @@ public class TeamController {
     //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/create")
     public ResponseEntity<StandardResponse> createTeam(@RequestBody TeamRequestDTO teamRequest) {
-        String message = teamService.createTeam(teamRequest);
+        Long teamId = teamService.createTeam(teamRequest);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(201, "Success", message),
+                new StandardResponse(201, "Success", teamId),
                 HttpStatus.CREATED);
     }
 

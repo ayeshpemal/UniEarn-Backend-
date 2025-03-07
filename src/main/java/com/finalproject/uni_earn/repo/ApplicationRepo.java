@@ -49,4 +49,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     List<Application> findByStudent(Student student);
 
     long countByStudent(Student student);
+
+    // Check if a team has applied for the job
+    @Query("SELECT COUNT(a) > 0 FROM Application a JOIN a.team t JOIN t.members m WHERE a.job.jobId = :jobId AND m.userId = :studentId")
+    boolean isStudentInAppliedTeam(@Param("jobId") Long jobId, @Param("studentId") Long studentId);
 }
