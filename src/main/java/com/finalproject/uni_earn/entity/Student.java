@@ -23,6 +23,9 @@ import java.util.Set;
 @Entity
 @Table(name = "students")
 public class Student extends User {
+    @Column(name="display_name", nullable = false)
+    private String displayName;
+
     @Column(name = "university", nullable = false)
     private String university;
 

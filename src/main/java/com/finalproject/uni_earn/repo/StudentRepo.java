@@ -21,4 +21,8 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
 
     @Query("SELECT s FROM Student s JOIN s.followers f WHERE f.id = :studentId")
     Page<Student> findFollowingByStudentId(Long studentId, Pageable pageable);
+
+    Page<Student> findByDisplayNameContainingIgnoreCase(String searchTerm, Pageable pageable);
+
+    Long countByDisplayNameContainingIgnoreCase(String searchTerm);
 }

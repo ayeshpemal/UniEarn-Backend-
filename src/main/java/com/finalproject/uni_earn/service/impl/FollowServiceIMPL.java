@@ -6,6 +6,7 @@ import com.finalproject.uni_earn.entity.Follow;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.EmployerRepo;
 import com.finalproject.uni_earn.repo.FollowRepo;
@@ -51,12 +52,12 @@ public class FollowServiceIMPL implements FollowService {
                 .orElseThrow(() -> new NotFoundException("Employer not found with ID: " + employerId));
 
         if (!(employerUser instanceof Employer employer)) {
-            throw new RuntimeException("The user with ID: " + employerId + " is not an employer.");
+            throw new InvalidValueException("The user with ID: " + employerId + " is not an employer.");
         }
 
         // Check if the follow relationship already exists
         if (followRepo.findByStudentAndEmployer(student, employer).isPresent()) {
-            throw new RuntimeException("The student already follows this employer.");
+            throw new AlreadyExistException("The student already follows this employer.");
         }
 
         // Create and save the follow relationship
@@ -82,12 +83,12 @@ public class FollowServiceIMPL implements FollowService {
                 .orElseThrow(() -> new NotFoundException("Employer not found with ID: " + employerId));
 
         if (!(employerUser instanceof Employer employer)) {
-            throw new RuntimeException("The user with ID: " + employerId + " is not an employer.");
+            throw new InvalidValueException("The user with ID: " + employerId + " is not an employer.");
         }
 
         // Check if the follow relationship exists
         Follow follow = (Follow) followRepo.findByStudentAndEmployer(student, employer)
-                .orElseThrow(() -> new RuntimeException("The student is not following this employer."));
+                .orElseThrow(() -> new NotFoundException("The student is not following this employer."));
 
         // Remove the follow relationship
         followRepo.delete(follow);
@@ -112,12 +113,16 @@ public class FollowServiceIMPL implements FollowService {
     @Transactional
     public void followStudent(Long studentId, Long targetStudentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
         Student targetStudent = studentRepository.findById(targetStudentId)
-                .orElseThrow(() -> new RuntimeException("Target student not found"));
+                .orElseThrow(() -> new NotFoundException("Target student not found"));
 
         if(student.getFollowing().contains(targetStudent)){
             throw new AlreadyExistException("Already following this student");
+        }
+
+        if(studentId.equals(targetStudentId)){
+            throw new InvalidValueException("Cannot follow yourself");
         }
 
         student.followStudent(targetStudent); // Add to following and followers
@@ -129,9 +134,9 @@ public class FollowServiceIMPL implements FollowService {
     @Transactional
     public void unfollowStudent(Long studentId, Long targetStudentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
         Student targetStudent = studentRepository.findById(targetStudentId)
-                .orElseThrow(() -> new RuntimeException("Target student not found"));
+                .orElseThrow(() -> new NotFoundException("Target student not found"));
 
         if (!student.getFollowing().contains(targetStudent)) {
             throw new NotFoundException("Not following this student");
@@ -145,7 +150,7 @@ public class FollowServiceIMPL implements FollowService {
     @Override
     public List<UserDTO> getFollowingStudents(Long studentId, Pageable pageable) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
 
         // Use the Pageable object to return a paginated result
         Page<Student> students = studentRepository.findFollowingByStudentId(studentId, pageable);

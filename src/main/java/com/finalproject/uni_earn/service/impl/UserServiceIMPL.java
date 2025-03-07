@@ -138,6 +138,10 @@ public class  UserServiceIMPL implements UserService {
         // Check for specific subclass updates
         if (user instanceof Student student) {
 
+            if (userUpdateRequestDTO.getDisplayName() != null) {
+                student.setDisplayName(userUpdateRequestDTO.getDisplayName());
+            }
+
             if (userUpdateRequestDTO.getGender() != null) {
                 try {
                     Gender gender = Gender.valueOf(userUpdateRequestDTO.getGender().toUpperCase()); // Convert String to Enum
