@@ -149,7 +149,8 @@ public class AdminServiceIMPL implements AdminService {
                             tuple.get("userId", Long.class),
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
-                            tuple.get("role", String.class)
+                            tuple.get("role", String.class),
+                            null
                     ));
             response.setTopEmployer(topEmployer.isPresent() && Objects.equals(topEmployer.get().getRole(), "EMPLOYER") ? topEmployer.get() : null);
         } catch (Exception e) {
@@ -163,7 +164,8 @@ public class AdminServiceIMPL implements AdminService {
                             tuple.get("userId", Long.class),
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
-                            tuple.get("role", String.class)
+                            tuple.get("role", String.class),
+                            null
                     ));
             response.setMostActiveStudent(mostActiveStudent.isPresent() && Objects.equals(mostActiveStudent.get().getRole(), "STUDENT") ? mostActiveStudent.get() : null);
         } catch (Exception e) {
