@@ -108,5 +108,15 @@ public class ApplicationController {
     public List<StudentApplicationDTO> getPendingStudentsByJobId(@PathVariable Long jobId) {
         return applicationService.getPendingStudentsByJobId(jobId);
     }
+    @GetMapping("/has-applied")
+    public ResponseEntity<StandardResponse> hasStudentApplied(
+            @RequestParam Long studentId, @RequestParam Long jobId) {
+
+        boolean hasApplied = applicationService.hasStudentAppliedForJob(studentId, jobId);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Check completed", hasApplied),
+                HttpStatus.OK
+        );
+    }
 }
 

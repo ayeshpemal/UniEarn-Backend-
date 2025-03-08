@@ -1,13 +1,26 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.EmployerDto;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedEmployerResponseDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
+import com.finalproject.uni_earn.dto.StudentDTO;
 import com.finalproject.uni_earn.entity.Application;
+import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
+import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.EmployerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployerServiceIMPL implements EmployerService {
@@ -28,6 +41,10 @@ public class EmployerServiceIMPL implements EmployerService {
 
     @Autowired
     private ApplicationRepo applicationRepo;
+
+    private static final int PAGE_SIZE = 10; // Fixed page size
+    @Autowired
+    private FollowRepo followRepo;
 
     @Override
     public String selectCandidate(long applicationId) {
@@ -50,7 +67,60 @@ public class EmployerServiceIMPL implements EmployerService {
         return "Candidate selected successfully for job: " + job.getJobTitle();
     }
 
+    @Override
+    public PaginatedUserResponseDTO getAllEmployers(int page) {
+        Page<Employer> employerPage = employerRepo.findAll(PageRequest.of(page, PAGE_SIZE));
+        List<UserResponseDTO> employers =employerPage.getContent()
+                .stream()
+                .map(employer -> modelMapper.map(employer, UserResponseDTO.class))
+                .collect(Collectors.toList());
 
+        long totalEmployers = employerRepo.count();
+
+        return new PaginatedUserResponseDTO(employers, totalEmployers);
+    }
+
+    @Override
+    public PaginatedEmployerResponseDTO searchEmployers(String query, int page) {
+        Page<Employer> employerPage = employerRepo.findByCompanyNameContainingIgnoreCase(query, PageRequest.of(page, PAGE_SIZE));
+        List<EmployerDto> employers = employerPage.getContent()
+                .stream()
+                .map(employer -> modelMapper.map(employer, EmployerDto.class))
+                .collect(Collectors.toList());
+
+        long totalEmployers = employerRepo.countByCompanyNameContainingIgnoreCase(query);
+
+        return new PaginatedEmployerResponseDTO(employers, totalEmployers);
+    }
+
+    @Override
+    public PaginatedEmployerResponseDTO searchEmployersWithFollowStatus(Long userId, String query, int page) {
+        // Fetch the current student (the user making the request)
+        Student currentStudent = studentRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
+
+        // Perform the search operation
+        PaginatedEmployerResponseDTO responseDTO = searchEmployers(query, page);
+
+        // Get the list of employers from the response DTO
+        List<EmployerDto> employerList = responseDTO.getEmployers();
+
+        // Iterate over the employer list to check the follow status
+        for (EmployerDto employerDto : employerList) {
+            Employer employer = employerRepo.findById(employerDto.getUserId())
+                    .orElseThrow(() -> new NotFoundException("Employer not found with ID: " + employerDto.getUserId()));
+            // Check if the current student follows this employer
+            boolean isFollow = followRepo.existsByStudentAndEmployer(currentStudent, employer);
+
+            // Set the follow status in the DTO
+            employerDto.setFollow(isFollow);
+        }
+
+        // Set the updated list of employers back to the response DTO
+        responseDTO.setEmployers(employerList);
+
+        return responseDTO;
+    }
 
 
 }

@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // Allow WebSocket handshake
                         // Public endpoints
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         /*.requestMatchers("/follows/**").hasRole("STUDENT")

@@ -12,10 +12,8 @@ import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
-import com.finalproject.uni_earn.exception.DuplicateEmailException;
-import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidValueException;
-import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.entity.enums.Role;
+import com.finalproject.uni_earn.exception.*;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.UserService;
@@ -106,6 +104,9 @@ public class  UserServiceIMPL implements UserService {
         User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
                 .orElseThrow(() -> new NotFoundException("User not found with user name: " + loginRequestDTO.getUserName()));
 
+        if(!user.isVerified()){
+            throw new UserNotVerifiedException("Email not verified");
+        }
         // Generate JWT token
         String token = jwtUtil.generateToken(user);
 
@@ -126,6 +127,8 @@ public class  UserServiceIMPL implements UserService {
         return userResponseDTO;
     }
 
+
+
     @Override
     public String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO) {
         // Find the existing user
@@ -134,6 +137,10 @@ public class  UserServiceIMPL implements UserService {
 
         // Check for specific subclass updates
         if (user instanceof Student student) {
+
+            if (userUpdateRequestDTO.getDisplayName() != null) {
+                student.setDisplayName(userUpdateRequestDTO.getDisplayName());
+            }
 
             if (userUpdateRequestDTO.getGender() != null) {
                 try {
@@ -209,6 +216,7 @@ public class  UserServiceIMPL implements UserService {
         String fileName = s3Service.uploadFile(file);
         user.setProfilePictureUrl(fileName);
         userRepo.save(user);
+        System.out.println("Profile picture uploaded successfully for user: " + userId);
 
         return s3Service.generatePresignedUrl(fileName);
     }
@@ -231,7 +239,7 @@ public class  UserServiceIMPL implements UserService {
     }
 
     @Override
-    public boolean verifyUser(String token) {
+    public String verifyUser(String token) {
         User user = userRepo.findByVerificationToken(token)
                 .orElseThrow(() -> new InvalidValueException("Invalid or expired token"));
 
@@ -242,7 +250,36 @@ public class  UserServiceIMPL implements UserService {
         user.setVerified(true);
         user.setVerificationToken(null); // Clear token after verification
         userRepo.save(user);
-        return true;
+        String url = null;
+        if(user.getRole() == Role.STUDENT) {
+            url = "http://localhost:3000/verify/" + user.getUserId();
+        }
+        if (user.getRole() == Role.EMPLOYER){
+            url = "http://localhost:3000/e-sign-in";
+        }
+        return url;
+    }
+
+    @Override
+    public String resendVerificationEmail(String username) {
+        // Send verification email
+        User user = userRepo.findByUserNameAndIsDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        String token = null;
+        if(!user.isVerified()){
+            if(user.getVerificationToken() != null) {
+                token = user.getVerificationToken();
+            }else {
+                throw new InvalidValueException("No verification token found");
+            }
+        }else{
+            throw new InvalidValueException("User is already verified");
+        }
+
+        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String emailBody = "Please click the following link to verify your email: " + verifyUrl;
+        emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
+        return "Please check your email to verify your account.";
     }
 
     @Override
@@ -281,7 +318,7 @@ public class  UserServiceIMPL implements UserService {
 
         // Validate old password
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new InvalidValueException("Old password is incorrect");
         }
 
         // Validate new password complexity

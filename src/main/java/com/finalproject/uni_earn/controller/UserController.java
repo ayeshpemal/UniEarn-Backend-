@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
+import com.finalproject.uni_earn.dto.request.UpdatePasswordDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @CrossOrigin
@@ -49,7 +51,7 @@ public class UserController {
     }
     
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/update/{userId}")
+    @PutMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
             @RequestBody UserUpdateRequestDTO userUpdateRequestDTO) {
@@ -62,7 +64,7 @@ public class UserController {
     }
 
     //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/{userId}/profile-picture")
+    @PutMapping("/{userId}/profile-picture")
     public ResponseEntity<StandardResponse> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
         try {
             String imageUrl = userService.uploadProfilePicture(userId, file);
@@ -96,10 +98,16 @@ public class UserController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<StandardResponse> verifyEmail(@RequestParam String token) {
-        boolean verified = userService.verifyUser(token);
+    public RedirectView verifyEmail(@RequestParam String token) {
+        String url = userService.verifyUser(token);
+        return new RedirectView(url);
+    }
+
+    @GetMapping("/resend-verification-email")
+    public ResponseEntity<StandardResponse> resendVerificationEmail(@RequestParam String username) {
+        String message = userService.resendVerificationEmail(username);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Email verified successfully", verified),
+                new StandardResponse(200, "Success", message),
                 HttpStatus.OK
         );
     }
@@ -128,10 +136,9 @@ public class UserController {
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
-            @RequestParam String oldPassword,
-            @RequestParam String newPassword) {
+            @RequestBody UpdatePasswordDTO updatePasswordDTO) {
 
-        userService.updatePassword(userId, oldPassword, newPassword);
+        userService.updatePassword(userId, updatePasswordDTO.getOldPassword(), updatePasswordDTO.getNewPassword());
         return new  ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", "Password updated successfully"),
                 HttpStatus.OK

@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
@@ -116,7 +117,7 @@ public class JobController {
     //jobs posted by user or completed by user
     @GetMapping(path = "/get-jobs-by-user", params = {"user_id","page"})
     ResponseEntity<StandardResponse> getJobsByUser(@RequestParam(value = "user_id") long userId, @RequestParam(value = "page") Integer page) {
-        List<JobDetailsResponseDTO> jobList = jobService.getJobsByUser(userId,page);
+        PaginatedJobDetailsResponseDTO jobList = jobService.getJobsByUser(userId,page);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", jobList),
                 HttpStatus.OK);
