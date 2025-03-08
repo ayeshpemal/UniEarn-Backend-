@@ -252,10 +252,10 @@ public class  UserServiceIMPL implements UserService {
         userRepo.save(user);
         String url = null;
         if(user.getRole() == Role.STUDENT) {
-            url = "http://localhost:3000/verify/" + user.getUserId();
+            url = "http://localhost:3000/verify?userId=" + user.getUserId();
         }
         if (user.getRole() == Role.EMPLOYER){
-            url = "http://localhost:3000/e-sign-in";
+            url = "http://localhost:3000/sign-in";
         }
         return url;
     }
