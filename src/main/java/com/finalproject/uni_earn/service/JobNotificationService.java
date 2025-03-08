@@ -8,5 +8,5 @@ public interface JobNotificationService {
 
     String createFollowNotification(Employer employer, Job job);
     boolean markAsRead(Long id);
-    PaginatedNotificationResponseDTO getPaginatedNotification(Long userId, int page, int size);
+    PaginatedNotificationResponseDTO getPaginatedJobNotification(Long userId, int page, int size);
 }

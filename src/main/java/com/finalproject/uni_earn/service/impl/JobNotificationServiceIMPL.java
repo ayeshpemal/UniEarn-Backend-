@@ -104,7 +104,7 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
     }
 
     @Override
-    public PaginatedNotificationResponseDTO getPaginatedNotification(Long userId, int page, int size) {
+    public PaginatedNotificationResponseDTO getPaginatedJobNotification(Long userId, int page, int size) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
