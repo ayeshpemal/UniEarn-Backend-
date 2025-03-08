@@ -1,6 +1,9 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupMemberDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -199,6 +202,51 @@ public class ApplicationServiceIMPL implements ApplicationService {
         response.put("categoryBreakdown", categoryBreakdown);
 
         return response;
+    }
+
+    @Override
+    public List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId) {
+        // Fetch all pending group applications for the job
+        List<Application> pendingGroupApplications = applicationRepository.findPendingGroupApplicationsByJobId(jobId);
+
+        // Transform the data into the required DTO structure
+        return pendingGroupApplications.stream()
+                .map(application -> {
+                    Team team = application.getTeam();
+                    return new GroupApplicationDTO(
+                            application.getApplicationId(), // applicationId
+                            team.getId(), // groupId
+                            team.getTeamName(), // groupName
+                            team.getMembers().stream()
+                                    .map(member -> new GroupMemberDTO(
+                                            member.getUserId(), // id
+                                            member.getUserName(), // name
+                                            member.getLocation(), // location
+                                            member.getRating(), // rating
+                                            member.getProfilePictureUrl() // avatar
+                                    ))
+                                    .collect(Collectors.toList()) // members
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId) {
+        List<Application> pendingApplications = applicationRepository.findPendingStudentApplicationsByJobId(jobId);
+
+        return pendingApplications.stream()
+                .map(application -> {
+                    Student student = application.getStudent();
+                    return new StudentApplicationDTO(
+                            application.getApplicationId(),          // applicationId
+                            student.getUserId(),          // id
+                            student.getUserName(),       // name
+                            student.getLocation(),        // location
+                            student.getRating(),         // rating
+                            student.getProfilePictureUrl() // profilePictureUrl
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     public boolean hasStudentAppliedForJob(Long studentId, Long jobId) {

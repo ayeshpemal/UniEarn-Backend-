@@ -2,6 +2,8 @@ package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -96,6 +99,15 @@ public class ApplicationController {
         return ResponseEntity.ok(summary);
     }
 
+
+    @GetMapping("pending-group/job/{jobId}")
+    public List<GroupApplicationDTO> getGroupApplicationsByJobId(@PathVariable Long jobId) {
+        return applicationService.getGroupApplicationsByJobId(jobId);
+    }
+    @GetMapping("pending-student/job/{jobId}")
+    public List<StudentApplicationDTO> getPendingStudentsByJobId(@PathVariable Long jobId) {
+        return applicationService.getPendingStudentsByJobId(jobId);
+    }
     @GetMapping("/has-applied")
     public ResponseEntity<StandardResponse> hasStudentApplied(
             @RequestParam Long studentId, @RequestParam Long jobId) {

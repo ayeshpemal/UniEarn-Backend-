@@ -48,6 +48,12 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
 
     List<Application> findByStudent(Student student);
 
+    @Query("SELECT a FROM Application a WHERE a.job.jobId = :jobId AND a.team IS NOT NULL AND a.status = 'PENDING'")
+    List<Application> findPendingGroupApplicationsByJobId(@Param("jobId") Long jobId);
+
+    @Query("SELECT a FROM Application a WHERE a.job.jobId = :jobId AND a.student IS NOT NULL AND a.status = 'PENDING'")
+    List<Application> findPendingStudentApplicationsByJobId(@Param("jobId") Long jobId);
+
     long countByStudent(Student student);
 
     // Check if a team has applied for the job
