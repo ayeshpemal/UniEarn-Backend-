@@ -4,9 +4,13 @@ import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.repo.EmployerRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
+import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.service.impl.JobNotificationServiceIMPL;
+import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -17,7 +21,7 @@ import java.util.Map;
 @RequestMapping(value = "/api/v1/Notification/")
 public class JobNotificationController {
     @Autowired
-    private JobNotificationServiceIMPL notificationService;
+    private JobNotificationService notificationService;
 
     @Autowired
     private JobRepo jobRepo;
@@ -27,7 +31,7 @@ public class JobNotificationController {
 
 
 
-
+    //@PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/{id}/mark-as-read")
     public ResponseEntity<String> markNotificationAsRead(@PathVariable Long id) {
         boolean isUpdated = notificationService.markAsRead(id);
@@ -37,6 +41,8 @@ public class JobNotificationController {
             return ResponseEntity.badRequest().body("Notification not found or already read.");
         }
     }
+
+    //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/create-follow-notification/{jobId}")
     public ResponseEntity<Map<String, String>> createFollowNotification(@PathVariable Long jobId) {
         Job job = jobRepo.findById(jobId)
@@ -58,4 +64,14 @@ public class JobNotificationController {
         return ResponseEntity.ok(response);
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/get-notifications/{userId}")
+    public ResponseEntity<StandardResponse> getPaginatedNotifications(@PathVariable Long userId,
+                                                                      @RequestParam(defaultValue = "0") int page,
+                                                                      @RequestParam(defaultValue = "10") int size) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success.", notificationService.getPaginatedNotification(userId, page, size)),
+                HttpStatus.OK
+        );
+    }
 }

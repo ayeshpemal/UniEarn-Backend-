@@ -318,7 +318,7 @@ public class  UserServiceIMPL implements UserService {
 
         // Validate old password
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new InvalidValueException("Old password is incorrect");
         }
 
         // Validate new password complexity
