@@ -1,10 +1,10 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
-import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
@@ -12,10 +12,8 @@ import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
-import com.finalproject.uni_earn.exception.DuplicateEmailException;
-import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidValueException;
-import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.entity.enums.Role;
+import com.finalproject.uni_earn.exception.*;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.UserService;
@@ -29,11 +27,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
-public class UserServiceIMPL implements UserService {
+public class  UserServiceIMPL implements UserService {
     @Autowired
     private UserRepo userRepo;
     @Autowired
@@ -48,6 +48,8 @@ public class UserServiceIMPL implements UserService {
     private JobRepo jobRepo;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -67,7 +69,7 @@ public class UserServiceIMPL implements UserService {
         User user = switch (userRequestDTO.getRole().toString().toUpperCase()) {
             case "STUDENT" -> modelMapper.map(userRequestDTO, Student.class);
             case "EMPLOYER" -> modelMapper.map(userRequestDTO, Employer.class);
-            case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
+            //case "ADMIN" -> modelMapper.map(userRequestDTO, User.class);
             default -> throw new InvalidValueException("Invalid role: " + userRequestDTO.getRole());
         };
 
@@ -99,9 +101,12 @@ public class UserServiceIMPL implements UserService {
             throw new InvalidValueException("Invalid email or password");
         }
 
-        User user = userRepo.findByUserNameAndAndIsDeletedFalse(loginRequestDTO.getUserName())
-                .orElseThrow(() -> new InvalidValueException("Invalid email or password"));
+        User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
+                .orElseThrow(() -> new NotFoundException("User not found with user name: " + loginRequestDTO.getUserName()));
 
+        if(!user.isVerified()){
+            throw new UserNotVerifiedException("Email not verified");
+        }
         // Generate JWT token
         String token = jwtUtil.generateToken(user);
 
@@ -112,8 +117,17 @@ public class UserServiceIMPL implements UserService {
     public UserResponseDTO getUser(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
-        return modelMapper.map(user, UserResponseDTO.class);
+
+        String profilePictureUrl = user.getProfilePictureUrl() != null
+                ? s3Service.generatePresignedUrl(user.getProfilePictureUrl())
+                : null;
+
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        userResponseDTO.setProfilePictureUrl(profilePictureUrl);
+        return userResponseDTO;
     }
+
+
 
     @Override
     public String updateUserDetails(Long userId, UserUpdateRequestDTO userUpdateRequestDTO) {
@@ -123,6 +137,10 @@ public class UserServiceIMPL implements UserService {
 
         // Check for specific subclass updates
         if (user instanceof Student student) {
+
+            if (userUpdateRequestDTO.getDisplayName() != null) {
+                student.setDisplayName(userUpdateRequestDTO.getDisplayName());
+            }
 
             if (userUpdateRequestDTO.getGender() != null) {
                 try {
@@ -185,8 +203,43 @@ public class UserServiceIMPL implements UserService {
         return "User updated successfully with ID: " + userId;
     }
 
+    /**
+     * Uploads and sets a user's profile picture.
+     */
+    public String uploadProfilePicture(Long userId, MultipartFile file) throws IOException {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found!");
+        }
+
+        User user = userOptional.get();
+        String fileName = s3Service.uploadFile(file);
+        user.setProfilePictureUrl(fileName);
+        userRepo.save(user);
+        System.out.println("Profile picture uploaded successfully for user: " + userId);
+
+        return s3Service.generatePresignedUrl(fileName);
+    }
+
+    /**
+     * Retrieves the pre-signed URL for a user's profile picture.
+     */
+    public String getProfilePicture(Long userId) {
+        Optional<User> userOptional = userRepo.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found!");
+        }
+
+        User user = userOptional.get();
+        if (user.getProfilePictureUrl() == null) {
+            throw new RuntimeException("No profile picture uploaded!");
+        }
+
+        return s3Service.generatePresignedUrl(user.getProfilePictureUrl());
+    }
+
     @Override
-    public boolean verifyUser(String token) {
+    public String verifyUser(String token) {
         User user = userRepo.findByVerificationToken(token)
                 .orElseThrow(() -> new InvalidValueException("Invalid or expired token"));
 
@@ -197,7 +250,36 @@ public class UserServiceIMPL implements UserService {
         user.setVerified(true);
         user.setVerificationToken(null); // Clear token after verification
         userRepo.save(user);
-        return true;
+        String url = null;
+        if(user.getRole() == Role.STUDENT) {
+            url = "http://localhost:3000/verify/" + user.getUserId();
+        }
+        if (user.getRole() == Role.EMPLOYER){
+            url = "http://localhost:3000/e-sign-in";
+        }
+        return url;
+    }
+
+    @Override
+    public String resendVerificationEmail(String username) {
+        // Send verification email
+        User user = userRepo.findByUserNameAndIsDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        String token = null;
+        if(!user.isVerified()){
+            if(user.getVerificationToken() != null) {
+                token = user.getVerificationToken();
+            }else {
+                throw new InvalidValueException("No verification token found");
+            }
+        }else{
+            throw new InvalidValueException("User is already verified");
+        }
+
+        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String emailBody = "Please click the following link to verify your email: " + verifyUrl;
+        emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
+        return "Please check your email to verify your account.";
     }
 
     @Override

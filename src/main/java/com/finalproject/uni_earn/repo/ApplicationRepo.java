@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -23,4 +24,33 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     boolean existsByJob_JobIdAndTeam_Id(Long jobId, Long teamId);
 
     boolean existsByJob_JobIdAndStudent_UserId(Long jobId, Long studentId);
+
+    // ✅ Count total applications for a student
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.student.userId = :studentId")
+    int countByStudentId(@Param("studentId") Long studentId);
+
+    // ✅ Count applications grouped by status for a student
+    @Query("SELECT a.status, COUNT(a) FROM Application a WHERE a.student.userId = :studentId GROUP BY a.status")
+    List<Object[]> countApplicationsByStatus(@Param("studentId") Long studentId);
+
+    // ✅ Count total applications for a job
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.job.jobId = :jobId")
+    int countByJobId(@Param("jobId") Long jobId);
+
+    // ✅ Find the most applied job
+    @Query(value = "SELECT j.job_title FROM application a JOIN job j ON a.job_id = j.id GROUP BY j.id ORDER BY COUNT(a.job_id) DESC LIMIT 1", nativeQuery = true)
+    String findMostAppliedJob();
+
+    // ✅ Find the least applied job
+    @Query(value = "SELECT j.job_title FROM application a JOIN job j ON a.job_id = j.id GROUP BY j.id ORDER BY COUNT(a.job_id) ASC LIMIT 1", nativeQuery = true)
+    String findLeastAppliedJob();
+
+
+    List<Application> findByStudent(Student student);
+
+    long countByStudent(Student student);
+
+    // Check if a team has applied for the job
+    @Query("SELECT COUNT(a) > 0 FROM Application a JOIN a.team t JOIN t.members m WHERE a.job.jobId = :jobId AND m.userId = :studentId")
+    boolean isStudentInAppliedTeam(@Param("jobId") Long jobId, @Param("studentId") Long studentId);
 }

@@ -1,13 +1,21 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
+import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.Application;
+import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.EmployerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployerServiceIMPL implements EmployerService {
@@ -28,6 +36,8 @@ public class EmployerServiceIMPL implements EmployerService {
 
     @Autowired
     private ApplicationRepo applicationRepo;
+
+    private static final int PAGE_SIZE = 10; // Fixed page size
 
     @Override
     public String selectCandidate(long applicationId) {
@@ -50,7 +60,18 @@ public class EmployerServiceIMPL implements EmployerService {
         return "Candidate selected successfully for job: " + job.getJobTitle();
     }
 
+    @Override
+    public PaginatedUserResponseDTO getAllEmployers(int page) {
+        Page<Employer> employerPage = employerRepo.findAll(PageRequest.of(page, PAGE_SIZE));
+        List<UserResponseDTO> employers =employerPage.getContent()
+                .stream()
+                .map(employer -> modelMapper.map(employer, UserResponseDTO.class))
+                .collect(Collectors.toList());
 
+        long totalEmployers = employerRepo.count();
+
+        return new PaginatedUserResponseDTO(employers, totalEmployers);
+    }
 
 
 }

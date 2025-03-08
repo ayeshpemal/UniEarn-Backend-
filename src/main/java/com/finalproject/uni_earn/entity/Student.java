@@ -19,10 +19,13 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"teams", "applications", "leadingTeams","followers", "following"})
 @Entity
 @Table(name = "students")
 public class Student extends User {
+    @Column(name="display_name", nullable = false)
+    private String displayName;
+
     @Column(name = "university", nullable = false)
     private String university;
 
@@ -66,6 +69,34 @@ public class Student extends User {
 
     @ManyToMany(mappedBy = "members")
     private Set<Team> teams;
+
+    // Add following and followers relationship
+    @ManyToMany
+    @JoinTable(
+            name = "student_followers",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "follower_id")
+    )
+    private Set<Student> followers;
+
+    @ManyToMany(mappedBy = "followers")
+    private Set<Student> following;
+
+    // Method to follow another student
+    public void followStudent(Student student) {
+        if (!following.contains(student)) {
+            following.add(student);
+            student.getFollowers().add(this); // Add current student to the followers of the target student
+        }
+    }
+
+    // Method to unfollow another student
+    public void unfollowStudent(Student student) {
+        if (following.contains(student)) {
+            following.remove(student);
+            student.getFollowers().remove(this); // Remove current student from the followers of the target student
+        }
+    }
 
     public void addPreference(JobCategory preference) {
         preferences.add(preference);

@@ -1,10 +1,12 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -37,7 +39,8 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
     @Autowired
     private FollowRepo followRepo;
 
-
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public String createFollowNotification(Employer employer, Job job) {
         List<Follow> followers = followRepo.findAllByEmployer(employer);
@@ -60,12 +63,27 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
             notification.setIsRead(false);
 
             notificationRepo.save(notification);
+
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    message,
+                    job.getJobId(),
+                    notification.getIsRead(),
+                    notification.getSentDate()
+            );
+
+            // Send real-time notification to the specific student
+            messagingTemplate.convertAndSendToUser(
+                    student.getUserName(),
+                    "/topic/notifications",
+                    notificationDTO
+            );
+
             System.out.println("Notification sent to student: " + student.getUserName());
         }
 
         return message; // Return only the message
     }
-
 
 
     public boolean markAsRead(Long id) {

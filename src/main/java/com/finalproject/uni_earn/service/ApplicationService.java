@@ -1,13 +1,21 @@
 package com.finalproject.uni_earn.service;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
+import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+
+import java.util.Map;
 
 public interface ApplicationService {
     String applyAsStudent(Long studentId, Long jobId);
     String applyAsTeam(Long teamId, Long jobId);
-    public String updateStatus(Long applicationId, ApplicationStatus status);
+    void updateStatus(Long applicationId, ApplicationStatus newStatus, User user);
     public ApplicationDTO viewApplicationDetails(Long applicationId);
     public void deleteApplication(Long applicationId);
-    public ApplicationDTO updateApplication(Long applicationId, ApplicationDTO applicationDTO);
+
+    Map<String, Object> getStudentApplicationsSummary(Long studentId);
+
+    boolean hasStudentAppliedForJob(Long studentId, Long jobId);
+
+
 }

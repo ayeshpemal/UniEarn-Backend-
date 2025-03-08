@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
@@ -14,6 +15,7 @@ import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -28,6 +30,7 @@ public class JobController {
     @Autowired
     JobService jobService;
 
+    //@PreAuthorize("hasRole('EMPLOYER')")
     @PostMapping("/addjob")
     public ResponseEntity<StandardResponse> addJob(@RequestBody AddJobRequestDTO addJobRequestDTO) {
         String message = jobService.addJob(addJobRequestDTO);
@@ -37,6 +40,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @DeleteMapping("/deletejob/{jobId}")
     public ResponseEntity<StandardResponse> deleteJob(@PathVariable Long jobId) {
         String message = jobService.deleteJob(jobId);
@@ -46,6 +50,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('EMPLOYER')")
     @PutMapping("/updatejob/{id}")
     public ResponseEntity<StandardResponse> updateJob(@RequestBody UpdateJobRequestDTO updateJobRequestDTO) {
         String message = jobService.updateJob(updateJobRequestDTO);
@@ -55,6 +60,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/getjob/{jobId}")
     ResponseEntity<StandardResponse> viewJobDetails(@PathVariable Long jobId) {
         JobDTO job = jobService.viewJobDetails(jobId);
@@ -64,6 +70,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     //search by category
     @GetMapping( path = "/jobsbycategory", params = {"jobcategory","page"})
     ResponseEntity<StandardResponse> JobsByCategory( @RequestParam(value = "jobcategory") JobCategory jobCategory, @RequestParam(value = "page") Integer page) {
@@ -74,6 +81,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     //search by location
     @GetMapping(path = "/jobsbylocation", params = {"location","page"})
     ResponseEntity<StandardResponse> JobsByLocation(@RequestParam(value = "location") Location location, @RequestParam(value = "page") Integer page) {
@@ -84,6 +92,7 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     //search by keyword
     @GetMapping(path = "/searchjobsbykeyword", params = {"keyword","page"})
     ResponseEntity<StandardResponse> searchJobKeyword(@RequestParam(value = "keyword") String keyWord, @RequestParam(value = "page") Integer page){
@@ -93,6 +102,7 @@ public class JobController {
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('STUDENT')")
     //student sugessions
     @GetMapping(path = "/studentpreferedjobs", params = {"student_id","page"})//this jobs are shown to students
     ResponseEntity<StandardResponse> StudentPreferedJobs(@RequestParam(value = "student_id") long studentId, @RequestParam(value = "page") Integer page) {
@@ -103,15 +113,17 @@ public class JobController {
         );
     }
 
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('STUDENT') or hasRole('ADMIN')")
     //jobs posted by user or completed by user
     @GetMapping(path = "/get-jobs-by-user", params = {"user_id","page"})
     ResponseEntity<StandardResponse> getJobsByUser(@RequestParam(value = "user_id") long userId, @RequestParam(value = "page") Integer page) {
-        List<JobDetailsResponseDTO> jobList = jobService.getJobsByUser(userId,page);
+        PaginatedJobDetailsResponseDTO jobList = jobService.getJobsByUser(userId,page);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", jobList),
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     //search by location,categories,keywords
     @GetMapping("/search")
     ResponseEntity<StandardResponse> searchJobs(
@@ -129,6 +141,7 @@ public class JobController {
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @PutMapping(path = "/set-status", params = {"job_id","status"})
     public ResponseEntity<StandardResponse> setStatus(@RequestParam(value = "job_id") long jobId, @RequestParam(value = "status") boolean status) {
         String message = jobService.setStatus(jobId, status);

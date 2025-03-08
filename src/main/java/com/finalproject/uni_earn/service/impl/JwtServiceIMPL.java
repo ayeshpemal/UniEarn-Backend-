@@ -19,7 +19,7 @@ public class JwtServiceIMPL implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findByUserNameAndAndIsDeletedFalse(username)
+        User user = userRepository.findByUserNameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
         return new org.springframework.security.core.userdetails.User(

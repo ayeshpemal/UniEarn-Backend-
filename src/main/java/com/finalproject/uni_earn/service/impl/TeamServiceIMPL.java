@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.TeamDTO;
 import com.finalproject.uni_earn.dto.request.TeamRequestDTO;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
@@ -26,7 +27,7 @@ public class TeamServiceIMPL implements TeamService {
     @Autowired
     private ModelMapper modelMapper;
     @Transactional
-    public String createTeam(TeamRequestDTO teamRequest) {
+    public Long createTeam(TeamRequestDTO teamRequest) {
         Student leader = studentRepository.findById(teamRequest.getLeader())
                 .orElseThrow(() -> new NotFoundException("Leader not found"));
 
@@ -35,7 +36,7 @@ public class TeamServiceIMPL implements TeamService {
         team.setLeader(leader);
         team.addMember(leader); // Leader is also a team member
 
-        return "Team created successfully with ID: " + teamRepository.save(team).getId();
+        return teamRepository.save(team).getId();
     }
 
     @Transactional
@@ -79,6 +80,13 @@ public class TeamServiceIMPL implements TeamService {
         teamRepository.removeAllMembersFromTeam(teamId);
         teamRepository.deleteById(teamId);
         return "Team deleted successfully with ID: " + teamId;
+    }
+
+    @Override
+    public TeamDTO getTeam(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NotFoundException("Team not found"));
+        return modelMapper.map(team, TeamDTO.class);
     }
 
 
