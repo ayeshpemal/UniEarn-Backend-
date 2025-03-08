@@ -161,8 +161,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
 
 
-        List<Application> applications = applicationRepository.findByStudent(student);
-
+        List<Application> individualapplications = applicationRepository.findByStudent(student);
+        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        
+        List<Application> applications = new ArrayList<>();
+        applications.addAll(individualapplications);
+        applications.addAll(teamApplications);
 
         Map<ApplicationStatus, Long> statusCounts = applications.stream()
                 .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));

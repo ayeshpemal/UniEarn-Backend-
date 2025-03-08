@@ -41,8 +41,10 @@ public class FollowController {
 
     //@PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("unfollow")
-    public ResponseEntity<String> unfollowEmployer(@RequestBody UnfollowRequestDTO unfollowRequestDTO) {
-        String responseMessage = followService.unfollowEmployer(unfollowRequestDTO.getStudentId(), unfollowRequestDTO.getEmployerId());
+    public ResponseEntity<String> unfollowEmployer(
+            @RequestParam Long studentId,
+            @RequestParam Long employerId) {
+        String responseMessage = followService.unfollowEmployer(studentId, employerId);
         return ResponseEntity.ok(responseMessage);
     }
 
