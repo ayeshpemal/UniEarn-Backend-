@@ -58,29 +58,13 @@ public class EmployerServiceIMPL implements EmployerService {
         }
         User emp = application.getJob().getEmployer();
         // Update the application status to SELECTED (using the enum)
-        applicationService.updateStatus(applicationId, ApplicationStatus.ACCEPTED,emp);
-
-        // Deactivate the job after selecting the candidate
-        Job job = application.getJob();
-        // Reject all other applications for this job
-        if (job.getRequiredWorkers() == 1){
-            applicationService.getPendingStudentsByJobId(job.getJobId())
-                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
-                    .forEach(app -> {
-                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
-                    });
-        }else if (job.getRequiredWorkers() > 1){
-            applicationService.getGroupApplicationsByJobId(job.getJobId())
-                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
-                    .forEach(app -> {
-                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
-                    });
+        if(!application.getStatus().equals(ApplicationStatus.REJECTED) && !application.getStatus().equals(ApplicationStatus.ACCEPTED)){
+            applicationService.updateStatus(applicationId, ApplicationStatus.ACCEPTED,emp);
         }else{
-            throw new NotFoundException("Application not found!");
+            return "Application is rejected or already accepted!";
         }
 
-        job.setActiveStatus(false); // Set the job as inactive
-        jobRepo.save(job); // Save the updated job
+        Job job = application.getJob();
 
         return "Candidate selected successfully for job: " + job.getJobTitle();
     }
