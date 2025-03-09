@@ -1,14 +1,22 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.NotificationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedNotificationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
+import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class JobNotificationServiceIMPL implements JobNotificationService {
@@ -37,7 +45,8 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
     @Autowired
     private FollowRepo followRepo;
 
-
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public String createFollowNotification(Employer employer, Job job) {
         List<Follow> followers = followRepo.findAllByEmployer(employer);
@@ -60,12 +69,27 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
             notification.setIsRead(false);
 
             notificationRepo.save(notification);
+
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    message,
+                    job.getJobId(),
+                    notification.getIsRead(),
+                    notification.getSentDate()
+            );
+
+            // Send real-time notification to the specific student
+            messagingTemplate.convertAndSendToUser(
+                    student.getUserName(),
+                    "/topic/notifications",
+                    notificationDTO
+            );
+
             System.out.println("Notification sent to student: " + student.getUserName());
         }
 
         return message; // Return only the message
     }
-
 
 
     public boolean markAsRead(Long id) {
@@ -78,5 +102,29 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
             return false;
         }).orElse(false);
     }
+
+    @Override
+    public PaginatedNotificationResponseDTO getPaginatedNotification(Long userId, int page, int size) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Long totalNotifications = notificationRepo.countByRecipient(user);
+
+        Page<JobNotification> notifications = notificationRepo.findAllByRecipient(user, PageRequest.of(page, size));
+        List<NotificationDTO> notificationDTOS = notifications.getContent().stream()
+                .map(notification -> {
+                   return new NotificationDTO(
+                            notification.getId(),
+                            notification.getMessage(),
+                            notification.getJob().getJobId(),
+                            notification.getIsRead(),
+                            notification.getSentDate()
+                   );
+                })
+                .collect(Collectors.toList());
+        return new PaginatedNotificationResponseDTO(notificationDTOS, totalNotifications);
+    }
+
+
 }
 

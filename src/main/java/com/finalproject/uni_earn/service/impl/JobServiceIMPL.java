@@ -1,6 +1,8 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.LocationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
@@ -10,14 +12,11 @@ import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.InvalidParametersException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
-import com.finalproject.uni_earn.repo.EmployerRepo;
-import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.repo.StudentRepo;
+import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.entity.*;
-import com.finalproject.uni_earn.repo.ApplicationRepo;
-import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.specification.JobSpecification;
@@ -28,8 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,21 +56,75 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private JobNotificationService notificationService;
 
+    @Autowired
+    private JobGroupMappingRepo jobGroupMappingRepo;
+
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
-        Job job = modelMapper.map(addJobRequestDTO, Job.class);
+        if (addJobRequestDTO.getJobLocations() == null || addJobRequestDTO.getJobLocations().isEmpty()) {
+            throw new InvalidValueException("At least one location is required.");
+        }
 
-        Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer()); // Fix variable name
-        job.setEmployer(employer);
+        if (addJobRequestDTO.getJobLocations().size() == 1) {
+            Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
+            Job job = new Job();
+            job.setJobTitle(addJobRequestDTO.getJobTitle());
+            job.setJobCategory(addJobRequestDTO.getJobCategory());
+            job.setJobDescription(addJobRequestDTO.getJobDescription());
+            job.setJobPayment(addJobRequestDTO.getJobPayment());
+            job.setRequiredWorkers(addJobRequestDTO.getRequiredWorkers());
+            job.setRequiredGender(addJobRequestDTO.getRequiredGender());
+            job.setStartDate(addJobRequestDTO.getJobLocations().get(0).getStartDate());
+            job.setEndDate(addJobRequestDTO.getJobLocations().get(0).getEndDate());
+            job.setStartTime(addJobRequestDTO.getStartTime());
+            job.setEndTime(addJobRequestDTO.getEndTime());
+            job.setEmployer(employer);
+            job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
+            job.setActiveStatus(true);
 
-        jobRepo.save(job);
+            jobRepo.save(job);
 
-        // Create follow notification after a new job is posted
-        notificationService.createFollowNotification(employer, job); // Notify students about the new job
+            // Create follow notification after a new job is posted
+            notificationService.createFollowNotification(employer, job); // Notify students about the new job
+        }
+
+        if (addJobRequestDTO.getJobLocations().size() > 1) {
+            // Generate a unique ID for the group
+            String groupJobId = UUID.randomUUID().toString();
+
+            for (LocationDTO locationDTO : addJobRequestDTO.getJobLocations()) {
+                Employer employer = employerRepo.getReferenceById(addJobRequestDTO.getEmployer());
+                // Create a new Job for each location
+                Job job = new Job();
+                job.setJobTitle(addJobRequestDTO.getJobTitle());
+                job.setJobCategory(addJobRequestDTO.getJobCategory());
+                job.setJobDescription(addJobRequestDTO.getJobDescription());
+                job.setJobPayment(addJobRequestDTO.getJobPayment());
+                job.setRequiredWorkers(addJobRequestDTO.getRequiredWorkers());
+                job.setRequiredGender(addJobRequestDTO.getRequiredGender());
+                job.setStartDate(locationDTO.getStartDate());
+                job.setEndDate(locationDTO.getEndDate());
+                job.setStartTime(addJobRequestDTO.getStartTime());
+                job.setEndTime(addJobRequestDTO.getEndTime());
+                job.setEmployer(employer);
+                job.setJobLocations(List.of(locationDTO.getLocation()));
+                job.setActiveStatus(true);
+
+                Job savedJob = jobRepo.save(job);
+
+                // Create follow notification after a new job is posted
+                notificationService.createFollowNotification(employer, job); // Notify students about the new job
+
+                // Store the Job-Group mapping
+                JobGroupMapping mapping = new JobGroupMapping();
+                mapping.setGroupJobId(groupJobId);
+                mapping.setJob(savedJob);
+                jobGroupMappingRepo.save(mapping);
+            }
+        }
 
         return addJobRequestDTO.getJobTitle() + " is saved.";
     }
-
 
     @Override
     public String deleteJob(Long jobId) {
@@ -86,14 +138,24 @@ public class JobServiceIMPL implements JobService {
 
     @Override
     public String updateJob(UpdateJobRequestDTO updateJobRequestDTO) {
-        if (jobRepo.existsByJobId(updateJobRequestDTO.getJobId())) {
-            Job job = modelMapper.map(updateJobRequestDTO, Job.class);
-            job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
-            jobRepo.save(job);
-            return updateJobRequestDTO.getJobTitle() + " is updated...";
-        } else {
-            throw new NotFoundException("No Job Found In That ID...!!");
-        }
+        Job job = jobRepo.findById(updateJobRequestDTO.getJobId())
+                .orElseThrow(() -> new NotFoundException("No Job Found In That ID...!!"));
+        job.setJobTitle(updateJobRequestDTO.getJobTitle());
+        job.setJobCategory(updateJobRequestDTO.getJobCategory());
+        job.setJobDescription(updateJobRequestDTO.getJobDescription());
+        job.setJobPayment(updateJobRequestDTO.getJobPayment());
+        job.setRequiredWorkers(updateJobRequestDTO.getRequiredWorkers());
+        job.setRequiredGender(updateJobRequestDTO.getRequiredGender());
+        job.setStartDate(updateJobRequestDTO.getJobLocations().get(0).getStartDate());
+        job.setEndDate(updateJobRequestDTO.getJobLocations().get(0).getEndDate());
+        job.setStartTime(updateJobRequestDTO.getStartTime());
+        job.setEndTime(updateJobRequestDTO.getEndTime());
+        job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
+        job.setJobLocations(new ArrayList<>(List.of(updateJobRequestDTO.getJobLocations().get(0).getLocation())));
+        job.setActiveStatus(true);
+        jobRepo.save(job);
+
+        return updateJobRequestDTO.getJobTitle() + " is updated...";
     }
 
     @Override
@@ -179,55 +241,62 @@ public class JobServiceIMPL implements JobService {
 
 
     @Override
-    public List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page) {
+    public PaginatedJobDetailsResponseDTO getJobsByUser(long userId, Integer page) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         List<JobDetailsResponseDTO> jobDetailsResponseDTOS = new ArrayList<>();
+        long dataCount = 0;
 
         if (user instanceof Student student) {
-            // Fetch applied jobs for students
-            Page<Application> applicationList = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize));
+            // Fetch all applied jobs count for students
+            dataCount = applicationRepo.countByStudent(student) + applicationRepo.countApplicationsByStudentInTeam(student.getUserId());
 
-            jobDetailsResponseDTOS = applicationList.getContent().stream()
+            // Fetch paginated applied individual jobs for students
+            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2));
+
+            // Get team applications
+            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2));
+
+            // Combine both lists, remove duplicates, and paginate
+            Set<Application> allApplications = new HashSet<>(individualApplications.getContent());
+            allApplications.addAll(teamApplications.getContent());
+
+            List<Application> applicationList = new ArrayList<>(allApplications);
+
+            jobDetailsResponseDTOS = applicationList.stream()
                     .map(application -> {
-                                Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
-                                return new JobDetailsResponseDTO(
-                                        job.getJobId(),
-                                        job.getJobTitle(),
-                                        job.getJobCategory().toString(),
-                                        job.getJobLocations().toString(),
-                                        job.getStartDate(),
-                                        job.getEndDate(),
-                                        job.isActiveStatus(),
-                                        job.getJobPayment(),
-                                        application.getStatus().toString()
-                                );
+                        Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
+                        JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
+                        jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
+                        jobDetailsResponseDTO.setApplicationStatus(application.getStatus().toString());
+                        return jobDetailsResponseDTO;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        if (user instanceof Employer employer) {
+            // Fetch all posted jobs count for employers
+            dataCount = jobRepo.countByEmployer(employer);
+
+            // Fetch paginated posted jobs for employers
+            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
+
+            jobDetailsResponseDTOS = jobs.getContent().stream()
+                    .map(job -> {
+                        System.out.println(job);
+                        JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
+                        jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
+                        jobDetailsResponseDTO.setApplicationStatus(null);
+                        return jobDetailsResponseDTO;
                             }
                     )
                     .collect(Collectors.toList());
         }
 
-        if (user instanceof Employer employer) {
-            // Fetch posted jobs for employers
-            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
-
-            jobDetailsResponseDTOS = jobs.stream()
-                    .map(job -> new JobDetailsResponseDTO(
-                            job.getJobId(),
-                            job.getJobTitle(),
-                            job.getJobCategory().toString(),
-                            job.getJobLocations().toString(),
-                            job.getStartDate(),
-                            job.getEndDate(),
-                            job.isActiveStatus(),
-                            job.getJobPayment(),
-                            null // Status is not relevant for posted jobs
-                    ))
-                    .collect(Collectors.toList());
-        }
-        return jobDetailsResponseDTOS;
+        return new PaginatedJobDetailsResponseDTO(jobDetailsResponseDTOS, dataCount);
     }
+
 
 
 

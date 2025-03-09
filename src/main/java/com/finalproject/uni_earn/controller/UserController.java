@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
+import com.finalproject.uni_earn.dto.request.UpdatePasswordDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @CrossOrigin
@@ -46,9 +49,9 @@ public class UserController {
                 HttpStatus.OK
         );
     }
-
+    
     //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/update/{userId}")
+    @PutMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
             @RequestBody UserUpdateRequestDTO userUpdateRequestDTO) {
@@ -60,11 +63,51 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PutMapping("/{userId}/profile-picture")
+    public ResponseEntity<StandardResponse> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = userService.uploadProfilePicture(userId, file);
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(201,"Image uploaded successfully", imageUrl),
+                    HttpStatus.CREATED
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(400,"Failed to upload profile picture: " + e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @GetMapping("/{userId}/profile-picture")
+    public ResponseEntity<StandardResponse> getProfilePicture(@PathVariable Long userId) {
+        try {
+            String imageUrl = userService.getProfilePicture(userId);
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"Image retrieve successfully", imageUrl),
+                    HttpStatus.OK
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(400,"Failed to retrieve profile picture: " + e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
     @GetMapping("/verify")
-    public ResponseEntity<StandardResponse> verifyEmail(@RequestParam String token) {
-        boolean verified = userService.verifyUser(token);
+    public RedirectView verifyEmail(@RequestParam String token) {
+        String url = userService.verifyUser(token);
+        return new RedirectView(url);
+    }
+
+    @GetMapping("/resend-verification-email")
+    public ResponseEntity<StandardResponse> resendVerificationEmail(@RequestParam String username) {
+        String message = userService.resendVerificationEmail(username);
         return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200, "Email verified successfully", verified),
+                new StandardResponse(200, "Success", message),
                 HttpStatus.OK
         );
     }
@@ -93,10 +136,9 @@ public class UserController {
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
-            @RequestParam String oldPassword,
-            @RequestParam String newPassword) {
+            @RequestBody UpdatePasswordDTO updatePasswordDTO) {
 
-        userService.updatePassword(userId, oldPassword, newPassword);
+        userService.updatePassword(userId, updatePasswordDTO.getOldPassword(), updatePasswordDTO.getNewPassword());
         return new  ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", "Password updated successfully"),
                 HttpStatus.OK

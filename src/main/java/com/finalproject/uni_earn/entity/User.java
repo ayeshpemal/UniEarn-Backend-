@@ -25,6 +25,8 @@ public class User {
     @Size(min = 3, max = 50)
     private String userName;
 
+    private String profilePictureUrl; // Stores the S3 URL of the profile picture
+
     @Column(name = "email", unique = true, nullable = false)
     @Email
     private String email;
@@ -42,4 +44,6 @@ public class User {
     private String verificationToken; // Token for email verification
 
     private boolean isDeleted = false; // Soft delete status
+
+    private boolean flagged = false; // Flagged status
 }
