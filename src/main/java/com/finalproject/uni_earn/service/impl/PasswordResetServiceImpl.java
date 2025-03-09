@@ -2,10 +2,12 @@ package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.entity.PasswordResetToken;
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.PasswordResetTokenRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.PasswordResetService;
+import com.finalproject.uni_earn.util.PasswordValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,18 +55,22 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public String validatePasswordResetToken(String token) {
         PasswordResetToken resetToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired password reset token"));
+                .orElseThrow(() -> new InvalidValueException("Invalid or expired password reset token"));
 
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token has expired");
+            throw new InvalidValueException("Token has expired");
         }
-        return resetToken.getUser().getEmail();
+        return "http://localhost:3000/reset-password?token=" + token;
     }
 
     @Override
     public void resetPassword(String token, String newPassword) {
         PasswordResetToken resetToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid password reset token"));
+                .orElseThrow(() -> new InvalidValueException("Invalid password reset token"));
+
+        if(!PasswordValidator.isValidPassword(newPassword)) {
+            throw new InvalidValueException("Password does not meet complexity requirements");
+        }
 
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));

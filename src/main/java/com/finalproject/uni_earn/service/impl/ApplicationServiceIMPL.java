@@ -71,7 +71,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         applicationRepository.save(application);
 
-
+        updateNotificationService.createNotification(application.getApplicationId());
         return "Student application submitted successfully!";
     }
 
@@ -81,6 +81,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .orElseThrow(() -> new NotFoundException("Team not found"));
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new NotFoundException("Job not found"));
+
+        team.getMembers().forEach(member -> {
+            if (applicationRepository.isStudentInAppliedTeam(jobId,member.getUserId())) {
+                throw new InvalidValueException("One or more team members have already applied for this job.");
+            }
+        });
 
         if (applicationRepository.existsByJob_JobIdAndTeam_Id(jobId, teamId)) {
             throw new AlreadyExistException("This team has already applied for this job.");
@@ -95,9 +101,10 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setJob(job);
         application.setTeam(team);
         application.setAppliedDate(new Date());
-        application.setStatus(ApplicationStatus.PENDING);
+        application.setStatus(ApplicationStatus.INACTIVE);
 
         applicationRepository.save(application);
+        updateNotificationService.createNotification(application.getApplicationId());
         return "Team application submitted successfully!";
     }
 

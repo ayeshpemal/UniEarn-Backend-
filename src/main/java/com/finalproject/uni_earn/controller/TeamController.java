@@ -62,4 +62,18 @@ public class TeamController {
                 new StandardResponse(200, "Success", message),
                 HttpStatus.OK);
     }
+
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @PutMapping("/{studentId}/confirm/{teamId}")
+    public ResponseEntity<StandardResponse> confirmMembership(
+            @PathVariable Long teamId,
+            @PathVariable Long studentId) {
+
+        teamService.confirmApplication(teamId, studentId);
+
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Success", "Member confirmation updated."),
+                HttpStatus.OK
+        );
+    }
 }

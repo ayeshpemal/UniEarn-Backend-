@@ -4,12 +4,16 @@ import com.finalproject.uni_earn.dto.Paginated.PaginatedStudentResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.StudentDTO;
-import com.finalproject.uni_earn.entity.Employer;
-import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.*;
+import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.FollowRepo;
 import com.finalproject.uni_earn.repo.StudentRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.ApplicationService;
+import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.StudentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +33,20 @@ public class StudentServiceIMPL implements StudentService {
     @Autowired
     private ModelMapper modelMapper;
 
-    private static final int PAGE_SIZE = 10; // Fixed page size
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private ApplicationRepo applicationRepo;
+
+    @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
+    private JobService jobService;
+
+    // Fixed page size
+    private static final int PAGE_SIZE = 10;
 
     @Override
     public PaginatedUserResponseDTO getAllStudents(int page) {
@@ -90,6 +105,52 @@ public class StudentServiceIMPL implements StudentService {
         return responseDTO;
     }
 
+    @Override
+    public String applicationConfirm(Long applicationId) {
+        // Fetch the application by ID
+        Application application = applicationRepo.findById(applicationId).
+                orElseThrow(() -> new NotFoundException("Application not found with ID: " + applicationId));
+
+        // Check if the application is already confirmed
+        if (application.getStatus().equals(ApplicationStatus.CONFIRMED)) {
+            return "Application is already confirmed.";
+        }
+
+        // Check if the application is already rejected
+        if (application.getStatus().equals(ApplicationStatus.REJECTED)) {
+            return "Application is already rejected.";
+        }
+
+        // Update the application status to confirmed
+        User emp = application.getJob().getEmployer();
+        if(application.getStatus().equals(ApplicationStatus.ACCEPTED)){
+            applicationService.updateStatus(applicationId, ApplicationStatus.CONFIRMED,emp);
+        }else{
+            throw new InvalidValueException("Application is not accepted yet!");
+        }
+
+        Job job = application.getJob();
+        // Reject all other applications for this job
+        if (job.getRequiredWorkers() == 1){
+            applicationService.getPendingStudentsByJobId(job.getJobId())
+                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
+                    .forEach(app -> {
+                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
+                    });
+        }else if (job.getRequiredWorkers() > 1){
+            applicationService.getGroupApplicationsByJobId(job.getJobId())
+                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
+                    .forEach(app -> {
+                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
+                    });
+        }else{
+            throw new NotFoundException("Application not found!");
+        }
+
+        // Deactivate the job after selecting the candidate
+        jobService.setStatus(job.getJobId(), false);
+        return "Job application confirmed successfully.";
+    }
 
 
 }

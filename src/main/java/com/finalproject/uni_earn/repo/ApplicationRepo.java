@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.repo;
 
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ApplicationRepo extends JpaRepository<Application, Long> {
     static void Save(Application map) {
@@ -67,4 +69,6 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     // Get total count of applications where student is in a team
     @Query("SELECT COUNT(a) FROM Application a JOIN a.team t JOIN t.members m WHERE m.userId = :studentId")
     long countApplicationsByStudentInTeam(@Param("studentId") Long studentId);
+
+    Optional<Application> findByTeamAndStatus(Team team, ApplicationStatus applicationStatus);
 }

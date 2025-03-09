@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Table(name="jobs")
-public class Job {
+public class Job extends Auditable {
     @Id
     @Column(name="job_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
