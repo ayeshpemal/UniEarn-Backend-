@@ -1,7 +1,9 @@
 package com.finalproject.uni_earn.repo;
 
+import com.finalproject.uni_earn.dto.UserDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Role;
+import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -34,12 +36,12 @@ public interface UserRepo extends JpaRepository<User, Long>{
     Optional <String> findRoleByUserId(@Param("userId") Long userId);
 
     // Top employer (most jobs posted)
-    @Query("SELECT e.companyName FROM Employer e ORDER BY SIZE(e.jobs) DESC LIMIT 1")
-    String findTopEmployer();
+    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email as email, u.role as role FROM users u ORDER BY (SELECT COUNT(j.job_id) FROM jobs j WHERE j.employer_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
+    Optional<Tuple> findTopEmployer();
 
     // Most active student (most applications submitted)
-    @Query(value = "SELECT u.email FROM users u ORDER BY (SELECT COUNT(a.application_id) FROM application a WHERE a.student_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
-    String findMostActiveStudent();
+    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email as email, u.role as role FROM users u ORDER BY (SELECT COUNT(a.application_id) FROM application a WHERE a.student_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
+    Optional<Tuple> findMostActiveStudent();
 
 
     List<User> findByRole(Role role);

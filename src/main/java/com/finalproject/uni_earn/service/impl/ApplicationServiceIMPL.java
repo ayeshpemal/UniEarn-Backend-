@@ -164,8 +164,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
 
 
-        List<Application> applications = applicationRepository.findByStudent(student);
-
+        List<Application> individualapplications = applicationRepository.findByStudent(student);
+        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        
+        List<Application> applications = new ArrayList<>();
+        applications.addAll(individualapplications);
+        applications.addAll(teamApplications);
 
         Map<ApplicationStatus, Long> statusCounts = applications.stream()
                 .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));
@@ -199,6 +203,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         return response;
     }
+
     @Override
     public List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId) {
         // Fetch all pending group applications for the job
@@ -242,6 +247,22 @@ public class ApplicationServiceIMPL implements ApplicationService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    public boolean hasStudentAppliedForJob(Long studentId, Long jobId) {
+        if(!studentRepository.existsById(studentId)) {
+            throw new NotFoundException("Student not found with ID: " + studentId);
+        }
+        if(!jobRepository.existsById(jobId)) {
+            throw new NotFoundException("Job not found with ID: " + jobId);
+        }
+        // Check if student applied individually
+        if (applicationRepository.existsByJob_JobIdAndStudent_UserId(jobId, studentId)) {
+            return true;
+        }
+
+        // Check if student is in a team that applied
+        return applicationRepository.isStudentInAppliedTeam(jobId, studentId);
     }
 }
 

@@ -23,4 +23,5 @@ public interface ApplicationService {
     List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId);
 
     //List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId);
+    boolean hasStudentAppliedForJob(Long studentId, Long jobId);
 }

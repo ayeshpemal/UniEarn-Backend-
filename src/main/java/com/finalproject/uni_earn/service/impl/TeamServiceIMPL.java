@@ -27,7 +27,7 @@ public class TeamServiceIMPL implements TeamService {
     @Autowired
     private ModelMapper modelMapper;
     @Transactional
-    public String createTeam(TeamRequestDTO teamRequest) {
+    public Long createTeam(TeamRequestDTO teamRequest) {
         Student leader = studentRepository.findById(teamRequest.getLeader())
                 .orElseThrow(() -> new NotFoundException("Leader not found"));
 
@@ -36,7 +36,7 @@ public class TeamServiceIMPL implements TeamService {
         team.setLeader(leader);
         team.addMember(leader); // Leader is also a team member
 
-        return "Team created successfully with ID: " + teamRepository.save(team).getId();
+        return teamRepository.save(team).getId();
     }
 
     @Transactional

@@ -13,6 +13,7 @@ public class UserUpdateRequestDTO {
     private List<String> contactNumber;
 
     // Student-specific fields
+    private String displayName;
     private String gender;
     private List<String> preferences;
     private List<String> skills;

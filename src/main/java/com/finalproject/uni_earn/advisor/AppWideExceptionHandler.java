@@ -61,4 +61,19 @@ public class AppWideExceptionHandler {
                 new StandardResponse(500, ex.getMessage(), null),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(NotificationFailedException.class)
+    public ResponseEntity<StandardResponse> handleNotificationFailed(NotificationFailedException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500, ex.getMessage(), null),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UserNotVerifiedException.class)
+    public ResponseEntity<StandardResponse> handleUserNotVerified(UserNotVerifiedException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(403, ex.getMessage(), null),
+                HttpStatus.FORBIDDEN);
+    }
+
 }
