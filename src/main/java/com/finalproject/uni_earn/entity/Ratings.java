@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Ratings {
+public class Ratings extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -16,7 +16,7 @@ import java.util.Set;
 @Entity
 @EqualsAndHashCode(exclude = {"leader", "members", "applications"})
 @Table(name = "team")
-public class Team {
+public class Team extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

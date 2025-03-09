@@ -79,12 +79,6 @@ public class EmployerServiceIMPL implements EmployerService {
             throw new NotFoundException("Application not found!");
         }
 
-        job.getApplications().stream()
-                .filter(app -> !app.equals(application))
-                .forEach(app -> {
-                    app.setStatus(ApplicationStatus.REJECTED); // Reject all other applications
-                    applicationRepo.save(app); // Save the updated application
-                });
         job.setActiveStatus(false); // Set the job as inactive
         jobRepo.save(job); // Save the updated job
 
