@@ -101,12 +101,17 @@ public class ApplicationController {
 
 
     @GetMapping("pending-group/job/{jobId}")
-    public List<GroupApplicationDTO> getGroupApplicationsByJobId(@PathVariable Long jobId) {
-        return applicationService.getGroupApplicationsByJobId(jobId);
+    public ResponseEntity<StandardResponse> getGroupApplicationsByJobId(@PathVariable Long jobId) {
+        List<GroupApplicationDTO> groupApplications = applicationService.getGroupApplicationsByJobId(jobId);
+        StandardResponse response = new StandardResponse(200, "Success", groupApplications);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("pending-student/job/{jobId}")
-    public List<StudentApplicationDTO> getPendingStudentsByJobId(@PathVariable Long jobId) {
-        return applicationService.getPendingStudentsByJobId(jobId);
+    public ResponseEntity<StandardResponse> getPendingStudentsByJobId(@PathVariable Long jobId) {
+        List<StudentApplicationDTO> studentApplications = applicationService.getPendingStudentsByJobId(jobId);
+        StandardResponse response = new StandardResponse(200, "Success", studentApplications);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @GetMapping("/has-applied")
     public ResponseEntity<StandardResponse> hasStudentApplied(
@@ -119,4 +124,3 @@ public class ApplicationController {
         );
     }
 }
-

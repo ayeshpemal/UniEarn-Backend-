@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.EmployerDto;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedEmployerResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
+import com.finalproject.uni_earn.dto.StudentDTO;
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;

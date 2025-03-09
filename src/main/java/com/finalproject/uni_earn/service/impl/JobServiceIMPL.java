@@ -239,7 +239,6 @@ public class JobServiceIMPL implements JobService {
         }
     }
 
-
     @Override
     public PaginatedJobDetailsResponseDTO getJobsByUser(long userId, Integer page) {
         User user = userRepo.findById(userId)
@@ -296,9 +295,6 @@ public class JobServiceIMPL implements JobService {
 
         return new PaginatedJobDetailsResponseDTO(jobDetailsResponseDTOS, dataCount);
     }
-
-
-
 
     @Override
     public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page) {
