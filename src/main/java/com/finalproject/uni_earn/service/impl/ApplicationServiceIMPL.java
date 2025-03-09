@@ -1,9 +1,15 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupMemberDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
@@ -17,10 +23,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
 import org.springframework.web.server.ResponseStatusException;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Optional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -34,7 +39,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private StudentRepo studentRepository;
-    
+
     @Autowired
     private TeamRepo teamRepository;
 
@@ -50,7 +55,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job not found"));
 
-        if(job.getRequiredWorkers() != 1) {
+        if (job.getRequiredWorkers() != 1) {
             throw new NotAcceptableStatusException("This job requires a team, please apply as a team.");
         }
 
@@ -65,6 +70,8 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         applicationRepository.save(application);
+
+
         return "Student application submitted successfully!";
     }
 
@@ -95,30 +102,28 @@ public class ApplicationServiceIMPL implements ApplicationService {
     }
 
     @Override
-    public String updateStatus(Long applicationId, ApplicationStatus status) {
-
+    public void updateStatus(Long applicationId, ApplicationStatus newStatus, User user) {
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new NotFoundException("Application not found"));
 
-        Job job = application.getJob();
-
-        User employer = job.getEmployer();
-
-        if (!"EMPLOYER".equalsIgnoreCase(String.valueOf(employer.getRole()))) {
-            throw new RuntimeException("Only employers can change the application status.");
+        if (user.getRole() == Role.EMPLOYER) {
+            if (newStatus == ApplicationStatus.ACCEPTED || newStatus == ApplicationStatus.REJECTED) {
+                application.setStatus(newStatus);
+            } else {
+                throw new InvalidValueException("Employer can only accept or reject applications.");
+            }
+        } else if (user.getRole() == Role.STUDENT) {
+            if (application.getStatus() == ApplicationStatus.ACCEPTED && newStatus == ApplicationStatus.CONFIRMED) {
+                application.setStatus(newStatus);
+            } else {
+                throw new InvalidValueException("Student can only confirm an accepted application.");
+            }
+        } else {
+            throw new InvalidValueException("Invalid user role.");
         }
 
-        application.setStatus(status);
         applicationRepository.save(application);
-
-        ApplicationDTO applicationDTO = new ApplicationDTO();
-        applicationDTO.setApplicationId(application.getApplicationId());
-        applicationDTO.setJobId(application.getJob().getJobId());
-        applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
-        applicationDTO.setStatus(application.getStatus().name());
-        applicationDTO.setAppliedDate(application.getAppliedDate());
-
-        return "Application status updated to " + status;
+        updateNotificationService.createNotification(applicationId);
     }
 
     @Override
@@ -131,12 +136,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
             ApplicationDTO applicationDTO = new ApplicationDTO();
             applicationDTO.setApplicationId(application.getApplicationId());
             applicationDTO.setJobId(application.getJob().getJobId());
-            if(application.getStudent() != null){
-                applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
-            }
-            if (application.getTeam() != null) {
-                applicationDTO.setTeamId(application.getTeam().getId());
-            }
+            applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
             applicationDTO.setStatus(application.getStatus().name());
             applicationDTO.setAppliedDate(application.getAppliedDate());
 
@@ -158,25 +158,111 @@ public class ApplicationServiceIMPL implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO updateApplication(Long applicationId, ApplicationDTO applicationDTO) {
-
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
-
-        Student student = application.getStudent();
+    public Map<String, Object> getStudentApplicationsSummary(Long userId) {
+        
+        Student student = studentRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
 
 
-        application.setStatus(ApplicationStatus.valueOf(applicationDTO.getStatus()));
-        application.setAppliedDate(applicationDTO.getAppliedDate());
+        List<Application> individualapplications = applicationRepository.findByStudent(student);
+        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        
+        List<Application> applications = new ArrayList<>();
+        applications.addAll(individualapplications);
+        applications.addAll(teamApplications);
 
-        applicationRepository.save(application);
+        Map<ApplicationStatus, Long> statusCounts = applications.stream()
+                .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));
 
-        applicationDTO.setApplicationId(application.getApplicationId());
-        applicationDTO.setJobId(application.getJob().getJobId());
-        applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
-        applicationDTO.setStatus(application.getStatus().name());
-        applicationDTO.setAppliedDate(application.getAppliedDate());
 
-        return applicationDTO;
+        long totalApplications = applications.size();
+
+
+        Map<String, Double> statusPercentages = new HashMap<>();
+        statusCounts.forEach((status, count) -> {
+            double percentage = (count * 100.0) / totalApplications;
+            statusPercentages.put(status.name(), percentage);
+        });
+
+
+        Map<JobCategory, Long> categoryBreakdown = applications.stream()
+                .collect(Collectors.groupingBy(
+                        application -> application.getJob().getJobCategory(), // Group by JobCategory enum
+                        Collectors.counting() // Count the number of applications in each category
+                ));
+
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalApplications", totalApplications);
+        response.put("pending", statusCounts.getOrDefault(ApplicationStatus.PENDING, 0L));
+        response.put("accepted", statusCounts.getOrDefault(ApplicationStatus.ACCEPTED, 0L));
+        response.put("rejected", statusCounts.getOrDefault(ApplicationStatus.REJECTED, 0L));
+        response.put("confirmed", statusCounts.getOrDefault(ApplicationStatus.CONFIRMED, 0L)); // Added CONFIRMED status
+        response.put("statusPercentages", statusPercentages);
+        response.put("categoryBreakdown", categoryBreakdown);
+
+        return response;
+    }
+
+    @Override
+    public List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId) {
+        // Fetch all pending group applications for the job
+        List<Application> pendingGroupApplications = applicationRepository.findPendingGroupApplicationsByJobId(jobId);
+
+        // Transform the data into the required DTO structure
+        return pendingGroupApplications.stream()
+                .map(application -> {
+                    Team team = application.getTeam();
+                    return new GroupApplicationDTO(
+                            application.getApplicationId(), // applicationId
+                            team.getId(), // groupId
+                            team.getTeamName(), // groupName
+                            team.getMembers().stream()
+                                    .map(member -> new GroupMemberDTO(
+                                            member.getUserId(), // id
+                                            member.getUserName(), // name
+                                            member.getLocation(), // location
+                                            member.getRating(), // rating
+                                            member.getProfilePictureUrl() // avatar
+                                    ))
+                                    .collect(Collectors.toList()) // members
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId) {
+        List<Application> pendingApplications = applicationRepository.findPendingStudentApplicationsByJobId(jobId);
+
+        return pendingApplications.stream()
+                .map(application -> {
+                    Student student = application.getStudent();
+                    return new StudentApplicationDTO(
+                            application.getApplicationId(),          // applicationId
+                            student.getUserId(),          // id
+                            student.getUserName(),       // name
+                            student.getLocation(),        // location
+                            student.getRating(),         // rating
+                            student.getProfilePictureUrl() // profilePictureUrl
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasStudentAppliedForJob(Long studentId, Long jobId) {
+        if(!studentRepository.existsById(studentId)) {
+            throw new NotFoundException("Student not found with ID: " + studentId);
+        }
+        if(!jobRepository.existsById(jobId)) {
+            throw new NotFoundException("Job not found with ID: " + jobId);
+        }
+        // Check if student applied individually
+        if (applicationRepository.existsByJob_JobIdAndStudent_UserId(jobId, studentId)) {
+            return true;
+        }
+
+        // Check if student is in a team that applied
+        return applicationRepository.isStudentInAppliedTeam(jobId, studentId);
     }
 }
+

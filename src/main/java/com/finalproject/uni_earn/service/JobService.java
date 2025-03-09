@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.service;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
@@ -28,6 +29,6 @@ public interface JobService {
 
     //Common
     JobDTO viewJobDetails(long jobId);
-    List<JobDetailsResponseDTO> getJobsByUser(long userId, Integer page);
+    PaginatedJobDetailsResponseDTO getJobsByUser(long userId, Integer page);
 
 }

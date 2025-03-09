@@ -1,0 +1,525 @@
+[33mcommit 862b60fa7fea60b550d48a667af5dc11cfa5aee2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32muditha[m[33m)[m
+Merge: bf07d56 33c41ee
+Author: uditha <udithachathuranga99@email.com>
+Date:   Wed Feb 26 09:02:31 2025 +0530
+
+    fixed conflicts
+
+[33mcommit bf07d5609ee1c20d964fd36b39b5a4e52468ef94[m[33m ([m[1;32mmain[m[33m)[m
+Author: uditha <udithachathuranga99@email.com>
+Date:   Tue Feb 25 23:37:56 2025 +0530
+
+    modifications
+
+[33mcommit 40d40bed17ee57521c34649ff0150cb651627ed9[m
+Author: uditha <udithachathuranga99@email.com>
+Date:   Tue Feb 25 23:08:44 2025 +0530
+
+    some changes
+
+[33mcommit 33c41ee547d456a9bf7aa9a944269dd5aa27b2ff[m[33m ([m[1;31morigin/uditha[m[33m)[m
+Merge: 0774ce9 0efba69
+Author: Uditha Chathuranga <udithachathuranga99@gmail.com>
+Date:   Tue Feb 25 22:01:32 2025 +0530
+
+    Merge pull request #56 from ayeshpemal/development
+    
+    updated project
+
+[33mcommit 0efba69c22a196348c733881f36c94d44d0065d4[m
+Merge: d491cc6 e72f66d
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sun Feb 23 13:43:46 2025 +0530
+
+    Merge pull request #52 from ayeshpemal/ayesha
+    
+    Admin statistics and reports function created
+
+[33mcommit e72f66ddf3301461796c5f50a124a79287708f1f[m
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Sun Feb 23 13:42:04 2025 +0530
+
+    Admin statistics and reports function created
+
+[33mcommit 17d9aeb0989245efe6c14e2da780b2ecd18f608c[m
+Merge: 0acef6c 0774ce9
+Author: uditha <udithachathuranga99@email.com>
+Date:   Sun Feb 23 00:23:38 2025 +0530
+
+    Merge branch 'uditha' of https://github.com/ayeshpemal/UniEarn-Backend-
+
+[33mcommit 0acef6cd452b07861f99bf424b1e9e081919e119[m
+Merge: 41ff5e9 d491cc6
+Author: uditha <udithachathuranga99@email.com>
+Date:   Sun Feb 23 00:23:17 2025 +0530
+
+    Merge branch 'development' of https://github.com/ayeshpemal/UniEarn-Backend-
+
+[33mcommit 0774ce9a47d5c2f8338d90f4358057bcc7aba976[m
+Merge: 49a71f1 d491cc6
+Author: Uditha Chathuranga <udithachathuranga99@gmail.com>
+Date:   Sun Feb 23 00:20:22 2025 +0530
+
+    Merge pull request #50 from ayeshpemal/development
+    
+    Updated project
+
+[33mcommit d491cc6932a190c462601f8462fbeaa41d3959f9[m
+Merge: 22441d8 eb619d3
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sat Feb 22 15:29:11 2025 +0530
+
+    Merge pull request #49 from ayeshpemal/ayesha
+    
+    RBAC added in method level
+
+[33mcommit eb619d308e8dd44dfa513bd72fd912797a0fa1eb[m
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Sat Feb 22 15:27:00 2025 +0530
+
+    RBAC added in method level
+
+[33mcommit 22441d87b36428d0f5a51d05d92e4b5be643f73c[m
+Merge: 954ba1b 467d568
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Thu Feb 20 15:37:54 2025 +0530
+
+    Merge pull request #48 from ayeshpemal/kavindu
+    
+    Kavindu update report controller
+
+[33mcommit 467d568730daee7979e0edc6bf8b27cc54ed549a[m[33m ([m[1;31morigin/kavindu[m[33m)[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Thu Feb 20 15:37:01 2025 +0530
+
+    report controller update
+
+[33mcommit 98d9b11fa50aaa6865e89cd6d8319c249f690bf7[m
+Merge: 7125265 954ba1b
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Thu Feb 20 11:08:59 2025 +0530
+
+    Merge pull request #45 from ayeshpemal/development
+    
+    Development updated project
+
+[33mcommit 41ff5e97dc1aecd2e1e123dc3e0bd5be16f2618b[m
+Merge: 41fe83d 49a71f1
+Author: uditha <udithachathuranga99@email.com>
+Date:   Thu Feb 20 10:04:57 2025 +0530
+
+    Merge branch 'uditha' of https://github.com/ayeshpemal/UniEarn-Backend-
+
+[33mcommit 49a71f18e04e2198f4c77dc71e898d8fe7ca96f8[m
+Merge: 1ede3ca 954ba1b
+Author: Uditha Chathuranga <udithachathuranga99@gmail.com>
+Date:   Thu Feb 20 10:02:32 2025 +0530
+
+    Merge pull request #44 from ayeshpemal/development
+    
+    updated project
+
+[33mcommit 954ba1b66f0fc0a5b290cf59dc95eef554ec6d6b[m
+Merge: e3904e1 6823ac5
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Wed Feb 19 18:18:39 2025 +0530
+
+    Merge pull request #43 from ayeshpemal/ayesha
+    
+    User get function created
+
+[33mcommit 6823ac5b6f1cbe0de2033da59420b5dc5f4a4c62[m
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Wed Feb 19 18:16:58 2025 +0530
+
+    User get function created
+
+[33mcommit 41fe83dfdc542cb17c53085e5bb205e78470c4dd[m
+Merge: 203ad97 1ede3ca
+Author: uditha <udithachathuranga99@email.com>
+Date:   Tue Feb 18 21:40:50 2025 +0530
+
+    fix conflicts
+
+[33mcommit 203ad975acca7e4af8513010866ca0912c747000[m
+Author: uditha <udithachathuranga99@email.com>
+Date:   Tue Feb 18 21:25:33 2025 +0530
+
+    job service
+
+[33mcommit 1ede3caddcbf8bf7cadd34542cd5d658b614cdfb[m
+Merge: 652ec9c e3904e1
+Author: Uditha Chathuranga <udithachathuranga99@gmail.com>
+Date:   Mon Feb 17 19:15:10 2025 +0530
+
+    Merge pull request #42 from ayeshpemal/development
+    
+    Updated project
+
+[33mcommit e3904e1c973306858322d0dc30f3fc1fe386dab6[m
+Merge: e8d5ca2 41e7ce3
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sun Feb 16 20:53:37 2025 +0530
+
+    Merge pull request #41 from ayeshpemal/ayesha
+    
+    Forgot password function created
+
+[33mcommit 41e7ce380c01dd978a96c4182569c4339cd15ea4[m
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Sun Feb 16 20:52:47 2025 +0530
+
+    Forgot password function created
+
+[33mcommit e8d5ca29643907c103c767bc39cc06a51d846150[m
+Merge: 1610b0b 25b9b30
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Thu Feb 13 22:09:55 2025 +0530
+
+    Merge pull request #40 from ayeshpemal/ayesha
+    
+    Group application functionality implemented
+
+[33mcommit 25b9b30bee3f3227979a6b6906f5fbd5d7e5555f[m
+Merge: 77920ea 1610b0b
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Thu Feb 13 22:05:28 2025 +0530
+
+    Merge branch 'development' into ayesha
+
+[33mcommit 77920ea859eaef3aec6e19b6ecea2936aa22995f[m
+Author: Ayesha pemal <ayeshapemal@gmail.com>
+Date:   Thu Feb 13 21:36:45 2025 +0530
+
+    Group application functionality implemented
+
+[33mcommit 1610b0b4f99a952efb9d816ffb114efe3401120b[m
+Merge: f98c255 7125265
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Thu Feb 13 17:28:35 2025 +0530
+
+    Merge pull request #39 from ayeshpemal/kavindu
+    
+    Kavindu
+
+[33mcommit 712526501074f61d969fb474ce940dbb6b0c307a[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Thu Feb 13 17:25:52 2025 +0530
+
+    finished report websocket congigurerations-2
+
+[33mcommit d9c0d2b68563606f2ec21886c4af9ccb388744ef[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Thu Feb 13 17:11:37 2025 +0530
+
+    finished report websoket congigurerations
+
+[33mcommit 95d1c244e609a83535e69354a2a8da638b99d82d[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Thu Feb 13 00:12:36 2025 +0530
+
+    with updated report functionalities
+
+[33mcommit f98c255b8a215939a0455cdb299debde49aec12b[m
+Merge: c72f9ec a77e64e
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Tue Feb 11 15:58:16 2025 +0530
+
+    Merge pull request #38 from ayeshpemal/umesha
+    
+    UpdateNotification entity
+
+[33mcommit a77e64e7707218383139168172f0f1747e5076b0[m
+Merge: 7def0d4 79ceae0
+Author: Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Tue Feb 11 15:09:41 2025 +0530
+
+    Merge branch 'umesha' of https://github.com/ayeshpemal/UniEarn-Backend- into umesha
+
+[33mcommit 7def0d4ec9da5890800482eb683faf0b63e2dd3b[m
+Author: Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Tue Feb 11 15:09:35 2025 +0530
+
+    UpdateNotification entity
+
+[33mcommit c72f9ec4c5fe559a7a05e0476ff09199a894ac33[m
+Merge: 997cba3 79ceae0
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Tue Feb 11 11:24:17 2025 +0530
+
+    Merge pull request #37 from ayeshpemal/umesha
+    
+    JobNotification
+
+[33mcommit 79ceae07ae4b5df989fe11e0816f1c8f5d32cb72[m
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Tue Feb 11 11:23:57 2025 +0530
+
+    Update pom.xml
+
+[33mcommit 8f300410846a9f116bbb6e5bf283a47f1a482781[m
+Author: Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Mon Feb 10 12:58:28 2025 +0530
+
+    Update pom.xml
+
+[33mcommit 440190ea745060e4ce17ad0dcb7f72fac7139977[m
+Author: Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Mon Feb 10 12:57:22 2025 +0530
+
+    JobNotification created
+
+[33mcommit ec63a9b5a47c09814b8f18cb04020330550abc94[m
+Merge: 86cfe37 997cba3
+Author: ayeshpemal <ayeshapemal@gmail.com>
+Date:   Fri Feb 7 10:52:02 2025 +0530
+
+    Merge branch 'development' into ayesha
+
+[33mcommit 86cfe37f716b9eb01a9ba129854b0d5d2128f188[m
+Author: ayeshpemal <ayeshapemal@gmail.com>
+Date:   Fri Feb 7 10:51:31 2025 +0530
+
+    Update UserService class
+
+[33mcommit 997cba3f36279761c3ced88f2173cd07357525a2[m
+Merge: 4be6402 59bad16
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Fri Feb 7 09:29:32 2025 +0530
+
+    Merge pull request #34 from ayeshpemal/umesha
+    
+    Umesha
+
+[33mcommit 59bad168ead1824e7aef48adcf3e573cf4a3e777[m
+Merge: a0b3cb4 4be6402
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Fri Feb 7 09:29:11 2025 +0530
+
+    Merge branch 'development' into umesha
+
+[33mcommit 4be64026a22dec653afa3bb1c5f2235afd643d1d[m
+Merge: 195fcae 77f727a
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Thu Feb 6 12:33:25 2025 +0530
+
+    Merge pull request #35 from ayeshpemal/ayesha
+    
+    Added JWT authentication for login
+
+[33mcommit 77f727a668af740917de5d689430746ab770851b[m
+Author: ayeshpemal <ayeshapemal@gmail.com>
+Date:   Thu Feb 6 12:29:54 2025 +0530
+
+    Error in login exception fixed
+
+[33mcommit a0b3cb47a899686406db03bf7776848b3ac77e58[m
+Author: Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Thu Feb 6 10:28:01 2025 +0530
+
+     Added job notification feature
+
+[33mcommit d3ddcfec21896c2ca7a6f9446f8606948bf7e212[m
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Sun Feb 2 21:09:48 2025 +0530
+
+    Added JWT authentication for login
+
+[33mcommit 195fcae27e1252c01a7828311656cc2ab7629fe9[m
+Merge: 7e2b501 00a9fbe
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sat Feb 1 22:18:42 2025 +0530
+
+    Merge pull request #33 from ayeshpemal/ayesha
+    
+    Team entity and service class created
+
+[33mcommit 00a9fbea377720fdd7b1f2336bc84c718b0e645a[m
+Merge: 980883f 7e2b501
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Sat Feb 1 22:16:53 2025 +0530
+
+    Merge branch 'development' into ayesha
+
+[33mcommit 980883f51398a9bda49c2203975f96373d673a96[m
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Sat Feb 1 22:12:37 2025 +0530
+
+    Team entity and service class created
+
+[33mcommit 7e2b50122b41e3569478f83ee1ed0f36f0a8ba96[m
+Merge: 85d18ba 652ec9c
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sat Feb 1 22:11:12 2025 +0530
+
+    Merge pull request #32 from ayeshpemal/uditha
+    
+    Search jobs with any parameters
+
+[33mcommit 652ec9c687af8324a8fb87e69614b82835b9f142[m
+Merge: 175f2f9 85d18ba
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sat Feb 1 22:07:56 2025 +0530
+
+    Merge branch 'development' into uditha
+
+[33mcommit 175f2f9a5d6375d7d545e9bee768fc8a5cb41c73[m
+Author: Uditha <udithachathuranga99@gmail.com>
+Date:   Sat Feb 1 03:09:35 2025 +0530
+
+    search jobs with any parameters
+
+[33mcommit 4d64e20557475221ee2f42e129f65f44f1258eca[m
+Merge: f73a097 85d18ba
+Author: Umesha Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Fri Jan 31 11:29:47 2025 +0530
+
+    Merge remote-tracking branch 'origin/development' into umesha
+
+[33mcommit f73a097a382fcbb51be5385bb01c689084f72cfa[m
+Author: Umesha Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Fri Jan 31 10:23:33 2025 +0530
+
+    application service
+
+[33mcommit 85d18bac30d36d4655099671ed14bed82d744b8f[m
+Merge: c20095f f07d740
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Thu Jan 30 14:08:37 2025 +0530
+
+    Merge pull request #30 from ayeshpemal/ayesha
+    
+    User deletion and restore functions created
+
+[33mcommit f07d74034d7615261b94927655d308bf70d84ef6[m
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Thu Jan 30 14:07:04 2025 +0530
+
+    User restore function created
+
+[33mcommit 179975db093ea53bfe023934a713dba6624d2d8f[m
+Merge: 6cc6de2 c20095f
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Tue Jan 28 10:17:43 2025 +0530
+
+    Merge branch 'development' into ayesha
+
+[33mcommit 6cc6de2a60bd44fb8d664cdac867d0bfbac2e365[m
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Tue Jan 28 10:14:37 2025 +0530
+
+    User delete function updated
+
+[33mcommit c20095f744b695dec9f9c4720c5d3bc8063271fb[m
+Merge: d2d3e61 34e0a56
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Mon Jan 27 21:07:52 2025 +0530
+
+    Merge pull request #29 from ayeshpemal/kavindu
+    
+    Kavindu
+
+[33mcommit 34e0a56eb6cb9442adf9e6ddd2fb92a49d88366c[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Mon Jan 27 21:04:43 2025 +0530
+
+    added tested rating service with dummy controller class
+
+[33mcommit 9d18dfa615863bd269997e48a54bc530d393dd2d[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Mon Jan 27 20:07:48 2025 +0530
+
+    fourth commit-  functioning rating service
+
+[33mcommit d2d3e61599da46983ac8e4065013a80f052695d8[m
+Merge: 135c7fa 5ec7f8f
+Author: chamal achintha <127402569+Chamal9979@users.noreply.github.com>
+Date:   Mon Jan 27 16:13:35 2025 +0530
+
+    Merge pull request #28 from ayeshpemal/chamal
+    
+    Follow, Unfollow
+
+[33mcommit 5ec7f8fc86c75a340926ce714cf560d67c556e7d[m
+Author: Chamal Achintha <127402569+Chamal9979@users.noreply.github.com>
+Date:   Mon Jan 27 16:09:04 2025 +0530
+
+    Function created for follow & unfollow
+
+[33mcommit cec8d857b1919531454d0cc706ee2fc1087afcaf[m
+Author: Chamal Achintha <127402569+Chamal9979@users.noreply.github.com>
+Date:   Mon Jan 27 16:05:23 2025 +0530
+
+    Revert "Follow,Unfollow"
+    
+    This reverts commit b8107968fb22e9183be1ebf87e6267f40c700132.
+
+[33mcommit b8107968fb22e9183be1ebf87e6267f40c700132[m
+Author: Chamal Achintha <127402569+Chamal9979@users.noreply.github.com>
+Date:   Sun Jan 26 12:45:55 2025 +0530
+
+    Follow,Unfollow
+
+[33mcommit 135c7fa95ab5b532979ffa04df48282f6c53c9ac[m
+Merge: 04f610b 89c54c2
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Tue Jan 21 20:04:52 2025 +0530
+
+    Merge pull request #25 from ayeshpemal/umesha
+    
+    Add notification creation and marking as read functionality
+
+[33mcommit 04f610bb2ea90976fbc6bb801bbcdce8a25bf796[m
+Merge: fb1a81b 7751821
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Sun Jan 19 21:28:33 2025 +0530
+
+    Merge pull request #26 from ayeshpemal/kavindu
+    
+    third commit-fixing the long int problem on report service
+
+[33mcommit 77518213b6ee0fe060fdd3f6cdc7e29b5156aecd[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Sun Jan 19 21:26:13 2025 +0530
+
+    third commit-fixing the long int problem on report service
+
+[33mcommit 89c54c21c11a36ce6b45395bb1124ef04499281c[m
+Author: Umesha Hasinduni <umeshahasinduni9@gmail.com>
+Date:   Sun Jan 19 21:23:47 2025 +0530
+
+    Add notification creation and marking as read functionality
+
+[33mcommit fb1a81bdc0ebc47dd737ca58f883f23dd65a3b96[m
+Merge: b600cc3 642023e
+Author: Ayesha pemal <68103074+ayeshpemal@users.noreply.github.com>
+Date:   Sat Jan 18 20:33:49 2025 +0530
+
+    Merge pull request #24 from ayeshpemal/ayesha
+    
+    Pasword update and complexity checking function added
+
+[33mcommit b600cc36339efd213aa2e76a79d1ba507c532358[m
+Merge: 2a01c83 ececb90
+Author: Kavindu Nimesh <151267612+CosmicGenos@users.noreply.github.com>
+Date:   Sat Jan 18 12:44:00 2025 +0530
+
+    Merge pull request #23 from ayeshpemal/kavindu
+    
+    secound commit-reportcontroller and report entity
+
+[33mcommit ececb90b1d9458939b5db5ff094ded8271044c62[m
+Author: CosmicGenos <nimesha12417@usci.ruh.ac.lk>
+Date:   Sat Jan 18 12:37:19 2025 +0530
+
+    secound commit-reportcontroller and report entity
+
+[33mcommit 642023e411a406af9c24e26f37806e7ccdde5590[m
+Author: ayeshapemal <ayeshapemal@gmail.com>
+Date:   Fri Jan 17 22:03:07 2025 +0530
+
+    Password update function added
+    
+    Functions for password update and password complexity check added
+
+[3
