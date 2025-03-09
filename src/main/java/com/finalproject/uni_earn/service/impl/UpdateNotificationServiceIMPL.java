@@ -16,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,9 +53,22 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
         }
 
         String message;
-        User recipient;
+        List<User> recipient = new ArrayList<>();
 
         switch (application.getStatus()) {
+            case INACTIVE:
+                // Notify team members about the application being withdrawn
+                if (application.getTeam() != null) {
+                    message = String.format(
+                            "%s has apply to the job: %s. as a team including you.",
+                            application.getTeam().getLeader().getUserName(),
+                            job.getJobTitle()
+                    );
+                    recipient = new ArrayList<>(application.getTeam().getMembers()); // Notify team members
+                    // Notify team leader
+                } else {
+                    throw new IllegalArgumentException("Application does not belong to a team");
+                }
             case PENDING:
                 // Notify employer about a new application
                 message = String.format(
@@ -61,18 +76,18 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                         application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
                         job.getJobTitle()
                 );
-                recipient = employer;
+                recipient = Collections.singletonList(employer);
                 break;
             case ACCEPTED:
                 // Notify student or team about application acceptance
                 if (application.getStudent() != null) {
-                    recipient = application.getStudent();
+                    recipient = Collections.singletonList(application.getStudent());
                     message = String.format(
                             "Congratulations! Your application for %s has been accepted.",
                             job.getJobTitle()
                     );
                 } else if (application.getTeam() != null) {
-                    recipient = application.getTeam().getLeader(); // Notify team leader
+                    recipient = Collections.singletonList(application.getTeam().getLeader()); // Notify team leader
                     message = String.format(
                             "Congratulations! Your team's application for %s has been accepted.",
                             job.getJobTitle()
@@ -85,13 +100,13 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
             case REJECTED:
                 // Notify student or team about application rejection
                 if (application.getStudent() != null) {
-                    recipient = application.getStudent();
+                    recipient = Collections.singletonList(application.getStudent());
                     message = String.format(
                             "Your application for %s has been rejected.",
                             job.getJobTitle()
                     );
                 } else if (application.getTeam() != null) {
-                    recipient = application.getTeam().getLeader(); // Notify team leader
+                    recipient = Collections.singletonList(application.getTeam().getLeader()); // Notify team leader
                     message = String.format(
                             "Your team's application for %s has been rejected.",
                             job.getJobTitle()
@@ -103,7 +118,7 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
             case CONFIRMED:
                 // Notify employer when a student confirms the job
-                recipient = employer;
+                recipient = Collections.singletonList(employer);
                 message = String.format(
                         "Student %s has confirmed the job for %s.",
                         application.getStudent() != null ? application.getStudent().getUserName() : "A Team",
@@ -115,31 +130,33 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                 throw new IllegalArgumentException("Invalid application status");
         }
         // Save notification
-        UpdateNotification notification = new UpdateNotification();
-        notification.setMessage(message);
-        notification.setRecipient(recipient);
-        notification.setApplication(application);
-        notification.setSentDate(new Date());
-        notification.setIsRead(false);
+        for (User user : recipient) {
+            UpdateNotification notification = new UpdateNotification();
+            notification.setMessage(message);
+            notification.setRecipient(user);
+            notification.setApplication(application);
+            notification.setSentDate(new Date());
+            notification.setIsRead(false);
+            notificationRepo.save(notification);
 
-        notificationRepo.save(notification);
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    message,
+                    job.getJobId(),
+                    notification.getIsRead(),
+                    notification.getSentDate()
+            );
 
-        NotificationDTO notificationDTO = new NotificationDTO(
-                notification.getId(),
-                message,
-                job.getJobId(),
-                notification.getIsRead(),
-                notification.getSentDate()
-        );
+            // Send real-time notification to the specific recipient
+            messagingTemplate.convertAndSendToUser(
+                    user.getUserName(),
+                    "/topic/notifications",
+                    notificationDTO
+            );
 
-        // Send real-time notification to the specific recipient
-        messagingTemplate.convertAndSendToUser(
-                recipient.getUserName(),
-                "/topic/notifications",
-                notificationDTO
-        );
+            System.out.println("Notification sent to " + user.getUserName() + ": " + message);
+        }
 
-        System.out.println("Notification sent to " + recipient.getUserName() + ": " + message);
     }
 
     @Override

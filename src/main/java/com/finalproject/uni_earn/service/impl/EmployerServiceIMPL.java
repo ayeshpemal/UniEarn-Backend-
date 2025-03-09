@@ -56,6 +56,10 @@ public class EmployerServiceIMPL implements EmployerService {
         if (application == null) {
             return "Application not found!";
         }
+
+        if(application.getStatus().equals(ApplicationStatus.INACTIVE)){
+            return "Application is not active!";
+        }
         User emp = application.getJob().getEmployer();
         // Update the application status to SELECTED (using the enum)
         if(!application.getStatus().equals(ApplicationStatus.REJECTED) && !application.getStatus().equals(ApplicationStatus.ACCEPTED)){

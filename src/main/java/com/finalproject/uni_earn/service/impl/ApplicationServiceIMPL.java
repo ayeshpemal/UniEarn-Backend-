@@ -101,7 +101,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setJob(job);
         application.setTeam(team);
         application.setAppliedDate(new Date());
-        application.setStatus(ApplicationStatus.PENDING);
+        application.setStatus(ApplicationStatus.INACTIVE);
 
         applicationRepository.save(application);
         updateNotificationService.createNotification(application.getApplicationId());

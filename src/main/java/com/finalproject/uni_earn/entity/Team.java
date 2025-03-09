@@ -48,7 +48,7 @@ public class Team extends Auditable {
     private Set<Application> applications;
 
     public void addMember(Student student) {
-        this.members.add(student);
+        //this.members.add(student);
         this.memberConfirmations.put(student, false); // Default confirmation status is false
     }
 }
