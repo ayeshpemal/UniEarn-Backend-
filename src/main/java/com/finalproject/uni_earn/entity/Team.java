@@ -7,14 +7,16 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
-@EqualsAndHashCode(exclude = {"leader", "members", "applications"})
+@EqualsAndHashCode(exclude = {"leader", "members", "applications", "memberConfirmations"})
 @Table(name = "team")
 public class Team extends Auditable {
     @Id
@@ -36,10 +38,17 @@ public class Team extends Auditable {
     )
     private Set<Student> members = new HashSet<>();
 
+    @ElementCollection
+    @CollectionTable(name = "team_members", joinColumns = @JoinColumn(name = "team_id"))
+    @MapKeyJoinColumn(name = "student_id")
+    @Column(name = "confirmed")
+    private Map<Student, Boolean> memberConfirmations = new HashMap<>();
+
     @OneToMany(mappedBy = "team")
     private Set<Application> applications;
 
     public void addMember(Student student) {
         this.members.add(student);
+        this.memberConfirmations.put(student, false); // Default confirmation status is false
     }
 }
