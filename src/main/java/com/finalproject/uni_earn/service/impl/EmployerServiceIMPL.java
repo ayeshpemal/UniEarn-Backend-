@@ -5,13 +5,11 @@ import com.finalproject.uni_earn.dto.Paginated.PaginatedEmployerResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.StudentDTO;
-import com.finalproject.uni_earn.entity.Application;
-import com.finalproject.uni_earn.entity.Employer;
-import com.finalproject.uni_earn.entity.Job;
-import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
+import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.EmployerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +45,9 @@ public class EmployerServiceIMPL implements EmployerService {
     @Autowired
     private FollowRepo followRepo;
 
+    @Autowired
+    private ApplicationService applicationService;
+
     @Override
     public String selectCandidate(long applicationId) {
         // Fetch the application by ID
@@ -54,13 +56,35 @@ public class EmployerServiceIMPL implements EmployerService {
         if (application == null) {
             return "Application not found!";
         }
-
+        User emp = application.getJob().getEmployer();
         // Update the application status to SELECTED (using the enum)
-        application.setStatus(ApplicationStatus.ACCEPTED);
-        applicationRepo.save(application); // Save the updated application
+        applicationService.updateStatus(applicationId, ApplicationStatus.ACCEPTED,emp);
 
         // Deactivate the job after selecting the candidate
         Job job = application.getJob();
+        // Reject all other applications for this job
+        if (job.getRequiredWorkers() == 1){
+            applicationService.getPendingStudentsByJobId(job.getJobId())
+                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
+                    .forEach(app -> {
+                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
+                    });
+        }else if (job.getRequiredWorkers() > 1){
+            applicationService.getGroupApplicationsByJobId(job.getJobId())
+                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
+                    .forEach(app -> {
+                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
+                    });
+        }else{
+            throw new NotFoundException("Application not found!");
+        }
+
+        job.getApplications().stream()
+                .filter(app -> !app.equals(application))
+                .forEach(app -> {
+                    app.setStatus(ApplicationStatus.REJECTED); // Reject all other applications
+                    applicationRepo.save(app); // Save the updated application
+                });
         job.setActiveStatus(false); // Set the job as inactive
         jobRepo.save(job); // Save the updated job
 
