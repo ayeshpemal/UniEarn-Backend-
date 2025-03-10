@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.Paginated.PaginatedUserResponseDTO;
 import com.finalproject.uni_earn.service.StudentService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,8 +39,11 @@ public class StudentController {
 
     //@PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/applications/confirm")
-    public ResponseEntity<String> applicationConfirm(@RequestParam Long applicationId, @RequestParam Long studentId) {
+    public ResponseEntity<StandardResponse> applicationConfirm(@RequestParam Long applicationId, @RequestParam Long studentId) {
         String response = studentService.applicationConfirm(applicationId, studentId); // Call service method
-        return ResponseEntity.ok(response); // Return the result
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", response),
+                HttpStatus.OK // Return the result
+        );
     }
 }

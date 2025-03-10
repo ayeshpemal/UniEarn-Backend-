@@ -20,7 +20,9 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<StandardResponse> forgotPassword(@RequestParam String email) {
         passwordResetService.createPasswordResetTokenForUser(email);
-        return new ResponseEntity<>(new StandardResponse(200, "Success", "Password reset link sent to email"), HttpStatus.OK);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", "Password reset link sent to email"),
+                HttpStatus.OK);
     }
 
     @GetMapping("/reset-password")
@@ -32,6 +34,8 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<StandardResponse> resetPassword(@RequestBody ForgetPasswordDTO request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return new ResponseEntity<>(new StandardResponse(200, "Success", "Password has been reset"), HttpStatus.OK);
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Success", "Password has been reset"),
+                HttpStatus.OK);
     }
 }

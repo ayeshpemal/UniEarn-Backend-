@@ -31,12 +31,12 @@ public class JobNotificationController {
 
     //@PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/{id}/mark-as-read")
-    public ResponseEntity<String> markNotificationAsRead(@PathVariable Long id) {
+    public ResponseEntity<StandardResponse> markNotificationAsRead(@PathVariable Long id) {
         boolean isUpdated = notificationService.markAsRead(id);
         if (isUpdated) {
-            return ResponseEntity.ok("Notification marked as read.");
+            return ResponseEntity.ok(new StandardResponse(200, "Notification marked as read.", isUpdated));
         } else {
-            return ResponseEntity.badRequest().body("Notification not found or already read.");
+            return ResponseEntity.badRequest().body(new StandardResponse(400, "Error in notification marked as read.", null));
         }
     }
 

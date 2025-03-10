@@ -51,7 +51,7 @@ public class ApplicationController {
 
     //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/{applicationId}/status")
-    public ResponseEntity<String> updateApplicationStatus(
+    public ResponseEntity<StandardResponse> updateApplicationStatus(
             @PathVariable Long applicationId,
             @RequestParam ApplicationStatus newStatus,
             @RequestParam("userId") Long userId) {
@@ -62,13 +62,13 @@ public class ApplicationController {
 
         try {
             applicationService.updateStatus(applicationId, newStatus, user);
-            return ResponseEntity.ok("Application status updated successfully.");
+            return ResponseEntity.ok(new StandardResponse(200, "Success", "Application status updated successfully"));
         } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardResponse(404, e.getMessage(), null));
         } catch (InvalidValueException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardResponse(400, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new StandardResponse(500, e.getMessage(), null));
         }
     }
 
@@ -92,12 +92,12 @@ public class ApplicationController {
     }
 
     @GetMapping("/student/{userId}/summary")
-    public ResponseEntity<Map<String, Object>> getStudentApplicationsSummary(@PathVariable Long userId) {
+    public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@PathVariable Long userId) {
 
         Map<String, Object> summary = applicationService.getStudentApplicationsSummary(userId);
 
 
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", summary));
     }
 
 
