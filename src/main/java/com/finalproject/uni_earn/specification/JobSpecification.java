@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.specification;
 
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,6 +30,9 @@ public class JobSpecification {
             if (keyword != null && !keyword.isEmpty()) {
                 predicate = cb.and(predicate, cb.like(root.get("jobDescription"), "%" + keyword + "%"));
             }
+
+            // Filter by JobStatus = PENDING
+            predicate = cb.and(predicate, cb.equal(root.get("jobStatus"), JobStatus.PENDING));
 
             return predicate;
         };

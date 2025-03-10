@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.finalproject.uni_earn.entity.enums.JobStatus.PENDING;
+
 @Service
 public class JobServiceIMPL implements JobService {
 
@@ -222,7 +224,7 @@ public class JobServiceIMPL implements JobService {
         if (student != null) {
             Location location = student.getLocation();
             List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location, preferences, PageRequest.of(page, pageSize));
+            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize));
             if (jobList.getSize() > 0) {
                 List<JobDTO> jobDTOs = jobList.getContent().stream()
                         .map(job -> modelMapper.map(job, JobDTO.class))
