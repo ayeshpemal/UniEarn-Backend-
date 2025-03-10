@@ -20,14 +20,14 @@ public class UpdateNotifiController {
 
     //@PreAuthorize("hasRole('EMPLOYER') or hasRole('STUDENT')")
     @PostMapping("/create-update-notification/{applicationId}")
-    public ResponseEntity<String> createNotification(@PathVariable Long applicationId) {
+    public ResponseEntity<StandardResponse> createNotification(@PathVariable Long applicationId) {
         try {
             updateNotificationService.createNotification(applicationId);
-            return ResponseEntity.ok("Notification created successfully.");
+            return ResponseEntity.ok(new StandardResponse(201, "Notification created successfully.", null));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(new StandardResponse(400, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(500).body(new StandardResponse(500, "Internal Server Error", null));
         }
     }
 

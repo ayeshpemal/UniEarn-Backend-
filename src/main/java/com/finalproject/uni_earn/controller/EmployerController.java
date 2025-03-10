@@ -17,9 +17,9 @@ public class EmployerController {
 
     //@PreAuthorize("hasRole('EMPLOYER')")
     @PutMapping("/applications/select/{applicationId}")
-    public ResponseEntity<String> selectCandidate(@PathVariable int applicationId) {
+    public ResponseEntity<StandardResponse> selectCandidate(@PathVariable int applicationId) {
         String response = employerService.selectCandidate(applicationId); // Call service method
-        return ResponseEntity.ok(response); // Return the result
+        return ResponseEntity.ok(new StandardResponse(200,"Success",response)); // Return the result
     }
 
     //@PreAuthorize("hasRole('STUDENT') or  hasRole('ADMIN')")

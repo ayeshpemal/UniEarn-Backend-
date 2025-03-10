@@ -10,5 +10,5 @@ public interface StudentService {
 
     PaginatedStudentResponseDTO searchStudentsWithFollowStatus(Long userId, String query, int page);
 
-    String applicationConfirm(Long applicationId);
+    String applicationConfirm(Long applicationId, Long studentId);
 }
