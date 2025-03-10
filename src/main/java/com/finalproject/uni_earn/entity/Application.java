@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Application {
+public class Application extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

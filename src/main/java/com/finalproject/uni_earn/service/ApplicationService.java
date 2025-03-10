@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.service;
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 
@@ -23,5 +24,5 @@ public interface ApplicationService {
     List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId);
 
     //List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId);
-    boolean hasStudentAppliedForJob(Long studentId, Long jobId);
+    StudentApplicationResponseDTO hasStudentAppliedForJob(Long studentId, Long jobId);
 }

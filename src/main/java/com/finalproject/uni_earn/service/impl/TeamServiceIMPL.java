@@ -2,11 +2,14 @@ package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.TeamDTO;
 import com.finalproject.uni_earn.dto.request.TeamRequestDTO;
+import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
+import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.StudentRepo;
 import com.finalproject.uni_earn.repo.TeamRepo;
 import com.finalproject.uni_earn.service.TeamService;
@@ -25,6 +28,9 @@ public class TeamServiceIMPL implements TeamService {
     private StudentRepo studentRepository;
 
     @Autowired
+    private ApplicationRepo applicationRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
     @Transactional
     public Long createTeam(TeamRequestDTO teamRequest) {
@@ -35,8 +41,10 @@ public class TeamServiceIMPL implements TeamService {
         team.setTeamName(teamRequest.getTeamName());
         team.setLeader(leader);
         team.addMember(leader); // Leader is also a team member
+        teamRepository.save(team);
+        team.getMemberConfirmations().put(leader,true);// Confirm the leader's membership
 
-        return teamRepository.save(team).getId();
+        return team.getId();
     }
 
     @Transactional
@@ -89,5 +97,28 @@ public class TeamServiceIMPL implements TeamService {
         return modelMapper.map(team, TeamDTO.class);
     }
 
+    public void confirmApplication(Long teamId, Long studentId) {
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new NotFoundException("Team not found"));
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotFoundException("Student not found"));
+
+        if (!team.getMemberConfirmations().containsKey(student)) {
+            throw new NotFoundException("Student is not a team member.");
+        }
+
+        if (team.getMemberConfirmations().get(student)) {
+            throw new AlreadyExistException("Student has already confirmed membership.");
+        }
+
+        team.getMemberConfirmations().put(student, true);
+        teamRepository.save(team);
+
+        // Check if all members confirmed
+        if (team.getMemberConfirmations().values().stream().allMatch(Boolean::booleanValue)) {
+            Application application = applicationRepository.findByTeamAndStatus(team, ApplicationStatus.INACTIVE)
+                    .orElseThrow(() -> new NotFoundException("No inactive application found"));
+            application.setStatus(ApplicationStatus.PENDING);
+            applicationRepository.save(application);
+        }
+    }
 
 }

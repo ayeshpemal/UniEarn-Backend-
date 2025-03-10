@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Reports {
+public class Reports extends Auditable {
 
     @Id
     @Column(name = "report_id")

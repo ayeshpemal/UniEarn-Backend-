@@ -11,7 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UpdateNotification {
+public class UpdateNotification extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

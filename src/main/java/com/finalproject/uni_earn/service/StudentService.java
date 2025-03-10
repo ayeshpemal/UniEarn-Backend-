@@ -9,4 +9,6 @@ public interface StudentService {
     PaginatedStudentResponseDTO searchStudents(String query, int page);
 
     PaginatedStudentResponseDTO searchStudentsWithFollowStatus(Long userId, String query, int page);
+
+    String applicationConfirm(Long applicationId, Long studentId);
 }
