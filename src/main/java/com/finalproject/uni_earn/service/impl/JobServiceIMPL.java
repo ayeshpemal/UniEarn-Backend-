@@ -326,7 +326,10 @@ public class JobServiceIMPL implements JobService {
             throw new NotFoundException("No Job Found with ID: " + jobId);
         }
         try {
-            jobRepo.setActiveState(jobId, status);
+            Job job = jobRepo.findById(jobId).
+                    orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
+            job.setActiveStatus(status);
+            jobRepo.save(job);
             return "Set status: "+status;
         }catch (RuntimeException e){
             throw new RuntimeException("Task failed...!!");

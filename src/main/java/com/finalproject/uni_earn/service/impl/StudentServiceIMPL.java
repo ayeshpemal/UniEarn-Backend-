@@ -106,7 +106,7 @@ public class StudentServiceIMPL implements StudentService {
     }
 
     @Override
-    public String applicationConfirm(Long applicationId) {
+    public String applicationConfirm(Long applicationId, Long studentId) {
         // Fetch the application by ID
         Application application = applicationRepo.findById(applicationId).
                 orElseThrow(() -> new NotFoundException("Application not found with ID: " + applicationId));
@@ -123,8 +123,10 @@ public class StudentServiceIMPL implements StudentService {
 
         // Update the application status to confirmed
         User emp = application.getJob().getEmployer();
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + studentId));
         if(application.getStatus().equals(ApplicationStatus.ACCEPTED)){
-            applicationService.updateStatus(applicationId, ApplicationStatus.CONFIRMED,emp);
+            applicationService.updateStatus(applicationId, ApplicationStatus.CONFIRMED,student);
         }else{
             throw new InvalidValueException("Application is not accepted yet!");
         }

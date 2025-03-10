@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -53,7 +54,7 @@ public class ApplicationController {
     public ResponseEntity<String> updateApplicationStatus(
             @PathVariable Long applicationId,
             @RequestParam ApplicationStatus newStatus,
-            @RequestHeader("userId") Long userId) {
+            @RequestParam("userId") Long userId) {
 
         // Assuming you have a method to fetch the user by userId
         User user = userRepository.findById(userId)
@@ -112,9 +113,9 @@ public class ApplicationController {
     public ResponseEntity<StandardResponse> hasStudentApplied(
             @RequestParam Long studentId, @RequestParam Long jobId) {
 
-        boolean hasApplied = applicationService.hasStudentAppliedForJob(studentId, jobId);
+        StudentApplicationResponseDTO studentApplicationResponseDTO = applicationService.hasStudentAppliedForJob(studentId, jobId);
         return new ResponseEntity<>(
-                new StandardResponse(200, "Check completed", hasApplied),
+                new StandardResponse(200, "Check completed", studentApplicationResponseDTO),
                 HttpStatus.OK
         );
     }
