@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.repo;
 
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ApplicationRepo extends JpaRepository<Application, Long> {
     static void Save(Application map) {
@@ -48,9 +50,30 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
 
     List<Application> findByStudent(Student student);
 
+    @Query("SELECT a FROM Application a WHERE a.job.jobId = :jobId AND a.team IS NOT NULL AND a.status = 'PENDING'")
+    List<Application> findPendingGroupApplicationsByJobId(@Param("jobId") Long jobId);
+
+    @Query("SELECT a FROM Application a WHERE a.job.jobId = :jobId AND a.student IS NOT NULL AND a.status = 'PENDING'")
+    List<Application> findPendingStudentApplicationsByJobId(@Param("jobId") Long jobId);
+
     long countByStudent(Student student);
 
     // Check if a team has applied for the job
     @Query("SELECT COUNT(a) > 0 FROM Application a JOIN a.team t JOIN t.members m WHERE a.job.jobId = :jobId AND m.userId = :studentId")
     boolean isStudentInAppliedTeam(@Param("jobId") Long jobId, @Param("studentId") Long studentId);
+
+    @Query("SELECT a FROM Application a JOIN a.team t JOIN t.members m WHERE a.job.jobId = :jobId AND m.userId = :studentId")
+    Application findStudentInAppliedTeam(@Param("jobId") Long jobId, @Param("studentId") Long studentId);
+
+    // Get applications where student is in an applied team (Paginated)
+    @Query("SELECT a FROM Application a JOIN a.team t JOIN t.members m WHERE m.userId = :studentId")
+    Page<Application> findApplicationsByStudentInTeam(@Param("studentId") Long studentId, Pageable pageable);
+
+    // Get total count of applications where student is in a team
+    @Query("SELECT COUNT(a) FROM Application a JOIN a.team t JOIN t.members m WHERE m.userId = :studentId")
+    long countApplicationsByStudentInTeam(@Param("studentId") Long studentId);
+
+    Optional<Application> findByTeamAndStatus(Team team, ApplicationStatus applicationStatus);
+
+    Application findByJob_JobIdAndStudent_UserId(Long jobId, Long studentId);
 }

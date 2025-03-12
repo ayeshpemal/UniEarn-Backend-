@@ -27,10 +27,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.finalproject.uni_earn.entity.enums.JobStatus.PENDING;
 
 @Service
 public class JobServiceIMPL implements JobService {
@@ -224,7 +224,7 @@ public class JobServiceIMPL implements JobService {
         if (student != null) {
             Location location = student.getLocation();
             List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryIn(location, preferences, PageRequest.of(page, pageSize));
+            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize));
             if (jobList.getSize() > 0) {
                 List<JobDTO> jobDTOs = jobList.getContent().stream()
                         .map(job -> modelMapper.map(job, JobDTO.class))
@@ -252,30 +252,27 @@ public class JobServiceIMPL implements JobService {
 
         if (user instanceof Student student) {
             // Fetch all applied jobs count for students
-            dataCount = applicationRepo.countByStudent(student);
+            dataCount = applicationRepo.countByStudent(student) + applicationRepo.countApplicationsByStudentInTeam(student.getUserId());
 
-            // Fetch paginated applied jobs for students
-            Page<Application> applicationList = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize));
+            // Fetch paginated applied individual jobs for students
+            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2));
 
-            jobDetailsResponseDTOS = applicationList.getContent().stream()
+            // Get team applications
+            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2));
+
+            // Combine both lists, remove duplicates, and paginate
+            Set<Application> allApplications = new HashSet<>(individualApplications.getContent());
+            allApplications.addAll(teamApplications.getContent());
+
+            List<Application> applicationList = new ArrayList<>(allApplications);
+
+            jobDetailsResponseDTOS = applicationList.stream()
                     .map(application -> {
                         Job job = jobRepo.getJobByJobId(application.getJob().getJobId());
-                        return new JobDetailsResponseDTO(
-                                job.getJobId(),
-                                job.getJobTitle(),
-                                job.getJobCategory().toString(),
-                                job.getJobDescription(),
-                                job.getJobLocations().toString(),
-                                job.getStartDate(),
-                                job.getEndDate(),
-                                job.getStartTime(),
-                                job.getEndTime(),
-                                job.isActiveStatus(),
-                                job.getJobPayment(),
-                                job.getRequiredWorkers(),
-                                job.getRequiredGender(),
-                                application.getStatus().toString()
-                        );
+                        JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
+                        jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
+                        jobDetailsResponseDTO.setApplicationStatus(application.getStatus().toString());
+                        return jobDetailsResponseDTO;
                     })
                     .collect(Collectors.toList());
         }
@@ -288,22 +285,14 @@ public class JobServiceIMPL implements JobService {
             Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
 
             jobDetailsResponseDTOS = jobs.getContent().stream()
-                    .map(job -> new JobDetailsResponseDTO(
-                            job.getJobId(),
-                            job.getJobTitle(),
-                            job.getJobCategory().toString(),
-                            job.getJobDescription(),
-                            job.getJobLocations().toString(),
-                            job.getStartDate(),
-                            job.getEndDate(),
-                            job.getStartTime(),
-                            job.getEndTime(),
-                            job.isActiveStatus(),
-                            job.getJobPayment(),
-                            job.getRequiredWorkers(),
-                            job.getRequiredGender(),
-                            null // Status is not relevant for posted jobs
-                    ))
+                    .map(job -> {
+                        System.out.println(job);
+                        JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
+                        jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
+                        jobDetailsResponseDTO.setApplicationStatus(null);
+                        return jobDetailsResponseDTO;
+                            }
+                    )
                     .collect(Collectors.toList());
         }
 
@@ -339,7 +328,10 @@ public class JobServiceIMPL implements JobService {
             throw new NotFoundException("No Job Found with ID: " + jobId);
         }
         try {
-            jobRepo.setActiveState(jobId, status);
+            Job job = jobRepo.findById(jobId).
+                    orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
+            job.setActiveStatus(status);
+            jobRepo.save(job);
             return "Set status: "+status;
         }catch (RuntimeException e){
             throw new RuntimeException("Task failed...!!");

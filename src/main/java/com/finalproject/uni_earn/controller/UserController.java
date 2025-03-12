@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
+import com.finalproject.uni_earn.dto.request.UpdatePasswordDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
@@ -135,10 +136,9 @@ public class UserController {
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
-            @RequestParam String oldPassword,
-            @RequestParam String newPassword) {
+            @RequestBody UpdatePasswordDTO updatePasswordDTO) {
 
-        userService.updatePassword(userId, oldPassword, newPassword);
+        userService.updatePassword(userId, updatePasswordDTO.getOldPassword(), updatePasswordDTO.getNewPassword());
         return new  ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", "Password updated successfully"),
                 HttpStatus.OK

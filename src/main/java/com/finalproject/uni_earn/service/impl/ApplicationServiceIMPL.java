@@ -1,6 +1,10 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.GroupMemberDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -15,6 +19,7 @@ import com.finalproject.uni_earn.repo.TeamRepo;
 import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,6 +49,9 @@ public class ApplicationServiceIMPL implements ApplicationService {
     @Autowired
     private UpdateNotificationService updateNotificationService;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Override
     public String applyAsStudent(Long studentId, Long jobId) {
 
@@ -68,7 +76,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         applicationRepository.save(application);
 
-
+        updateNotificationService.createNotification(application.getApplicationId());
         return "Student application submitted successfully!";
     }
 
@@ -78,6 +86,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .orElseThrow(() -> new NotFoundException("Team not found"));
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new NotFoundException("Job not found"));
+
+        team.getMembers().forEach(member -> {
+            if (applicationRepository.isStudentInAppliedTeam(jobId,member.getUserId())) {
+                throw new InvalidValueException("One or more team members have already applied for this job.");
+            }
+        });
 
         if (applicationRepository.existsByJob_JobIdAndTeam_Id(jobId, teamId)) {
             throw new AlreadyExistException("This team has already applied for this job.");
@@ -92,9 +106,10 @@ public class ApplicationServiceIMPL implements ApplicationService {
         application.setJob(job);
         application.setTeam(team);
         application.setAppliedDate(new Date());
-        application.setStatus(ApplicationStatus.PENDING);
+        application.setStatus(ApplicationStatus.INACTIVE);
 
         applicationRepository.save(application);
+        updateNotificationService.createNotification(application.getApplicationId());
         return "Team application submitted successfully!";
     }
 
@@ -133,7 +148,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
             ApplicationDTO applicationDTO = new ApplicationDTO();
             applicationDTO.setApplicationId(application.getApplicationId());
             applicationDTO.setJobId(application.getJob().getJobId());
-            applicationDTO.setUserId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
+            applicationDTO.setStudentId(application.getStudent().getUserId()); // Changed from getUserId() to getStudentId()
             applicationDTO.setStatus(application.getStatus().name());
             applicationDTO.setAppliedDate(application.getAppliedDate());
 
@@ -161,8 +176,12 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
 
 
-        List<Application> applications = applicationRepository.findByStudent(student);
-
+        List<Application> individualapplications = applicationRepository.findByStudent(student);
+        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        
+        List<Application> applications = new ArrayList<>();
+        applications.addAll(individualapplications);
+        applications.addAll(teamApplications);
 
         Map<ApplicationStatus, Long> statusCounts = applications.stream()
                 .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));
@@ -197,20 +216,79 @@ public class ApplicationServiceIMPL implements ApplicationService {
         return response;
     }
 
-    public boolean hasStudentAppliedForJob(Long studentId, Long jobId) {
+    @Override
+    public List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId) {
+        // Fetch all pending group applications for the job
+        List<Application> pendingGroupApplications = applicationRepository.findPendingGroupApplicationsByJobId(jobId);
+
+        // Transform the data into the required DTO structure
+        return pendingGroupApplications.stream()
+                .map(application -> {
+                    Team team = application.getTeam();
+                    return new GroupApplicationDTO(
+                            application.getApplicationId(), // applicationId
+                            team.getId(), // groupId
+                            team.getTeamName(), // groupName
+                            team.getMembers().stream()
+                                    .map(member -> new GroupMemberDTO(
+                                            member.getUserId(), // id
+                                            member.getUserName(), // name
+                                            member.getLocation(), // location
+                                            member.getRating(), // rating
+                                            member.getProfilePictureUrl() // avatar
+                                    ))
+                                    .collect(Collectors.toList()) // members
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId) {
+        List<Application> pendingApplications = applicationRepository.findPendingStudentApplicationsByJobId(jobId);
+
+        return pendingApplications.stream()
+                .map(application -> {
+                    Student student = application.getStudent();
+                    return new StudentApplicationDTO(
+                            application.getApplicationId(),          // applicationId
+                            student.getUserId(),          // id
+                            student.getUserName(),       // name
+                            student.getLocation(),        // location
+                            student.getRating(),         // rating
+                            student.getProfilePictureUrl() // profilePictureUrl
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public StudentApplicationResponseDTO hasStudentAppliedForJob(Long studentId, Long jobId) {
         if(!studentRepository.existsById(studentId)) {
             throw new NotFoundException("Student not found with ID: " + studentId);
         }
         if(!jobRepository.existsById(jobId)) {
             throw new NotFoundException("Job not found with ID: " + jobId);
         }
-        // Check if student applied individually
-        if (applicationRepository.existsByJob_JobIdAndStudent_UserId(jobId, studentId)) {
-            return true;
+        StudentApplicationResponseDTO responseDTO = new StudentApplicationResponseDTO();
+
+        Application studentApplication = applicationRepository.findByJob_JobIdAndStudent_UserId(jobId, studentId);
+        Application groupApplication = applicationRepository.findStudentInAppliedTeam(jobId, studentId);
+
+        if(studentApplication != null) {
+            responseDTO.setHasApplied(true);
+            responseDTO.setApplication(modelMapper.map(studentApplication, ApplicationDTO.class));
+            responseDTO.setMemberStatus(null);
+            responseDTO.setIsTeamLeader(null);
+        }else if(groupApplication != null) {
+            responseDTO.setHasApplied(true);
+            responseDTO.setApplication(modelMapper.map(groupApplication, ApplicationDTO.class));
+            Team team = groupApplication.getTeam();
+            responseDTO.setMemberStatus(team.getMemberConfirmations().get(studentRepository.getStudentByUserId(studentId)));
+            responseDTO.setIsTeamLeader(team.getLeader().getUserId() == studentId);
+        }else{
+            throw new NotFoundException("Application not found");
         }
 
-        // Check if student is in a team that applied
-        return applicationRepository.isStudentInAppliedTeam(jobId, studentId);
+        return responseDTO;
     }
 }
 

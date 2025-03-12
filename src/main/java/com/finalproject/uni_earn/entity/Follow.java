@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "follows", uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "employer_id"}))
 
-public class Follow {
+public class Follow extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

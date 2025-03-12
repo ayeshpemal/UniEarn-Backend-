@@ -2,6 +2,9 @@ package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -16,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,10 +51,10 @@ public class ApplicationController {
 
     //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/{applicationId}/status")
-    public ResponseEntity<String> updateApplicationStatus(
+    public ResponseEntity<StandardResponse> updateApplicationStatus(
             @PathVariable Long applicationId,
             @RequestParam ApplicationStatus newStatus,
-            @RequestHeader("userId") Long userId) {
+            @RequestParam("userId") Long userId) {
 
         // Assuming you have a method to fetch the user by userId
         User user = userRepository.findById(userId)
@@ -58,13 +62,13 @@ public class ApplicationController {
 
         try {
             applicationService.updateStatus(applicationId, newStatus, user);
-            return ResponseEntity.ok("Application status updated successfully.");
+            return ResponseEntity.ok(new StandardResponse(200, "Success", "Application status updated successfully"));
         } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardResponse(404, e.getMessage(), null));
         } catch (InvalidValueException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardResponse(400, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new StandardResponse(500, e.getMessage(), null));
         }
     }
 
@@ -88,21 +92,35 @@ public class ApplicationController {
     }
 
     @GetMapping("/student/{userId}/summary")
-    public ResponseEntity<Map<String, Object>> getStudentApplicationsSummary(@PathVariable Long userId) {
+    public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@PathVariable Long userId) {
 
         Map<String, Object> summary = applicationService.getStudentApplicationsSummary(userId);
 
 
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", summary));
     }
 
+
+    @GetMapping("pending-group/job/{jobId}")
+    public ResponseEntity<StandardResponse> getGroupApplicationsByJobId(@PathVariable Long jobId) {
+        List<GroupApplicationDTO> groupApplications = applicationService.getGroupApplicationsByJobId(jobId);
+        StandardResponse response = new StandardResponse(200, "Success", groupApplications);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("pending-student/job/{jobId}")
+    public ResponseEntity<StandardResponse> getPendingStudentsByJobId(@PathVariable Long jobId) {
+        List<StudentApplicationDTO> studentApplications = applicationService.getPendingStudentsByJobId(jobId);
+        StandardResponse response = new StandardResponse(200, "Success", studentApplications);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
     @GetMapping("/has-applied")
     public ResponseEntity<StandardResponse> hasStudentApplied(
             @RequestParam Long studentId, @RequestParam Long jobId) {
 
-        boolean hasApplied = applicationService.hasStudentAppliedForJob(studentId, jobId);
+        StudentApplicationResponseDTO studentApplicationResponseDTO = applicationService.hasStudentAppliedForJob(studentId, jobId);
         return new ResponseEntity<>(
-                new StandardResponse(200, "Check completed", hasApplied),
+                new StandardResponse(200, "Check completed", studentApplicationResponseDTO),
                 HttpStatus.OK
         );
     }

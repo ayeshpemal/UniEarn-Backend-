@@ -32,18 +32,20 @@ public class FollowController {
 
     //@PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{employerId}/follow")
-    public ResponseEntity<String> followEmployer(
+    public ResponseEntity<StandardResponse> followEmployer(
             @RequestParam Long studentId,
             @PathVariable Long employerId) {
         String responseMessage = followService.followEmployer(studentId, employerId);
-        return ResponseEntity.ok(responseMessage);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", responseMessage));
     }
 
     //@PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("unfollow")
-    public ResponseEntity<String> unfollowEmployer(@RequestBody UnfollowRequestDTO unfollowRequestDTO) {
-        String responseMessage = followService.unfollowEmployer(unfollowRequestDTO.getStudentId(), unfollowRequestDTO.getEmployerId());
-        return ResponseEntity.ok(responseMessage);
+    public ResponseEntity<StandardResponse> unfollowEmployer(
+            @RequestParam Long studentId,
+            @RequestParam Long employerId) {
+        String responseMessage = followService.unfollowEmployer(studentId, employerId);
+        return ResponseEntity.ok(new StandardResponse(200, "Success", responseMessage));
     }
 
     //@PreAuthorize("hasRole('STUDENT')")

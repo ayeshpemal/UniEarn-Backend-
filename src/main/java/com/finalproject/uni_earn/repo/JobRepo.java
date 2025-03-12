@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     Page<Job> findAllByJobCategory(JobCategory jobCategory, Pageable pageable);
     Page<Job> findAllByEmployer(Employer employer, Pageable pageable);
     Page<Job> findAllByJobLocationsContaining(Location location, Pageable pageable);
-    Page<Job> findAllByJobLocationsContainingAndJobCategoryIn(Location location, List<JobCategory> jobCategoryList, Pageable pageable);
+    Page<Job> findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(Location location, List<JobCategory> jobCategoryList, JobStatus jobStatus, Pageable pageable);
     Page<Job> findAllByJobDescriptionContaining(String keyword, Pageable pageable);
 
     Integer countAllByJobCategory(JobCategory jobCategory);

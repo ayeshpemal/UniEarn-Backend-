@@ -26,4 +26,5 @@ public interface FollowRepo extends JpaRepository<Follow,Long> {
 
     @Query("SELECT f.employer FROM Follow f WHERE f.student.userId = :studentId")
     Page<Employer> findFollowingEmployersByStudentId(Long studentId, Pageable pageable);
+    boolean existsByStudentAndEmployer(Student student, Employer employer);
 }
