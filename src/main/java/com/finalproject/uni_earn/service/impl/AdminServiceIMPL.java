@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Response.AdminResponseDTO;
 import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
 import com.finalproject.uni_earn.dto.UserDTO;
+import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
@@ -23,6 +24,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,111 +80,86 @@ public class AdminServiceIMPL implements AdminService {
                 .collect(Collectors.toList());
     }
 
-    public AdminStatsResponseDTO getPlatformStatistics() {
+    public AdminStatsResponseDTO getPlatformStatistics(LocalDateTime startDate, LocalDateTime endDate) {
         AdminStatsResponseDTO response = new AdminStatsResponseDTO();
 
         try {
-            // Total jobs posted
-            long jobCount = jobRepository.count();
-//            if (jobCount == 0) {
-//                throw new NotFoundException("No jobs found on the platform.");
-//            }
+            long jobCount = jobRepository.countJobsByDateRange(startDate, endDate);
             response.setTotalJobsPosted((int) jobCount);
-        } catch (DataAccessException e) {
-            throw new RuntimeException("Database error while counting jobs.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while counting jobs within date range.", e);
         }
 
         try {
-            // Jobs by category
-            Map<String, Integer> jobsByCategory = jobRepository.findAll()
+            Map<String, Integer> jobsByCategory = jobRepository.countJobsByCategory(startDate, endDate)
                     .stream()
-                    .collect(Collectors.groupingBy(
-                            job -> job.getJobCategory().toString(),
-                            Collectors.summingInt(job -> 1)
+                    .collect(Collectors.toMap(
+                            obj -> obj[0].toString(),
+                            obj -> ((Number) obj[1]).intValue()
                     ));
-            response.setJobsByCategory(jobsByCategory.isEmpty() ? Collections.emptyMap() : jobsByCategory);
+            response.setJobsByCategory(jobsByCategory);
         } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving jobs by category.", e);
+            throw new RuntimeException("Error while retrieving jobs by category within date range.", e);
         }
 
         try {
-            // Most applied job
-            List<Long> mostAppliedJobs = jobRepository.findMostAppliedJob();
-            if (mostAppliedJobs.isEmpty()) {
-                response.setMostAppliedJob(null);  // Assign null if empty
-            } else {
-                for (Long id : mostAppliedJobs) {
-                    JobDTO jobDTO = jobService.viewJobDetails(id);
-                    if (response.getMostAppliedJob() == null) {
-                        response.setMostAppliedJob(new ArrayList<>());
-                    }
-                    response.getMostAppliedJob().add(jobDTO);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving the most applied job.", e);
-        }
+            // ✅ Get job count by location
+            List<Job> jobsByLocationList = jobRepository.findJobsByDateRange(startDate, endDate);
 
-        try {
-            // Least applied job
-            List<Long> leastAppliedJobs = jobRepository.findLeastAppliedJob();
-            if (leastAppliedJobs.isEmpty()) {
-                response.setLeastAppliedJob(null);  // Assign null if empty
-            } else {
-                for (Long id : leastAppliedJobs) {
-                    JobDTO jobDTO = jobService.viewJobDetails(id);
-                    if (response.getLeastAppliedJob() == null) {
-                        response.setLeastAppliedJob(new ArrayList<>());
-                    }
-                    response.getLeastAppliedJob().add(jobDTO);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving the least applied job.", e);
-        }
-
-
-        try {
-            // Top employer (by job count)
-            Optional<UserDTO> topEmployer = userRepository.findTopEmployer()
-                    .map(tuple -> new UserDTO(
-                            tuple.get("userId", Long.class),
-                            tuple.get("userName", String.class),
-                            tuple.get("email", String.class),
-                            tuple.get("role", String.class),
-                            null
-                    ));
-            response.setTopEmployer(topEmployer.isPresent() && Objects.equals(topEmployer.get().getRole(), "EMPLOYER") ? topEmployer.get() : null);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving the top employer.", e);
-        }
-
-        try {
-            // Most active student (by applications)
-            Optional<UserDTO> mostActiveStudent = userRepository.findMostActiveStudent()
-                    .map(tuple -> new UserDTO(
-                            tuple.get("userId", Long.class),
-                            tuple.get("userName", String.class),
-                            tuple.get("email", String.class),
-                            tuple.get("role", String.class),
-                            null
-                    ));
-            response.setMostActiveStudent(mostActiveStudent.isPresent() && Objects.equals(mostActiveStudent.get().getRole(), "STUDENT") ? mostActiveStudent.get() : null);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving the most active student.", e);
-        }
-
-        try {
-            // Jobs by location
-            Map<String, Integer> jobsByLocation = jobRepository.findAll()
-                    .stream()
+            Map<String, Integer> jobsByLocation = jobsByLocationList.stream()
                     .collect(Collectors.groupingBy(
                             job -> job.getJobLocations().toString(),
-                            Collectors.collectingAndThen(Collectors.counting(), Long::intValue) // Convert Long to Integer
+                            Collectors.summingInt(job -> 1)
                     ));
-            response.setJobsByLocation(jobsByLocation.isEmpty() ? Collections.emptyMap() : jobsByLocation);
+            response.setJobsByLocation(jobsByLocation);
         } catch (Exception e) {
-            throw new RuntimeException("Error while retrieving jobs by location.", e);
+            throw new RuntimeException("Error while retrieving jobs by location within date range.", e);
+        }
+
+        try {
+            List<Long> mostAppliedJobs = jobRepository.findMostAppliedJobByDate(startDate, endDate);
+            response.setMostAppliedJob(mostAppliedJobs.isEmpty() ? null : mostAppliedJobs.stream()
+                    .map(jobService::viewJobDetails)
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            throw new RuntimeException("Error while retrieving most applied jobs within date range.", e);
+        }
+
+        try {
+            List<Long> leastAppliedJobs = jobRepository.findLeastAppliedJobByDate(startDate, endDate);
+            response.setLeastAppliedJob(leastAppliedJobs.isEmpty() ? null : leastAppliedJobs.stream()
+                    .map(jobService::viewJobDetails)
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            throw new RuntimeException("Error while retrieving least applied jobs within date range.", e);
+        }
+
+        try {
+            Optional<UserDTO> topEmployer = userRepository.findTopEmployerByDate(startDate, endDate)
+                    .map(tuple -> new UserDTO(
+                            tuple.get("userId", Long.class),
+                            tuple.get("userName", String.class),
+                            tuple.get("email", String.class),
+                            tuple.get("role", String.class),
+                            null
+                    ));
+            response.setTopEmployer(topEmployer.orElse(null));
+        } catch (Exception e) {
+            throw new RuntimeException("Error while retrieving top employer within date range.", e);
+        }
+
+        try {
+            Optional<UserDTO> mostActiveStudent = userRepository.findMostActiveStudentByDate(startDate, endDate)
+                    .map(tuple -> new UserDTO(
+                            tuple.get("userId", Long.class),
+                            tuple.get("userName", String.class),
+                            tuple.get("email", String.class),
+                            tuple.get("role", String.class),
+                            null
+                    ));
+            response.setMostActiveStudent(mostActiveStudent.orElse(null));
+        } catch (Exception e) {
+            throw new RuntimeException("Error while retrieving most active student within date range.", e);
         }
 
         return response;
