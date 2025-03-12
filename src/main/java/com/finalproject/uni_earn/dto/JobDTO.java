@@ -33,7 +33,7 @@ public class JobDTO {
     private Date endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Employer employer;
+    private EmployerDto employer;
     private boolean activeStatus;
 
 }

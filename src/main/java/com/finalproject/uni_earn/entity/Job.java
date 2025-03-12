@@ -84,11 +84,8 @@ public class Job extends Auditable {
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Application> applications;
 
-    @Column(name = "active_status", columnDefinition = "BOOLEAN DEFAULT TRUE", nullable = false)
-    private boolean activeStatus;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "job_status", nullable = false)
-    private JobStatus jobStatus = JobStatus.PENDING;
+    private JobStatus jobStatus;
    
 }

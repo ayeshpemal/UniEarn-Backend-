@@ -1,13 +1,17 @@
 package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
+import com.finalproject.uni_earn.dto.request.AdminStatsRequestDTO;
 import com.finalproject.uni_earn.service.AdminService;
 import com.finalproject.uni_earn.util.StandardResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @CrossOrigin
@@ -43,11 +47,12 @@ public class AdminController {
         );
     }
 
-    @GetMapping("/stats")
-    public ResponseEntity<StandardResponse> getAdminStats() {
-        AdminStatsResponseDTO stats = adminService.getPlatformStatistics();
+    @PostMapping("/stats")
+    @Operation(summary = "Get platform statistics", description = "Retrieves platform statistics within a given date range.")
+    public ResponseEntity<StandardResponse> getPlatformStatistics(@RequestBody AdminStatsRequestDTO request) {
+        AdminStatsResponseDTO response = adminService.getPlatformStatistics(request.getStartDate(), request.getEndDate());
         return new ResponseEntity<>(
-                new StandardResponse(200, "Admin statistics fetched successfully.", stats),
+                new StandardResponse(200, "Success", response),
                 HttpStatus.OK
         );
     }

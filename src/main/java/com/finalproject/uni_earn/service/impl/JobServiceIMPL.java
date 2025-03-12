@@ -10,6 +10,7 @@ import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.InvalidParametersException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -82,7 +83,7 @@ public class JobServiceIMPL implements JobService {
             job.setEndTime(addJobRequestDTO.getEndTime());
             job.setEmployer(employer);
             job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
-            job.setActiveStatus(true);
+            job.setJobStatus(JobStatus.PENDING);
 
             jobRepo.save(job);
 
@@ -110,7 +111,7 @@ public class JobServiceIMPL implements JobService {
                 job.setEndTime(addJobRequestDTO.getEndTime());
                 job.setEmployer(employer);
                 job.setJobLocations(List.of(locationDTO.getLocation()));
-                job.setActiveStatus(true);
+                job.setJobStatus(JobStatus.PENDING);
 
                 Job savedJob = jobRepo.save(job);
 
@@ -154,7 +155,7 @@ public class JobServiceIMPL implements JobService {
         job.setEndTime(updateJobRequestDTO.getEndTime());
         job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
         job.setJobLocations(new ArrayList<>(List.of(updateJobRequestDTO.getJobLocations().get(0).getLocation())));
-        job.setActiveStatus(true);
+        job.setJobStatus(JobStatus.PENDING);
         jobRepo.save(job);
 
         return updateJobRequestDTO.getJobTitle() + " is updated...";
@@ -330,7 +331,7 @@ public class JobServiceIMPL implements JobService {
         try {
             Job job = jobRepo.findById(jobId).
                     orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
-            job.setActiveStatus(status);
+            job.setJobStatus(JobStatus.FINISH);
             jobRepo.save(job);
             return "Set status: "+status;
         }catch (RuntimeException e){

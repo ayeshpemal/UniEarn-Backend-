@@ -12,7 +12,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,15 +45,26 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     Optional<Job> findAllByEmployer(Employer employer);
 
-    boolean existsByJobIdAndActiveStatusAndEmployer_UserId(Long jobId, boolean activeStatus, Long userId);
+    boolean existsByJobIdAndJobStatusAndEmployer_UserId(Long jobId, JobStatus jobStatus, Long userId);
 
-    // Most applied job (based on number of applications)
-    @Query("SELECT j.jobId FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) DESC LIMIT 3")
-    List<Long> findMostAppliedJob();
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.createdAt BETWEEN :startDate AND :endDate")
+    long countJobsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    // Least applied job
-    @Query("SELECT j.jobId FROM Application a JOIN a.job j GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
-    List<Long> findLeastAppliedJob();
+    @Query("SELECT j.jobCategory, COUNT(j) FROM Job j WHERE j.createdAt BETWEEN :startDate AND :endDate GROUP BY j.jobCategory")
+    List<Object[]> countJobsByCategory(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+    SELECT j FROM Job j 
+    WHERE j.startDate BETWEEN :startDate AND :endDate
+""")
+    List<Job> findJobsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+
+    @Query("SELECT j.jobId FROM Application a JOIN a.job j WHERE j.createdAt BETWEEN :startDate AND :endDate GROUP BY j ORDER BY COUNT(a) DESC LIMIT 3")
+    List<Long> findMostAppliedJobByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT j.jobId FROM Application a JOIN a.job j WHERE j.createdAt BETWEEN :startDate AND :endDate GROUP BY j ORDER BY COUNT(a) ASC LIMIT 3")
+    List<Long> findLeastAppliedJobByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     long countByEmployer(Employer employer);
 }

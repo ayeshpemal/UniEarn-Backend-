@@ -10,6 +10,7 @@ import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Ratings;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.RatingType;
 import com.finalproject.uni_earn.exception.AlreadyRatedException;
 import com.finalproject.uni_earn.exception.NotFoundException;
@@ -152,8 +153,8 @@ public class RatingServiceIMPL implements RatingService {
          * 2)check whether student applied that job and employer confirmed the application
          * there is two function for two tables
          * */
-        if (!(jobRepo.existsByJobIdAndActiveStatusAndEmployer_UserId(reatingRequestDTO.getJobId(),
-                false, employerId) &&
+        if (!(jobRepo.existsByJobIdAndJobStatusAndEmployer_UserId(reatingRequestDTO.getJobId(),
+                JobStatus.FINISH, employerId) &&
                 applicationRepo.existsByStudent_UserIdAndJob_JobIdAndStatus(studentId,
                         reatingRequestDTO.getJobId(), ApplicationStatus.ACCEPTED))) {
             throw new UnauthurizedRatingException(
@@ -208,8 +209,8 @@ public class RatingServiceIMPL implements RatingService {
          * 2)check whether student applied that job and employer confirmed the application
          * there is two function for two tables
          * */
-        if (!(jobRepo.existsByJobIdAndActiveStatusAndEmployer_UserId(
-                updateRatingRequestDTO.getJobId(), false, employerId) &&
+        if (!(jobRepo.existsByJobIdAndJobStatusAndEmployer_UserId(
+                updateRatingRequestDTO.getJobId(), JobStatus.FINISH, employerId) &&
                 applicationRepo.existsByStudent_UserIdAndJob_JobIdAndStatus(
                         studentId, updateRatingRequestDTO.getJobId(), ApplicationStatus.ACCEPTED))) {
             throw new UnauthurizedRatingException(
@@ -249,8 +250,8 @@ public class RatingServiceIMPL implements RatingService {
          * 2)check whether student applied that job and employer confirmed the application
          * there is two function for two tables
          * */
-        if (!(jobRepo.existsByJobIdAndActiveStatusAndEmployer_UserId(
-                updateRatingRequestDTO.getJobId(), false, employerId) &&
+        if (!(jobRepo.existsByJobIdAndJobStatusAndEmployer_UserId(
+                updateRatingRequestDTO.getJobId(), JobStatus.FINISH, employerId) &&
                 applicationRepo.existsByStudent_UserIdAndJob_JobIdAndStatus(
                         studentId, updateRatingRequestDTO.getJobId(), ApplicationStatus.ACCEPTED))) {
             throw new UnauthurizedRatingException(

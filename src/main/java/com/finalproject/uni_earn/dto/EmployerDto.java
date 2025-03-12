@@ -13,9 +13,11 @@ import java.util.List;
 public class EmployerDto {
     private Long userId;
     private String userName;
+    private String profilePicture;
     private String companyName;
     private String companyDetails;
     private String location;
+    private float rating;
     private List<String> categories ;
     private boolean follow;
 }

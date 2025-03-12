@@ -41,6 +41,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/get-user-by-id/{userId}")
     public ResponseEntity<StandardResponse> getUserById(@PathVariable Long userId){
         UserResponseDTO userResponseDTO = userService.getUser(userId);
