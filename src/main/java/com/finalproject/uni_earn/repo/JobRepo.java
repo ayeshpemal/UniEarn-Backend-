@@ -45,7 +45,7 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     Optional<Job> findAllByEmployer(Employer employer);
 
-    boolean existsByJobIdAndActiveStatusAndEmployer_UserId(Long jobId, boolean activeStatus, Long userId);
+    boolean existsByJobIdAndJobStatusAndEmployer_UserId(Long jobId, JobStatus jobStatus, Long userId);
 
     @Query("SELECT COUNT(j) FROM Job j WHERE j.createdAt BETWEEN :startDate AND :endDate")
     long countJobsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
