@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +49,7 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     String findLeastAppliedJob();
 
 
-    List<Application> findByStudent(Student student);
+    List<Application> findByStudentAndCreatedAtBetween(Student student, LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT a FROM Application a WHERE a.job.jobId = :jobId AND a.team IS NOT NULL AND a.status = 'PENDING'")
     List<Application> findPendingGroupApplicationsByJobId(@Param("jobId") Long jobId);
@@ -76,4 +77,13 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     Optional<Application> findByTeamAndStatus(Team team, ApplicationStatus applicationStatus);
 
     Application findByJob_JobIdAndStudent_UserId(Long jobId, Long studentId);
+
+    @Query("SELECT a FROM Application a WHERE a.team.id IN " +
+            "(SELECT t.id FROM Team t JOIN t.members m WHERE m.id = :studentId) " +
+            "AND a.appliedDate BETWEEN :startDate AND :endDate")
+    List<Application> findByStudentInTeamAndDateRange(@Param("studentId") Long studentId,
+                                                      @Param("startDate") LocalDateTime startDate,
+                                                      @Param("endDate") LocalDateTime endDate);
+
+
 }

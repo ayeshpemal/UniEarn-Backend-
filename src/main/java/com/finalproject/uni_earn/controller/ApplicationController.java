@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
+import com.finalproject.uni_earn.dto.request.StudentSummaryRequestDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -91,10 +92,10 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
-    @GetMapping("/student/{userId}/summary")
-    public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@PathVariable Long userId) {
+    @PostMapping("/student/summary")
+    public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@RequestBody StudentSummaryRequestDTO requestDTO) {
 
-        Map<String, Object> summary = applicationService.getStudentApplicationsSummary(userId);
+        Map<String, Object> summary = applicationService.getStudentApplicationsSummary(requestDTO);
 
 
         return ResponseEntity.ok(new StandardResponse(200, "Success", summary));
