@@ -55,7 +55,7 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     @Query("""
     SELECT j FROM Job j 
-    WHERE j.startDate BETWEEN :startDate AND :endDate
+    WHERE j.createdAt BETWEEN :startDate AND :endDate
 """)
     List<Job> findJobsByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 

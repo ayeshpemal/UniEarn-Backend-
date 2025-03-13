@@ -101,7 +101,6 @@ public class ApplicationServiceIMPL implements ApplicationService {
             throw new RuntimeException("Team size does not match required workers.");
         }
 
-
         Application application = new Application();
         application.setJob(job);
         application.setTeam(team);

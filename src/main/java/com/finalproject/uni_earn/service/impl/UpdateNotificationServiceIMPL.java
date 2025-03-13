@@ -64,8 +64,12 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                             application.getTeam().getLeader().getUserName(),
                             job.getJobTitle()
                     );
-                    recipient = new ArrayList<>(application.getTeam().getMembers()); // Notify team members
-                    // Notify team leader
+                    for (Student member : application.getTeam().getMembers()) {
+                        if(!member.equals(application.getTeam().getLeader())) {
+                            recipient.add(member);
+                        }
+                    }
+                    break;
                 } else {
                     throw new IllegalArgumentException("Application does not belong to a team");
                 }
@@ -146,7 +150,7 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                     notification.getIsRead(),
                     notification.getSentDate()
             );
-
+            System.out.println("Member: " + user.getUserName());
             // Send real-time notification to the specific recipient
             messagingTemplate.convertAndSendToUser(
                     user.getUserName(),
