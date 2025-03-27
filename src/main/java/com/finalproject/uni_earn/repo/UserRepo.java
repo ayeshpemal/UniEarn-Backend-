@@ -65,4 +65,6 @@ public interface UserRepo extends JpaRepository<User, Long>{
     Optional<Tuple> findMostActiveStudentByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     List<User> findByRole(Role role);
+
+    Optional<User> findByEmailAndRole(String defaultAdminEmail, Role role);
 }

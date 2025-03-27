@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.GroupMemberDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
+import com.finalproject.uni_earn.dto.request.StudentSummaryRequestDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -169,14 +170,14 @@ public class ApplicationServiceIMPL implements ApplicationService {
     }
 
     @Override
-    public Map<String, Object> getStudentApplicationsSummary(Long userId) {
+    public Map<String, Object> getStudentApplicationsSummary(StudentSummaryRequestDTO requestDTO) {
         
-        Student student = studentRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
+        Student student = studentRepository.findById(requestDTO.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + requestDTO.getStudentId()));
 
 
-        List<Application> individualapplications = applicationRepository.findByStudent(student);
-        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        List<Application> individualapplications = applicationRepository.findByStudentAndCreatedAtBetween(student, requestDTO.getStartDate(), requestDTO.getEndDate());
+        List<Application> teamApplications = applicationRepository.findByStudentInTeamAndDateRange(requestDTO.getStudentId(),requestDTO.getStartDate(),requestDTO.getEndDate());
         
         List<Application> applications = new ArrayList<>();
         applications.addAll(individualapplications);
@@ -205,6 +206,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("totalApplications", totalApplications);
+        response.put("inactive", statusCounts.getOrDefault(ApplicationStatus.INACTIVE,0L));
         response.put("pending", statusCounts.getOrDefault(ApplicationStatus.PENDING, 0L));
         response.put("accepted", statusCounts.getOrDefault(ApplicationStatus.ACCEPTED, 0L));
         response.put("rejected", statusCounts.getOrDefault(ApplicationStatus.REJECTED, 0L));
