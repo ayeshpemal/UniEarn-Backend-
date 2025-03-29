@@ -1,15 +1,13 @@
 package com.finalproject.uni_earn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -61,16 +59,20 @@ public class Student extends User {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> skills;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "student")
     private Set<Application> applications;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "leader")
     private Set<Team> leadingTeams;
 
+    @ToString.Exclude
     @ManyToMany(mappedBy = "members")
     private Set<Team> teams;
 
     // Add following and followers relationship
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(
             name = "student_followers",
@@ -79,6 +81,7 @@ public class Student extends User {
     )
     private Set<Student> followers;
 
+    @ToString.Exclude
     @ManyToMany(mappedBy = "followers")
     private Set<Student> following;
 

@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
+import com.finalproject.uni_earn.dto.request.StudentSummaryRequestDTO;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 
@@ -17,7 +18,7 @@ public interface ApplicationService {
     public ApplicationDTO viewApplicationDetails(Long applicationId);
     public void deleteApplication(Long applicationId);
 
-    Map<String, Object> getStudentApplicationsSummary(Long studentId);
+    Map<String, Object> getStudentApplicationsSummary(StudentSummaryRequestDTO requestDTO);
 
     List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId);
 

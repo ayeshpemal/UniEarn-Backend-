@@ -45,16 +45,26 @@ public interface UserRepo extends JpaRepository<User, Long>{
     Optional<Tuple> findTopEmployerByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 
-    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email AS email, u.role AS role " +
-            "FROM users u " +
-            "ORDER BY (SELECT COUNT(a.application_id) FROM application a " +
-            "WHERE a.student_id = u.user_id AND a.applied_date BETWEEN :startDate AND :endDate) DESC " +
-            "LIMIT 1",
-            nativeQuery = true)
+    @Query(value = """
+    SELECT u.user_id AS userId, u.user_name AS userName, u.email AS email, u.role AS role 
+    FROM users u 
+    ORDER BY (
+        (SELECT COUNT(a.application_id) 
+         FROM application a 
+         WHERE a.student_id = u.user_id 
+         AND a.applied_date BETWEEN :startDate AND :endDate)
+        + 
+        (SELECT COUNT(a2.application_id) 
+         FROM application a2 
+         WHERE a2.team_id IN 
+            (SELECT tm.team_id FROM team_members tm WHERE tm.student_id = u.user_id) 
+         AND a2.applied_date BETWEEN :startDate AND :endDate)
+    ) DESC
+    LIMIT 1
+    """, nativeQuery = true)
     Optional<Tuple> findMostActiveStudentByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-
-
-
     List<User> findByRole(Role role);
+
+    Optional<User> findByEmailAndRole(String defaultAdminEmail, Role role);
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Date;
 
@@ -19,14 +20,17 @@ public class Application extends Auditable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long applicationId;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job; // Many applications can apply to one job
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = true)
     private Student student;// Many applications can be made by one student
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = true)
     private Team team;
