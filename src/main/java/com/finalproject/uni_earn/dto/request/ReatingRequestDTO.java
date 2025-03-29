@@ -12,7 +12,7 @@ public class ReatingRequestDTO {
 
     private Long raterId;
     private Long ratedId;
-    private Long jobId;
+    private Long applicationId;
     private Integer score;
     private String comment;
 

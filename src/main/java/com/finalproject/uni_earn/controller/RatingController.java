@@ -5,14 +5,20 @@ import com.finalproject.uni_earn.dto.Response.RatingResponseBasicDTO;
 import com.finalproject.uni_earn.dto.request.ReatingRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateRatingRequestDTO;
 import com.finalproject.uni_earn.service.RatingService;
+import com.finalproject.uni_earn.util.StandardResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/api/v1/rating")
+@Validated
 public class RatingController {
 
     private final RatingService ratingService;
@@ -23,91 +29,90 @@ public class RatingController {
     }
 
     /**
-     * Test endpoint for creating a new rating
-     * Sample request: POST /api/v1/rating/test/create
+     * Creates a new rating
      */
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PostMapping("/test/create")
-    public ResponseEntity<RatingResponseBasicDTO> testCreateRating() {
-        // Create a test rating request
-        ReatingRequestDTO testRating = new ReatingRequestDTO(
-                5L,  // Student (rater)
-                11L, // Employer (rated)
-                1L,  // Job ID
-                5,   // Score
-                "Excellent work environment and great learning experience"
-        );
+    @PostMapping("/create")
+    public ResponseEntity<StandardResponse> createRating(
+            @Valid @RequestBody ReatingRequestDTO ratingRequestDTO) {
 
-        return ResponseEntity.ok(ratingService.saveRating(testRating));
+        if (ratingRequestDTO.getScore() == null || ratingRequestDTO.getScore() < 1 || ratingRequestDTO.getScore() > 5) {
+            return ResponseEntity.badRequest().body(
+                    new StandardResponse(400, "Score must be between 1 and 5", null));
+        }
+
+        RatingResponseBasicDTO response = ratingService.saveRating(ratingRequestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new StandardResponse(201, "Rating created successfully", response));
     }
 
     /**
-     * Test endpoint for updating an existing rating
-     * Sample request: PUT /api/v1/rating/test/update
+     * Updates an existing rating
      */
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @PutMapping("/test/update")
-    public ResponseEntity<RatingResponseBasicDTO> testUpdateRating() {
-        // Create a test update rating request
-        UpdateRatingRequestDTO updateRequest = new UpdateRatingRequestDTO(
-                2L,  // Rating ID
-                2L,  // Student (rater)
-                11L, // Employer (rated)
-                1L,  // Job ID
-                4,   // New score
-                "Good experience overall, but could improve communication"
-        );
+    @PutMapping("/update")
+    public ResponseEntity<StandardResponse> updateRating(
+            @Valid @RequestBody UpdateRatingRequestDTO updateRatingRequestDTO) {
 
-        return ResponseEntity.ok(ratingService.updateRating(updateRequest));
+        // Validate score is within reasonable range
+        if (updateRatingRequestDTO.getNewScore() == null ||
+                updateRatingRequestDTO.getNewScore() < 1 ||
+                updateRatingRequestDTO.getNewScore() > 5) {
+            return ResponseEntity.badRequest().body(
+                    new StandardResponse(400, "Score must be between 1 and 5", null));
+        }
+
+        RatingResponseBasicDTO response = ratingService.updateRating(updateRatingRequestDTO);
+        return ResponseEntity.ok(
+                new StandardResponse(200, "Rating updated successfully", response));
     }
 
     /**
-     * Test endpoint for deleting a rating
-     * Sample request: DELETE /api/v1/rating/test/delete
+     * Deletes an existing rating
+     * dont send rating or comment , i just put that since it is easy 
      */
+    @DeleteMapping("/delete")
+    public ResponseEntity<StandardResponse> deleteRating(
+            @Valid @RequestBody UpdateRatingRequestDTO updateRatingRequestDTO) {
 
-    @DeleteMapping("/test/delete")
-    public ResponseEntity<RatingResponseBasicDTO> testDeleteRating() {
-        // Create a test delete rating request
-        UpdateRatingRequestDTO deleteRequest = new UpdateRatingRequestDTO(
-                1L,  // Rating ID
-                1L,  // Student (rater)
-                11L, // Employer (rated)
-                1L,  // Job ID
-                null, // Score not needed for delete
-                null  // Comment not needed for delete
-        );
-
-        return ResponseEntity.ok(ratingService.deleteRating(deleteRequest));
+        RatingResponseBasicDTO response = ratingService.deleteRating(updateRatingRequestDTO);
+        return ResponseEntity.ok(
+                new StandardResponse(200, "Rating deleted successfully", response));
     }
 
     /**
-     * Test endpoint for getting all received ratings for a user
-     * Sample request: GET /api/v1/rating/test/received/11?page=0&size=10
+     * Retrieves all ratings received by a specific user with pagination
      */
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @GetMapping("/test/received/{userId}")
-    public ResponseEntity<PaginatedRatingDTO> testGetReceivedRatings(
+    @GetMapping("/received/{userId}")
+    public ResponseEntity<StandardResponse> getAllReceivedRatings(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
 
-        return ResponseEntity.ok(ratingService.getAllReceivedRatings(userId, page, size));
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.badRequest().body(
+                    new StandardResponse(400, "Invalid user ID", null));
+        }
+
+        PaginatedRatingDTO response = ratingService.getAllReceivedRatings(userId, page, size);
+        return ResponseEntity.ok(
+                new StandardResponse(200, "Retrieved ratings received by user", response));
     }
 
     /**
-     * Test endpoint for getting all given ratings by a user
-     * Sample request: GET /api/v1/rating/test/given/1?page=0&size=10
+     * Retrieves all ratings given by a specific user with pagination
      */
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
-    @GetMapping("/test/given/{userId}")
-    public ResponseEntity<PaginatedRatingDTO> testGetGivenRatings(
+    @GetMapping("/given/{userId}")
+    public ResponseEntity<StandardResponse> getAllGivenRatings(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
 
-        return ResponseEntity.ok(ratingService.getAllGivenRatings(userId, page, size));
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.badRequest().body(
+                    new StandardResponse(400, "Invalid user ID", null));
+        }
+
+        PaginatedRatingDTO response = ratingService.getAllGivenRatings(userId, page, size);
+        return ResponseEntity.ok(
+                new StandardResponse(200, "Retrieved ratings given by user", response));
     }
-
-    // Regular endpoints for production use would go here
 }
