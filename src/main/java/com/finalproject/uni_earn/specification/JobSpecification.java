@@ -7,11 +7,12 @@ import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Date;
 import java.util.List;
 
 public class JobSpecification {
 
-    public static Specification<Job> filterJobs(Location location, List<JobCategory> categories, String keyword) {
+    public static Specification<Job> filterJobs(Location location, List<JobCategory> categories, String keyword, Date startDate) {
         return (Root<Job> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction(); // Default to TRUE (no filters applied)
 
@@ -33,6 +34,13 @@ public class JobSpecification {
 
             // Filter by JobStatus = PENDING
             predicate = cb.and(predicate, cb.equal(root.get("jobStatus"), JobStatus.PENDING));
+
+            // Filter by Start Date if provided
+            if (startDate != null) {
+                Expression<Date> jobStartDate = cb.function("DATE", Date.class, root.get("startDate"));
+                Expression<Date> inputDate = cb.function("DATE", Date.class, cb.literal(startDate));
+                predicate = cb.and(predicate, cb.equal(jobStartDate, inputDate));
+            }
 
             return predicate;
         };
