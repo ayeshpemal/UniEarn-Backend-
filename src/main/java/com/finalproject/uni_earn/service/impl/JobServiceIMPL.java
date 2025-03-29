@@ -324,14 +324,14 @@ public class JobServiceIMPL implements JobService {
         }
     }
 
-    public String setStatus(Long jobId, boolean status){
+    public String setStatus(Long jobId, JobStatus status){
         if (!jobRepo.existsById(jobId)) {
             throw new NotFoundException("No Job Found with ID: " + jobId);
         }
         try {
             Job job = jobRepo.findById(jobId).
                     orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
-            job.setJobStatus(JobStatus.FINISH);
+            job.setJobStatus(status);
             jobRepo.save(job);
             return "Set status: "+status;
         }catch (RuntimeException e){

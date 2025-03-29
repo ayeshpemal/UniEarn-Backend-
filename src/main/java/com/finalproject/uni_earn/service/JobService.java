@@ -8,6 +8,7 @@ import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 
 import java.util.Date;
@@ -19,7 +20,7 @@ public interface JobService {
     String addJob(AddJobRequestDTO addJobRequestDTO);
     String deleteJob(Long jobId);
     String updateJob(UpdateJobRequestDTO updateJobRequestDTO);
-    String setStatus(Long jobId, boolean status);
+    String setStatus(Long jobId, JobStatus status);
 
     //For Student
     PaginatedResponseJobDTO studentJobs(Long studentId, Integer page);

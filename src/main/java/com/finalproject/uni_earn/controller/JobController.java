@@ -8,6 +8,7 @@ import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.impl.JobServiceIMPL;
@@ -147,7 +148,7 @@ public class JobController {
 
     //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @PutMapping(path = "/set-status", params = {"job_id","status"})
-    public ResponseEntity<StandardResponse> setStatus(@RequestParam(value = "job_id") long jobId, @RequestParam(value = "status") boolean status) {
+    public ResponseEntity<StandardResponse> setStatus(@RequestParam(value = "job_id") long jobId, @RequestParam(value = "status") JobStatus status) {
         String message = jobService.setStatus(jobId, status);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "Success.", message),
