@@ -1,5 +1,7 @@
 package com.finalproject.uni_earn.repo;
 
+import com.finalproject.uni_earn.dto.Response.JobCategoryStatisticsDTO;
+import com.finalproject.uni_earn.dto.Response.JobStaticsDTO;
 import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
@@ -79,11 +81,64 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     Application findByJob_JobIdAndStudent_UserId(Long jobId, Long studentId);
 
     @Query("SELECT a FROM Application a WHERE a.team.id IN " +
-            "(SELECT t.id FROM Team t JOIN t.members m WHERE m.id = :studentId) " +
+            "(SELECT t.id FROM Team t JOIN t.members m WHERE m.userId = :studentId) " +
             "AND a.appliedDate BETWEEN :startDate AND :endDate")
     List<Application> findByStudentInTeamAndDateRange(@Param("studentId") Long studentId,
                                                       @Param("startDate") LocalDateTime startDate,
                                                       @Param("endDate") LocalDateTime endDate);
+
+
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobStaticsDTO(" +
+            "j.jobId, COUNT(a), j.jobCategory, j.startDate, j.endDate) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = 'PENDING' " +
+            "GROUP BY j.jobId, j.jobCategory, j.startDate, j.endDate " +
+            "ORDER BY COUNT(a) DESC")
+    Page<JobStaticsDTO> findJobsWithMostApplicationsByEmployerId(
+            @Param("employerId") Long employerId,
+            Pageable pageable);
+
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobStaticsDTO(" +
+            "j.jobId, COUNT(a), j.jobCategory, j.startDate, j.endDate) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = 'PENDING' " +
+            "GROUP BY j.jobId, j.jobCategory, j.startDate, j.endDate " +
+            "ORDER BY COUNT(a) ASC")
+    Page<JobStaticsDTO> findJobsWithLeastApplicationsByEmployerId(
+            @Param("employerId") Long employerId,
+            Pageable pageable);
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobCategoryStatisticsDTO(" +
+            "j.jobCategory, COUNT(a)) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "GROUP BY j.jobCategory " +
+            "ORDER BY COUNT(a) DESC")
+    Page<JobCategoryStatisticsDTO> findMostPopularJobCategoriesByEmployerId(
+            @Param("employerId") Long employerId,
+            Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT j.jobId) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = 'PENDING'")
+    long countJobsWithApplicationsByEmployerId(@Param("employerId") Long employerId);
+
+
+    @Query("SELECT COUNT(DISTINCT j.jobCategory) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId")
+    long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
+
 
 
 }

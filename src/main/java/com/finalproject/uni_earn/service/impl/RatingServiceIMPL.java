@@ -35,13 +35,12 @@ import java.util.Optional;
 @Transactional
 public class RatingServiceIMPL implements RatingService {
 
-    // Define constants to avoid magic numbers
     private static final long MAX_RATING_MODIFICATION_MINUTES = 720; // 12 hours
     private static final String STUDENT_ROLE = "STUDENT";
     private static final String EMPLOYER_ROLE = "EMPLOYER";
     private static final String ADMIN_ROLE = "ADMIN";
 
-    // Repository dependencies
+
     private final UserRepo userRepo;
     private final RatingRepo ratingRepo;
     private final ApplicationRepo applicationRepo;
