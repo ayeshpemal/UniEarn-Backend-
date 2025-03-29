@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.repo;
 
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Response.JobSummeryDetails;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -73,4 +74,87 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     List<Job> findByStartDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
 
     List<Job> findByEndDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
+            "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime,j.jobStatus) " +
+            "FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "ORDER BY j.startDate DESC")
+    Page<JobSummeryDetails> getJobSummeryDetails(@Param("employerId") Long employerId, Pageable pageable);
+
+    Long countByEmployer_UserId(Long employerId);
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
+            "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime,j.jobStatus) " +
+            "FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "ORDER BY j.startDate DESC")
+    Page<JobSummeryDetails> getJobsByEmployerAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate")
+    Long countJobsByEmployerAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
+            "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime, j.jobStatus) " +
+            "FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = :jobStatus " +
+            "ORDER BY j.startDate DESC")
+    Page<JobSummeryDetails> getJobsByEmployerAndStatus(
+            @Param("employerId") Long employerId,
+            @Param("jobStatus") JobStatus jobStatus,
+            Pageable pageable
+    );
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = :status")
+    Long countJobsByEmployerAndStatus(
+            @Param("employerId") Long employerId,
+            @Param("status") JobStatus status
+    );
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
+            "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime, j.jobStatus) " +
+            "FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = :jobStatus " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "ORDER BY j.startDate DESC")
+    Page<JobSummeryDetails> getJobsByEmployerStatusAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("jobStatus") JobStatus jobStatus,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = :jobStatus " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate")
+    Long countJobsByEmployerStatusAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("jobStatus") JobStatus jobStatus,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+
 }
+
