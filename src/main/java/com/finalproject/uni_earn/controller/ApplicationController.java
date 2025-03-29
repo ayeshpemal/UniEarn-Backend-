@@ -2,6 +2,8 @@ package com.finalproject.uni_earn.controller;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedGroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedStudentApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
 import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
@@ -92,6 +94,7 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @PostMapping("/student/summary")
     public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@RequestBody StudentSummaryRequestDTO requestDTO) {
 
@@ -101,7 +104,7 @@ public class ApplicationController {
         return ResponseEntity.ok(new StandardResponse(200, "Success", summary));
     }
 
-
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("pending-group/job/{jobId}")
     public ResponseEntity<StandardResponse> getGroupApplicationsByJobId(@PathVariable Long jobId) {
         List<GroupApplicationDTO> groupApplications = applicationService.getGroupApplicationsByJobId(jobId);
@@ -109,12 +112,15 @@ public class ApplicationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("pending-student/job/{jobId}")
     public ResponseEntity<StandardResponse> getPendingStudentsByJobId(@PathVariable Long jobId) {
         List<StudentApplicationDTO> studentApplications = applicationService.getPendingStudentsByJobId(jobId);
         StandardResponse response = new StandardResponse(200, "Success", studentApplications);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/has-applied")
     public ResponseEntity<StandardResponse> hasStudentApplied(
             @RequestParam Long studentId, @RequestParam Long jobId) {
@@ -122,6 +128,34 @@ public class ApplicationController {
         StudentApplicationResponseDTO studentApplicationResponseDTO = applicationService.hasStudentAppliedForJob(studentId, jobId);
         return new ResponseEntity<>(
                 new StandardResponse(200, "Check completed", studentApplicationResponseDTO),
+                HttpStatus.OK
+        );
+    }
+
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @GetMapping("/group-applications/job/{jobId}")
+    public ResponseEntity<StandardResponse> getPaginatedGroupApplicationsByJobId(
+            @PathVariable Long jobId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        PaginatedGroupApplicationDTO paginatedGroupApplications = applicationService.getPaginatedGroupApplicationsByJobId(jobId, page, pageSize);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Success", paginatedGroupApplications),
+                HttpStatus.OK
+        );
+    }
+
+    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @GetMapping("/student-applications/job/{jobId}")
+    public ResponseEntity<StandardResponse> getPaginatedStudentApplicationsByJobId(
+            @PathVariable Long jobId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        PaginatedStudentApplicationDTO paginatedStudentApplications = applicationService.getPaginatedStudentApplicationsByJobId(jobId, page, pageSize);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Success", paginatedStudentApplications),
                 HttpStatus.OK
         );
     }

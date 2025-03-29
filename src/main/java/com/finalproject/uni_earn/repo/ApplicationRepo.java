@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -85,5 +86,5 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
                                                       @Param("startDate") LocalDateTime startDate,
                                                       @Param("endDate") LocalDateTime endDate);
 
-
+    Page<Application> findByJob_JobId(Long jobJobId, Pageable pageable);
 }
