@@ -139,10 +139,7 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "WHERE j.employer.userId = :employerId")
     long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
 
-    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
-            "JOIN t.memberConfirmations mc " +
-            "WHERE KEY(mc).userId = :studentId AND VALUE(mc) = true")
-    boolean isStudentConfirmedTeamMemberById(@Param("studentId") Long studentId);
+
 
 
 }
