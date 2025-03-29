@@ -8,8 +8,10 @@ import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 
+import java.util.Date;
 import java.util.List;
 
 public interface JobService {
@@ -18,14 +20,14 @@ public interface JobService {
     String addJob(AddJobRequestDTO addJobRequestDTO);
     String deleteJob(Long jobId);
     String updateJob(UpdateJobRequestDTO updateJobRequestDTO);
-    String setStatus(Long jobId, boolean status);
+    String setStatus(Long jobId, JobStatus status);
 
     //For Student
     PaginatedResponseJobDTO studentJobs(Long studentId, Integer page);
     PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page);
     PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page);
     PaginatedResponseJobDTO searchJobByKeyword(String keyWord, Integer page);
-    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page);
+    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDate, Integer page);
 
     //Common
     JobDTO viewJobDetails(long jobId);

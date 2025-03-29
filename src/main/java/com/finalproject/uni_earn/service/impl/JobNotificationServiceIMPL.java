@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -110,7 +111,8 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
 
         Long totalNotifications = notificationRepo.countByRecipient(user);
 
-        Page<JobNotification> notifications = notificationRepo.findAllByRecipient(user, PageRequest.of(page, size));
+        Page<JobNotification> notifications = notificationRepo.findAllByRecipient(
+                user, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         List<NotificationDTO> notificationDTOS = notifications.getContent().stream()
                 .map(notification -> {
                    return new NotificationDTO(
