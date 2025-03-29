@@ -127,18 +127,19 @@ public class JobController {
     }
 
     //search by location,categories,keywords
-    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @GetMapping("/search")
     ResponseEntity<StandardResponse> searchJobs(
             @RequestParam(required = false) Location location,
             @RequestParam(required = false) String categories, // List of categories as CSV
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @RequestParam Integer page) {
 
         List<JobCategory> categoryList = (categories != null && !categories.isEmpty()) ?
                 Arrays.stream(categories.split(",")).map(JobCategory::valueOf).collect(Collectors.toList()) : null;
 
-        PaginatedResponseJobDTO jobList = jobService.searchJobs(location, categoryList, keyword,page);
+        PaginatedResponseJobDTO jobList = jobService.searchJobs(location, categoryList, keyword, startDate, page);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", jobList),
                 HttpStatus.OK);

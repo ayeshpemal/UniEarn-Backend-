@@ -304,8 +304,8 @@ public class JobServiceIMPL implements JobService {
 
 
     @Override
-    public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page) {
-        Specification<Job> spec = JobSpecification.filterJobs(location, categories, keyword);
+    public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDate, Integer page) {
+        Specification<Job> spec = JobSpecification.filterJobs(location, categories, keyword, startDate);
         if(spec==null)
             throw new InvalidParametersException("Invalid Parameters...!!");
 

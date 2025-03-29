@@ -10,6 +10,7 @@ import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
 
+import java.util.Date;
 import java.util.List;
 
 public interface JobService {
@@ -25,7 +26,7 @@ public interface JobService {
     PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page);
     PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page);
     PaginatedResponseJobDTO searchJobByKeyword(String keyWord, Integer page);
-    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page);
+    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDate, Integer page);
 
     //Common
     JobDTO viewJobDetails(long jobId);
