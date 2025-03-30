@@ -6,6 +6,7 @@ import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.StudentDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
@@ -150,7 +151,7 @@ public class StudentServiceIMPL implements StudentService {
         }
 
         // Deactivate the job after selecting the candidate
-        jobService.setStatus(job.getJobId(), false);
+        //jobService.setStatus(job.getJobId(), JobStatus.ON_GOING);
         return "Job application confirmed successfully.";
     }
 

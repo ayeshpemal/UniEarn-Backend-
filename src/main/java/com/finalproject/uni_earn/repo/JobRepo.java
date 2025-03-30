@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +70,10 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     List<Long> findLeastAppliedJobByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     long countByEmployer(Employer employer);
+
+    List<Job> findByStartDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
+
+    List<Job> findByEndDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
             "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime,j.jobStatus) " +
