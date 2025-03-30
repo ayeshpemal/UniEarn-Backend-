@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Response.JobSummeryDetails;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
+import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
