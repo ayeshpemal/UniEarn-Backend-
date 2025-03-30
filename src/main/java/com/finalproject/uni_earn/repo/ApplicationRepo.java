@@ -6,6 +6,7 @@ import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import io.micrometer.common.KeyValues;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -142,4 +143,5 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "WHERE j.employer.userId = :employerId")
     long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
 
+    List<Application> getByJob_JobId(Long jobJobId);
 }
