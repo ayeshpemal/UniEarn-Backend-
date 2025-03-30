@@ -69,4 +69,6 @@ public interface UserRepo extends JpaRepository<User, Long>{
     Optional<User> findByEmailAndRole(String defaultAdminEmail, Role role);
 
     Optional<User> findByUserId(Long userId);
+
+    List<User> findByVerifiedFalseAndCreatedAtBefore(LocalDateTime cutoffTime);
 }

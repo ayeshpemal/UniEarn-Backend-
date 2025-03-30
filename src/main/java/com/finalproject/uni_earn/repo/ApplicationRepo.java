@@ -91,7 +91,7 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
 
 
     Page<Application> findByJob_JobId(Long jobJobId, Pageable pageable);
-    
+
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobStaticsDTO(" +
             "j.jobId, COUNT(a), j.jobCategory, j.startDate, j.endDate) " +
@@ -143,5 +143,25 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "WHERE j.employer.userId = :employerId")
     long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
 
+
     List<Application> getByJob_JobId(Long jobJobId);
+
+    // Get top 3 jobs with most applications for an employer
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) DESC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithMostApplicationsByEmployerId(@Param("employerId") Long employerId);
+
+    // Get top 3 jobs with least applications for an employer
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) ASC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithLeastApplicationsByEmployerId(@Param("employerId") Long employerId);
+
 }
