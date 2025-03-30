@@ -19,7 +19,7 @@ public class JobStatusScheduler {
     private JobRepo jobRepository;
 
     @Transactional
-    @Scheduled(cron = "0 0 6 * * ?") // Runs every day at 1:00 AM
+    @Scheduled(cron = "0 0 6 * * ?") // Runs every day at 6:00 AM
     public void updateJobStatuses() {
         Date currentDate = new Date(); // Get current date-time
 
