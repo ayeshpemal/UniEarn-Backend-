@@ -3,7 +3,10 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedCategoryStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobSummeryDTO;
+import com.finalproject.uni_earn.dto.Response.EmployerBriefSummaryDTO;
 import com.finalproject.uni_earn.entity.enums.JobStatus;
+import com.finalproject.uni_earn.exception.UnauthorizedActionException;
+import com.finalproject.uni_earn.exception.UserNotFoundException;
 import com.finalproject.uni_earn.service.EmployerAnalysisService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import jakarta.validation.constraints.Min;
@@ -194,6 +197,28 @@ public class EmployerAnalysisController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new StandardResponse(500, "Error retrieving category statistics: " + e.getMessage(), null));
+        }
+    }
+    /*
+    * this for getting brief summary of the employer. no filtering
+    * last function asked
+    *
+    * */
+
+    @GetMapping("/brief-summary/{employerId}")
+    public ResponseEntity<StandardResponse> getBriefSummary(
+            @PathVariable @NotNull @Min(0) Long employerId) {
+
+        try
+        {
+            EmployerBriefSummaryDTO result = employerAnalysisService.getBriefSummary(employerId);
+            return ResponseEntity.ok(
+                    new StandardResponse(200, "Successfully retrieved employer job summary", result)
+            );
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error retrieving employer job summary: " + e.getMessage(), null));
         }
     }
 

@@ -139,7 +139,23 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "WHERE j.employer.userId = :employerId")
     long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
 
+    // Get top 3 jobs with most applications for an employer
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) DESC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithMostApplicationsByEmployerId(@Param("employerId") Long employerId);
 
+    // Get top 3 jobs with least applications for an employer
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) ASC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithLeastApplicationsByEmployerId(@Param("employerId") Long employerId);
 
 
 }
