@@ -31,6 +31,7 @@ public class RatingController {
     /**
      * Creates a new rating
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PostMapping("/create")
     public ResponseEntity<StandardResponse> createRating(
             @Valid @RequestBody ReatingRequestDTO ratingRequestDTO) {
@@ -48,6 +49,7 @@ public class RatingController {
     /**
      * Updates an existing rating
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/update")
     public ResponseEntity<StandardResponse> updateRating(
             @Valid @RequestBody UpdateRatingRequestDTO updateRatingRequestDTO) {
@@ -69,6 +71,7 @@ public class RatingController {
      * Deletes an existing rating
      * dont send rating or comment , i just put that since it is easy 
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @DeleteMapping("/delete")
     public ResponseEntity<StandardResponse> deleteRating(
             @Valid @RequestBody UpdateRatingRequestDTO updateRatingRequestDTO) {
@@ -81,6 +84,7 @@ public class RatingController {
     /**
      * Retrieves all ratings received by a specific user with pagination
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/received/{userId}")
     public ResponseEntity<StandardResponse> getAllReceivedRatings(
             @PathVariable Long userId,
@@ -100,6 +104,7 @@ public class RatingController {
     /**
      * Retrieves all ratings given by a specific user with pagination
      */
+    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/given/{userId}")
     public ResponseEntity<StandardResponse> getAllGivenRatings(
             @PathVariable Long userId,
