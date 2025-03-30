@@ -7,11 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UpdateRatingRequestDTO {
+public class DeleteRatingRequestDTO {
     private Long ratingId;
     private Long raterId;
     private Long ratedId;
     private Long ApplicationId;
-    private Integer newScore;
-    private String newComment;
+
 }
