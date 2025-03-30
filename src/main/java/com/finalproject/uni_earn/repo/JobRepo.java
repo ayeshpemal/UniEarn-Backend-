@@ -155,6 +155,20 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
             @Param("endDate") Date endDate
     );
 
+    // Count jobs by status for an employer
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.employer.userId = :employerId AND j.jobStatus = :status")
+    Long countByEmployerIdAndStatus(@Param("employerId") Long employerId, @Param("status") JobStatus status);
+
+    // Count jobs by category for an employer
+    @Query("SELECT j.jobCategory, COUNT(j) FROM Job j WHERE j.employer.userId = :employerId GROUP BY j.jobCategory")
+    List<Object[]> countByEmployerIdGroupByCategory(@Param("employerId") Long employerId);
+
+    // Count jobs by location for an employer
+    @Query("SELECT l, COUNT(j) FROM Job j JOIN j.jobLocations l WHERE j.employer.userId = :employerId GROUP BY l")
+    List<Object[]> countByEmployerIdGroupByLocation(@Param("employerId") Long employerId);
+
+
+
+
 
 }
-

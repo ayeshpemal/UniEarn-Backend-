@@ -3,11 +3,11 @@ package com.finalproject.uni_earn.service.impl;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedCategoryStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobSummeryDTO;
-import com.finalproject.uni_earn.dto.Response.JobCategoryStatisticsDTO;
-import com.finalproject.uni_earn.dto.Response.JobStaticsDTO;
-import com.finalproject.uni_earn.dto.Response.JobSummeryDetails;
+import com.finalproject.uni_earn.dto.Response.*;
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.JobStatus;
+import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.UnauthorizedActionException;
 import com.finalproject.uni_earn.exception.UserNotFoundException;
@@ -20,8 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
@@ -161,6 +160,73 @@ public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
                 applicationRepo.countJobCategoriesWithApplicationsByEmployerId(employerId)
         );
 
+    }
+
+    @Override
+    public EmployerBriefSummaryDTO getBriefSummary(Long employerId) {
+
+        verifyEmployerExists(employerId);
+
+        EmployerBriefSummaryDTO summary = new EmployerBriefSummaryDTO();
+
+        //  Get total job count
+        summary.setTotalJobCount(jobRepo.countByEmployer_UserId(employerId));
+
+        /*
+        * Get counts by job status
+        For each status type, get the count of jobs with that status*/
+        summary.setPendingJobCount(jobRepo.countByEmployerIdAndStatus(employerId, JobStatus.PENDING));
+        summary.setOngoingJobCount(jobRepo.countByEmployerIdAndStatus(employerId, JobStatus.ON_GOING));
+        summary.setFinishedJobCount(jobRepo.countByEmployerIdAndStatus(employerId, JobStatus.FINISH));
+        summary.setCanceledJobCount(jobRepo.countByEmployerIdAndStatus(employerId, JobStatus.CANCEL));
+
+        /*
+        Get counts by category
+         This returns category and count pairs that we convert to a map
+        * */
+        List<Object[]> categoryStats = jobRepo.countByEmployerIdGroupByCategory(employerId);
+        Map<JobCategory, Long> categoryCounts = new HashMap<>();
+        for (Object[] stat : categoryStats) {
+            categoryCounts.put((JobCategory) stat[0], (Long) stat[1]);
+        }
+        summary.setJobCountByCategory(categoryCounts);
+
+        /*
+        *  Get counts by location
+        This returns location and count pairs that we convert to a map
+        * */
+        List<Object[]> locationStats = jobRepo.countByEmployerIdGroupByLocation(employerId);
+        Map<Location, Long> locationCounts = new HashMap<>();
+        for (Object[] stat : locationStats) {
+            locationCounts.put((Location) stat[0], (Long) stat[1]);
+        }
+        summary.setJobCountByLocation(locationCounts);
+
+//        the top 3 jobs with the least applications
+        List<Object[]> mostAppliedJobsData = applicationRepo.findJobsWithMostApplicationsByEmployerId(employerId);
+        List<JobApplicationCountDTO> mostAppliedJobs = new ArrayList<>();
+        for (Object[] jobData : mostAppliedJobsData) {
+            mostAppliedJobs.add(new JobApplicationCountDTO(
+                    (Long) jobData[0],
+                    (String) jobData[1],
+                    (Long) jobData[2]
+            ));
+        }
+        summary.setMostAppliedJobs(mostAppliedJobs);
+
+        // the top 3 jobs with the least applications
+        List<Object[]> leastAppliedJobsData = applicationRepo.findJobsWithLeastApplicationsByEmployerId(employerId);
+        List<JobApplicationCountDTO> leastAppliedJobs = new ArrayList<>();
+        for (Object[] jobData : leastAppliedJobsData) {
+            leastAppliedJobs.add(new JobApplicationCountDTO(
+                    (Long) jobData[0],
+                    (String) jobData[1],
+                    (Long) jobData[2]
+            ));
+        }
+        summary.setLeastAppliedJobs(leastAppliedJobs);
+
+        return summary;
     }
 
 

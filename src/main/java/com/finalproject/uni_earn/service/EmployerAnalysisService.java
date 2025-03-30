@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.service;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedCategoryStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobStaticsDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobSummeryDTO;
+import com.finalproject.uni_earn.dto.Response.EmployerBriefSummaryDTO;
 import com.finalproject.uni_earn.entity.enums.JobStatus;
 
 import java.util.Date;
@@ -19,4 +20,5 @@ public interface EmployerAnalysisService {
     PaginatedJobStaticsDTO getJobsWithLeastApplicationsByEmployerId(long employerId, int page, int size);
     PaginatedCategoryStaticsDTO getMostPopularJobCategoriesByEmployerId(long employerId, int page, int size);
 
+    EmployerBriefSummaryDTO getBriefSummary(Long employerId);
 }
