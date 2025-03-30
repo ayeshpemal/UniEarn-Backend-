@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,21 +134,20 @@ public class StudentServiceIMPL implements StudentService {
         }
 
         Job job = application.getJob();
+        // Check if the job is already finished
+        if (job.getJobStatus().equals(JobStatus.FINISH) || job.getJobStatus().equals(JobStatus.ON_GOING) || job.getJobStatus().equals(JobStatus.CANCEL)) {
+            throw new InvalidValueException("Application is already finished or ongoing or canceled.");
+        }
+        // Fetch all applications for the job
+        List<Application> allApplications = applicationRepo.getByJob_JobId(job.getJobId());
         // Reject all other applications for this job
-        if (job.getRequiredWorkers() == 1){
-            applicationService.getPendingStudentsByJobId(job.getJobId())
+
+        if(!allApplications.isEmpty()){
+            allApplications
                     .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
                     .forEach(app -> {
                         applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
                     });
-        }else if (job.getRequiredWorkers() > 1){
-            applicationService.getGroupApplicationsByJobId(job.getJobId())
-                    .stream().filter(app -> !app.getApplicationId().equals(application.getApplicationId()))
-                    .forEach(app -> {
-                        applicationService.updateStatus(app.getApplicationId(), ApplicationStatus.REJECTED, emp);
-                    });
-        }else{
-            throw new NotFoundException("Application not found!");
         }
 
         // Deactivate the job after selecting the candidate

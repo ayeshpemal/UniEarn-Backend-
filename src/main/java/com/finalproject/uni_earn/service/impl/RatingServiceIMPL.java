@@ -191,12 +191,12 @@ public class RatingServiceIMPL implements RatingService {
                 isStudentEligible = true;
                 ratingCategory = RatingCategory.TEAM_TO_INDIVIDUAL;
 
-        }
-        else {
+            }
+        } else {
             throw new UnauthurizedRatingException(
                     "Unauthorized Rating Request: Student not associated with this application");// Default
         }
-        }
+
 
 
         // Getting needed data
@@ -214,6 +214,7 @@ public class RatingServiceIMPL implements RatingService {
                 ratingType,
                 ratingCategory
         );
+
 
         Ratings storedRatings = ratingRepo.save(ratings);
         return createResponseDTO(storedRatings);
