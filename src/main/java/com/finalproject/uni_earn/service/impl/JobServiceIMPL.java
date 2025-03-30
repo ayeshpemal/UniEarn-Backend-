@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.LocationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
+import com.finalproject.uni_earn.dto.Response.ConfirmJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
@@ -338,5 +339,33 @@ public class JobServiceIMPL implements JobService {
             throw new RuntimeException("Task failed...!!");
         }
 
+    }
+
+    @Override
+    public ConfirmJobDTO getByJobId(Long jobId) {
+        // Fetch the job from the repository
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found with ID: " + jobId));
+
+        // Map the job entity to ConfirmJobDTO
+        ConfirmJobDTO confirmJobDTO = new ConfirmJobDTO();
+        confirmJobDTO.setId(job.getJobId());
+        confirmJobDTO.setCompanyName(job.getEmployer().getCompanyName()); // Assuming Employer has a companyName field
+        confirmJobDTO.setDescription(job.getJobDescription());
+        confirmJobDTO.setDate(job.getStartDate() + " - " + job.getEndDate()); // Combine start and end dates
+        confirmJobDTO.setTime(job.getStartTime() + " to " + job.getEndTime()); // Combine start and end times
+
+        // Convert List<Gender> to a comma-separated string
+        List<String> genderList = job.getRequiredGender().stream()
+                .map(Enum::name) // Convert Gender enum to String
+                .collect(Collectors.toList());
+        confirmJobDTO.setGender(String.join(", ", genderList)); // Join the list into a single string
+
+        confirmJobDTO.setRequiredWorkers(job.getRequiredWorkers());
+        confirmJobDTO.setSalary("Rs." + job.getJobPayment()); // Format salary
+        //confirmJobDTO.setCompanyLogo(job.getCompanyLogo()); // Assuming Job has a companyLogo field
+        //confirmJobDTO.setCoverImage(job.getCoverImage()); // Assuming Job has a coverImage field
+
+        return confirmJobDTO;
     }
 }

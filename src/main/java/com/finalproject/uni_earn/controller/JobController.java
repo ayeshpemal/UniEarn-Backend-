@@ -3,12 +3,14 @@ package com.finalproject.uni_earn.controller;
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
+import com.finalproject.uni_earn.dto.Response.ConfirmJobDTO;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.Location;
+import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.impl.JobServiceIMPL;
 import com.finalproject.uni_earn.util.StandardResponse;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
-@RequestMapping(value = "/api/v1/jobs/")
+@RequestMapping(value = "/api/v1/jobs")
 public class JobController {
 
     @Autowired
@@ -149,5 +151,15 @@ public class JobController {
                 new StandardResponse(201, "Success.", message),
                 HttpStatus.CREATED
         );
+    }
+
+    @GetMapping("/{jobId}")
+    public ResponseEntity<?> getByJobId(@PathVariable Long jobId) {
+        try {
+            ConfirmJobDTO confirmJobDTO = jobService.getByJobId(jobId);
+            return new ResponseEntity<>(confirmJobDTO, HttpStatus.OK); // Return ResponseEntity with HTTP 200 OK
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND); // Return 404 if job is not found
+        }
     }
 }
