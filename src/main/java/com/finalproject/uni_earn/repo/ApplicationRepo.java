@@ -6,6 +6,7 @@ import com.finalproject.uni_earn.entity.Application;
 import com.finalproject.uni_earn.entity.Student;
 import com.finalproject.uni_earn.entity.Team;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import io.micrometer.common.KeyValues;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -142,6 +143,9 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "WHERE j.employer.userId = :employerId")
     long countJobCategoriesWithApplicationsByEmployerId(@Param("employerId") Long employerId);
 
+
+    List<Application> getByJob_JobId(Long jobJobId);
+
     // Get top 3 jobs with most applications for an employer
     @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
             "FROM Application a JOIN a.job j " +
@@ -159,6 +163,5 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "ORDER BY COUNT(a) ASC " +
             "LIMIT 3")
     List<Object[]> findJobsWithLeastApplicationsByEmployerId(@Param("employerId") Long employerId);
-
 
 }
