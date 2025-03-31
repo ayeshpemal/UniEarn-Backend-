@@ -38,7 +38,7 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     Integer countAllByJobCategory(JobCategory jobCategory);
     Integer countAllByJobLocationsContaining(Location location);
-    Integer countAllByJobLocationsContainingAndJobCategoryIn(Location location, List<JobCategory> jobCategoryList);
+    Integer countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus jobStatus, Location location, List<JobCategory> jobCategory);
     Integer countAllByJobDescriptionContaining(String keyword);
 
     @Query(value = "UPDATE Jobs SET activeStatus = ?2 WHERE job_id = ?1",nativeQuery = true)

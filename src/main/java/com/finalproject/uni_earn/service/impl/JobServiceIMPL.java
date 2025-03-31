@@ -235,7 +235,7 @@ public class JobServiceIMPL implements JobService {
                         .collect(Collectors.toList());
                 return new PaginatedResponseJobDTO(
                         jobDTOs,
-                        jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location, preferences)
+                        jobRepo.countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus.PENDING, location, preferences)
                 );
             } else {
                 throw new NotFoundException("No Jobs Found...!!");
