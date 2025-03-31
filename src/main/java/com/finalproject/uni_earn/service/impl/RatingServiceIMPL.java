@@ -308,5 +308,14 @@ public class RatingServiceIMPL implements RatingService {
         return new PaginatedRatingDTO(allReceivedRatings.getContent(), ratingRepo.countAllByRaterUserId(UserId));
     }
 
+    @Override
+    public Double getUserAverageRating(long userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new NotFoundException("User not found");
+        }
+        return ratingRepo.findAverageRatingForUser(userId).orElse(0.0);
+    }
+
+
 
 }

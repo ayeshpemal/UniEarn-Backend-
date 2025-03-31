@@ -20,5 +20,5 @@ public interface EmployerAnalysisService {
     PaginatedJobStaticsDTO getJobsWithLeastApplicationsByEmployerId(long employerId, int page, int size);
     PaginatedCategoryStaticsDTO getMostPopularJobCategoriesByEmployerId(long employerId, int page, int size);
 
-    EmployerBriefSummaryDTO getBriefSummary(Long employerId);
+    EmployerBriefSummaryDTO getBriefSummary(Long employerId, Date startDate, Date endDate);
 }

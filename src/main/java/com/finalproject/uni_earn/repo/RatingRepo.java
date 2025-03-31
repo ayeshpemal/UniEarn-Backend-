@@ -81,4 +81,9 @@ public interface RatingRepo extends JpaRepository<Ratings, Long> {
     Long countAllByRaterUserId(Long userId);
 
     boolean existsByRatingId(Long ratingId);
+
+    @Query("SELECT AVG(r.score) FROM Ratings r WHERE r.rated.userId = :userId")
+    Optional<Double> findAverageRatingForUser(@Param("userId") Long userId);
+
+
 }

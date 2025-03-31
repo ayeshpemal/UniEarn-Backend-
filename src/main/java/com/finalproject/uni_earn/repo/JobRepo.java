@@ -168,6 +168,55 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     @Query("SELECT l, COUNT(j) FROM Job j JOIN j.jobLocations l WHERE j.employer.userId = :employerId GROUP BY l")
     List<Object[]> countByEmployerIdGroupByLocation(@Param("employerId") Long employerId);
 
+    // Count jobs by employer and date range
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate")
+    Long countByEmployer_UserIdAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+    // Count jobs by employer, status, and date range
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.jobStatus = :status " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate")
+    Long countByEmployerIdAndStatusAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("status") JobStatus status,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+    // Count jobs by category for an employer with date range
+    @Query("SELECT j.jobCategory, COUNT(j) FROM Job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "GROUP BY j.jobCategory")
+    List<Object[]> countByEmployerIdGroupByCategoryAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+    // Count jobs by location for an employer with date range
+    @Query("SELECT l, COUNT(j) FROM Job j " +
+            "JOIN j.jobLocations l " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "GROUP BY l")
+    List<Object[]> countByEmployerIdGroupByLocationAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
 
 
 
