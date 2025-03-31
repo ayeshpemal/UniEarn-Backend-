@@ -13,10 +13,7 @@ import com.finalproject.uni_earn.entity.enums.RatingType;
 import com.finalproject.uni_earn.exception.AlreadyRatedException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.exception.UnauthurizedRatingException;
-import com.finalproject.uni_earn.repo.ApplicationRepo;
-import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.repo.RatingRepo;
-import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.RatingService;
 import com.finalproject.uni_earn.util.mappers.RatingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,15 +42,19 @@ public class RatingServiceIMPL implements RatingService {
     private final ApplicationRepo applicationRepo;
     private final JobRepo jobRepo;
     private final RatingMapper ratingMapper;
+    private final StudentRepo studentRepo;
+    private final EmployerRepo employerRepo;
 
     @Autowired
     public RatingServiceIMPL(UserRepo userRepo, RatingRepo ratingRepo, ApplicationRepo applicationRepo,
-                             JobRepo jobRepo, RatingMapper ratingMapper) {
+                             JobRepo jobRepo, RatingMapper ratingMapper,StudentRepo studentRepo,EmployerRepo employerRepo) {
         this.userRepo = userRepo;
         this.ratingRepo = ratingRepo;
         this.applicationRepo = applicationRepo;
         this.jobRepo = jobRepo;
         this.ratingMapper = ratingMapper;
+        this.studentRepo = studentRepo;
+        this.employerRepo = employerRepo;
     }
 
     /*
@@ -122,6 +124,34 @@ public class RatingServiceIMPL implements RatingService {
                 rating.getCreatedAt(),
                 rating.getCategory() // Added category
         );
+    }
+
+    private void calculateAndSaveAverageRating(Long userId) {
+        //calculating the average rating
+        float averageRating = 0.0f;
+        List<Ratings> ratingList = ratingRepo.findAllByRated_UserId(userId);
+        if (ratingList.isEmpty()) {
+            averageRating = 0.0f;
+        }else{
+            double sum = ratingList.stream().mapToDouble(Ratings::getScore).sum();
+            averageRating = (float) (sum / ratingList.size());
+            //updating the average rating
+            if (averageRating > 5.0) {
+                averageRating = 5.0f;
+            } else if (averageRating < 0.0) {
+                averageRating = 0.0f;
+            }
+        }
+
+        //updating the average rating of the rated user
+        User ratedUser = userRepo.getReferenceById(userId);
+        if (ratedUser instanceof Student student){
+            student.setRating(averageRating);
+            studentRepo.save(student);
+        }else if(ratedUser instanceof Employer employer){
+            employer.setRating(averageRating);
+            employerRepo.save(employer);
+        }
     }
 
     //Saying the rating
@@ -198,7 +228,6 @@ public class RatingServiceIMPL implements RatingService {
         }
 
 
-
         // Getting needed data
         User rater = userRepo.getReferenceById(reatingRequestDTO.getRaterId());
         User rated = userRepo.getReferenceById(reatingRequestDTO.getRatedId());
@@ -215,8 +244,12 @@ public class RatingServiceIMPL implements RatingService {
                 ratingCategory
         );
 
-
+        // Save the rating
         Ratings storedRatings = ratingRepo.save(ratings);
+
+        // Calculate and save average rating
+        calculateAndSaveAverageRating(reatingRequestDTO.getRatedId());
+
         return createResponseDTO(storedRatings);
     }
 

@@ -81,4 +81,6 @@ public interface RatingRepo extends JpaRepository<Ratings, Long> {
     Long countAllByRaterUserId(Long userId);
 
     boolean existsByRatingId(Long ratingId);
+
+    List<Ratings> findAllByRated_UserId(long userId);
 }
