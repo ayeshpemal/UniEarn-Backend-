@@ -26,4 +26,15 @@ public class ReportProcessServiceIMPL implements ReportProcessService {
     public Double getScore(ReportType reportType) {
         return penaltyScores.getOrDefault(reportType, 0.0);
     }
+
+    @Override
+    public boolean isValidReportType(ReportType reportType) {
+        for (ReportType type : ReportType.values()) {
+            if (type == reportType) {
+                return true;
+            }
+        }
+        // If the report type is not found in the enum, return false
+        return false;
+    }
 }

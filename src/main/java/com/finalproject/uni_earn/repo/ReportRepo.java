@@ -13,7 +13,7 @@ import java.util.List;
 public interface ReportRepo extends JpaRepository<Reports, Long> {
 
     Page<Reports> findAll(Pageable pageable);
-    Page<Reports> findAllByReportedUser_UserId(int id,Pageable pageable);
+    Page<Reports> findAllByReportedUser_UserId(Long id,Pageable pageable);
     long countAllBy();
 
     @Query("SELECT COUNT(r) FROM Reports r " +
