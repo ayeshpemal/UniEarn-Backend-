@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -163,5 +164,35 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "ORDER BY COUNT(a) ASC " +
             "LIMIT 3")
     List<Object[]> findJobsWithLeastApplicationsByEmployerId(@Param("employerId") Long employerId);
+
+    // Get top 3 jobs with most applications for an employer within date range
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) DESC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithMostApplicationsByEmployerIdAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
+    // Get top 3 jobs with least applications for an employer within date range
+    @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
+            "FROM Application a JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId " +
+            "AND j.startDate >= :startDate " +
+            "AND j.endDate <= :endDate " +
+            "GROUP BY j.jobId, j.jobTitle " +
+            "ORDER BY COUNT(a) ASC " +
+            "LIMIT 3")
+    List<Object[]> findJobsWithLeastApplicationsByEmployerIdAndDateRange(
+            @Param("employerId") Long employerId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
 
 }

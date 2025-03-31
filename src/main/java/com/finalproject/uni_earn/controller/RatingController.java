@@ -120,4 +120,21 @@ public class RatingController {
         return ResponseEntity.ok(
                 new StandardResponse(200, "Retrieved ratings given by user", response));
     }
+
+    /**
+     * Gets the average rating score for a specific user
+     */
+    @GetMapping("/average/{userId}")
+    public ResponseEntity<StandardResponse> getUserAverageRating(
+            @PathVariable Long userId) {
+
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.badRequest().body(
+                    new StandardResponse(400, "Invalid user ID", null));
+        }
+
+        Double averageRating = ratingService.getUserAverageRating(userId);
+        return ResponseEntity.ok(
+                new StandardResponse(200, "Retrieved average rating for user", averageRating));
+    }
 }

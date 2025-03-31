@@ -207,16 +207,16 @@ public class EmployerAnalysisController {
 
     @GetMapping("/brief-summary/{employerId}")
     public ResponseEntity<StandardResponse> getBriefSummary(
-            @PathVariable @NotNull @Min(0) Long employerId) {
+            @PathVariable @NotNull @Min(0) Long employerId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
 
-        try
-        {
-            EmployerBriefSummaryDTO result = employerAnalysisService.getBriefSummary(employerId);
+        try {
+            EmployerBriefSummaryDTO result = employerAnalysisService.getBriefSummary(employerId, startDate, endDate);
             return ResponseEntity.ok(
                     new StandardResponse(200, "Successfully retrieved employer job summary", result)
             );
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new StandardResponse(500, "Error retrieving employer job summary: " + e.getMessage(), null));
         }

@@ -13,5 +13,5 @@ public interface RatingService {
     RatingResponseBasicDTO deleteRating(UpdateRatingRequestDTO updateRatingRequestDTO);
     PaginatedRatingDTO getAllReceivedRatings (long UserId, int page, int size);
     PaginatedRatingDTO getAllGivenRatings (long UserId,int page,int size);
-
+    Double getUserAverageRating(long userId);
 }
