@@ -126,34 +126,6 @@ public class RatingServiceIMPL implements RatingService {
         );
     }
 
-    private void calculateAndSaveAverageRating(Long userId) {
-        //calculating the average rating
-        float averageRating = 0.0f;
-        List<Ratings> ratingList = ratingRepo.findAllByRated_UserId(userId);
-        if (ratingList.isEmpty()) {
-            averageRating = 0.0f;
-        }else{
-            double sum = ratingList.stream().mapToDouble(Ratings::getScore).sum();
-            averageRating = (float) (sum / ratingList.size());
-            //updating the average rating
-            if (averageRating > 5.0) {
-                averageRating = 5.0f;
-            } else if (averageRating < 0.0) {
-                averageRating = 0.0f;
-            }
-        }
-
-        //updating the average rating of the rated user
-        User ratedUser = userRepo.getReferenceById(userId);
-        if (ratedUser instanceof Student student){
-            student.setRating(averageRating);
-            studentRepo.save(student);
-        }else if(ratedUser instanceof Employer employer){
-            employer.setRating(averageRating);
-            employerRepo.save(employer);
-        }
-    }
-
     //Saying the rating
 
     public RatingResponseBasicDTO saveRating(ReatingRequestDTO reatingRequestDTO) {
@@ -349,6 +321,20 @@ public class RatingServiceIMPL implements RatingService {
         return ratingRepo.findAverageRatingForUser(userId).orElse(0.0);
     }
 
+    private void calculateAndSaveAverageRating(Long userId) {
+        //calculating the average rating
+        Double averageRating = getUserAverageRating(userId);
+        float averageRatingFloat = averageRating.floatValue();
 
+        //updating the average rating of the rated user
+        User ratedUser = userRepo.getReferenceById(userId);
+        if (ratedUser instanceof Student student){
+            student.setRating(averageRatingFloat);
+            studentRepo.save(student);
+        }else if(ratedUser instanceof Employer employer){
+            employer.setRating(averageRatingFloat);
+            employerRepo.save(employer);
+        }
+    }
 
 }
