@@ -17,4 +17,5 @@ public class NewStudentApplicationDTO {
     private float rating;
     private ApplicationStatus applicationStatus;
     private String profilePictureUrl;
+    private boolean isRated;
 }

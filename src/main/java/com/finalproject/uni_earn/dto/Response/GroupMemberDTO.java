@@ -14,6 +14,7 @@ public class GroupMemberDTO {
     private Location location;
     private float rating;
     private String profilePictureUrl;
+    private boolean isRated;
 
 }
 
