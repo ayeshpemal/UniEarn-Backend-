@@ -90,4 +90,11 @@ public class AppWideExceptionHandler {
                 HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(OtherExceptions.class)
+    public ResponseEntity<StandardResponse> handleOtherExceptions(OtherExceptions ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+    }
+
 }

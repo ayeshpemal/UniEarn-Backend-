@@ -29,18 +29,18 @@ public class JobStatusScheduler {
         Date currentDate = new Date(); // Get current date-time
 
         // Update jobs that should be ON_GOING
-        List<Job> ongoingJobs = jobRepository.findByStartDateBeforeAndJobStatusNot(currentDate, JobStatus.ON_GOING);
+        List<Job> ongoingJobs = jobRepository.findByStartDateBeforeAndJobStatus(currentDate, JobStatus.PENDING);
         for (Job job : ongoingJobs) {
             job.setJobStatus(JobStatus.ON_GOING);
             applicationRepo.getByJob_JobId(job.getJobId()).forEach(app -> {
-                if(!app.getStatus().equals(ApplicationStatus.CONFIRMED)){
+                if (!app.getStatus().equals(ApplicationStatus.CONFIRMED)) {
                     app.setStatus(ApplicationStatus.REJECTED);
                 }
             });
         }
 
         // Update jobs that should be FINISHED
-        List<Job> finishedJobs = jobRepository.findByEndDateBeforeAndJobStatusNot(currentDate, JobStatus.FINISH);
+        List<Job> finishedJobs = jobRepository.findByEndDateBeforeAndJobStatus(currentDate, JobStatus.ON_GOING);
         for (Job job : finishedJobs) {
             job.setJobStatus(JobStatus.FINISH);
         }
