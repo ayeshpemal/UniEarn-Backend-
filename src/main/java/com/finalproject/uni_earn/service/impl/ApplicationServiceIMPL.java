@@ -131,7 +131,13 @@ public class ApplicationServiceIMPL implements ApplicationService {
             } else {
                 throw new InvalidValueException("Student can only confirm an accepted application.");
             }
-        } else {
+        } else if (user.getRole() == Role.ADMIN) {
+            if (newStatus == ApplicationStatus.REJECTED) {
+                application.setStatus(newStatus);
+            } else {
+                throw new InvalidValueException("Admin can only reject applications.");
+            }
+        }else {
             throw new InvalidValueException("Invalid user role.");
         }
 

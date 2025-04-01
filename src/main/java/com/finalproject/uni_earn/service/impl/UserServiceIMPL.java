@@ -5,17 +5,13 @@ import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
-import com.finalproject.uni_earn.entity.Employer;
-import com.finalproject.uni_earn.entity.Job;
-import com.finalproject.uni_earn.entity.Student;
-import com.finalproject.uni_earn.entity.User;
-import com.finalproject.uni_earn.entity.enums.Gender;
-import com.finalproject.uni_earn.entity.enums.JobCategory;
-import com.finalproject.uni_earn.entity.enums.Location;
-import com.finalproject.uni_earn.entity.enums.Role;
+import com.finalproject.uni_earn.entity.*;
+import com.finalproject.uni_earn.entity.enums.*;
 import com.finalproject.uni_earn.exception.*;
+import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.JwtUtil;
 import com.finalproject.uni_earn.util.PasswordValidator;
@@ -30,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -50,6 +48,10 @@ public class  UserServiceIMPL implements UserService {
     private AuthenticationManager authenticationManager;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private JobService jobService;
+    @Autowired
+    private ApplicationRepo applicationRepo;
 
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
@@ -287,11 +289,38 @@ public class  UserServiceIMPL implements UserService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
 
-        if (user instanceof Employer employer) {
-            Optional<Job> jobs = jobRepo.findAllByEmployer(employer);
-            jobs.ifPresent(job -> {
-                jobRepo.setActiveState(job.getJobId());
-            });
+        if(user.isDeleted()){
+            throw new InvalidValueException("User already deleted");
+        }
+
+        try{
+            if (user instanceof Employer employer) {
+                Optional<Job> jobs = jobRepo.findAllByEmployer(employer);
+                jobs.ifPresent(job -> {
+                    jobService.setStatus(job.getJobId(), JobStatus.CANCEL);
+                    List<Application> applications = applicationRepo.getByJob_JobId(job.getJobId());
+                    if (!applications.isEmpty()) {
+                        for (Application application : applications) {
+                            application.setStatus(ApplicationStatus.REJECTED);
+                            applicationRepo.save(application);
+                        }
+                    }
+                });
+            } else if (user instanceof Student student) {
+                List<Application> studentApplications = applicationRepo.getByStudent_UserId(student.getUserId());
+                List<Application> teamApplications = applicationRepo.findByStudentInTeamAndDateRange(student.getUserId(),null,null);
+                ArrayList<Application> applications = new ArrayList<>();
+                applications.addAll(studentApplications);
+                applications.addAll(teamApplications);
+                if (!applications.isEmpty()) {
+                    for (Application application : applications) {
+                        application.setStatus(ApplicationStatus.REJECTED);
+                        applicationRepo.save(application);
+                    }
+                }
+            }
+        }catch (Exception e){
+            throw new OtherExceptions("Error while deleting user: " + e.getMessage());
         }
 
         user.setDeleted(true);
@@ -303,6 +332,10 @@ public class  UserServiceIMPL implements UserService {
     public String restoreUser(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        if(!user.isDeleted()){
+            throw new InvalidValueException("User is not deleted");
+        }
 
         user.setDeleted(false);
         userRepo.save(user);

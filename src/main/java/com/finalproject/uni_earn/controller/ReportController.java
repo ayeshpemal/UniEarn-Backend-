@@ -36,7 +36,8 @@ public class ReportController {
         PaginatedReportDTO paginatedreportdto = reportService.getAllReports(page, size);
         return (ResponseEntity<StandardResponse>) ResponseEntity.ok(new StandardResponse(200, "Success", paginatedreportdto));
     }
-//to get the id of the reported user
+
+    //to get the id of the reported user
     //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/getall-by-id", params = {"userId","page", "size"})
     public ResponseEntity<StandardResponse> getAllReportsByCount(@RequestParam(value = "userId") Long userId, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
