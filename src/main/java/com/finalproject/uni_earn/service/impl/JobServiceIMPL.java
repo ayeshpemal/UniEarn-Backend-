@@ -9,6 +9,7 @@ import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
 import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
@@ -336,15 +337,23 @@ public class JobServiceIMPL implements JobService {
         if (!jobRepo.existsById(jobId)) {
             throw new NotFoundException("No Job Found with ID: " + jobId);
         }
-        try {
-            Job job = jobRepo.findById(jobId).
-                    orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
-            job.setJobStatus(status);
-            jobRepo.save(job);
-            return "Set status: "+status;
-        }catch (RuntimeException e){
-            throw new RuntimeException("Task failed...!!");
+
+        Job job = jobRepo.findById(jobId).
+                orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
+        if(status == JobStatus.CANCEL){
+            List<Application> applications = applicationRepo.getByJob_JobId(job.getJobId());
+            for (Application application : applications) {
+                if(application.getStatus().equals(ApplicationStatus.CONFIRMED)){
+                    throw new InvalidParametersException("Job already confirmed...Cannot cancel");
+                }
+                application.setStatus(ApplicationStatus.REJECTED);
+                applicationRepo.save(application);
+            }
         }
+        job.setJobStatus(status);
+        jobRepo.save(job);
+        return "Set status: "+status;
+
 
     }
 }

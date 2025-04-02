@@ -66,6 +66,7 @@ public class AdminServiceIMPL implements AdminService {
         }
 
         user.setRole(Role.STUDENT); // Defaulting back to a student, change if needed
+        user.setDeleted(true);
         userRepository.save(user);
         return "User with ID " + userId + " is no longer an admin.";
     }

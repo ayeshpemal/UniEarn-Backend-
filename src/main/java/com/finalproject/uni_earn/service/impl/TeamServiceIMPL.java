@@ -31,6 +31,9 @@ public class TeamServiceIMPL implements TeamService {
     private ApplicationRepo applicationRepository;
 
     @Autowired
+    private UpdateNotificationServiceIMPL updateNotificationService;
+
+    @Autowired
     private ModelMapper modelMapper;
     @Transactional
     public Long createTeam(TeamRequestDTO teamRequest) {
@@ -117,6 +120,7 @@ public class TeamServiceIMPL implements TeamService {
             Application application = applicationRepository.findByTeamAndStatus(team, ApplicationStatus.INACTIVE)
                     .orElseThrow(() -> new NotFoundException("No inactive application found"));
             application.setStatus(ApplicationStatus.PENDING);
+            updateNotificationService.createNotification(application.getApplicationId());
             applicationRepository.save(application);
         }
     }
