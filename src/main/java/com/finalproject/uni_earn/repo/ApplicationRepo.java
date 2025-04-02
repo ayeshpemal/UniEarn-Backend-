@@ -85,7 +85,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
 
     @Query("SELECT a FROM Application a WHERE a.team.id IN " +
             "(SELECT t.id FROM Team t JOIN t.members m WHERE m.userId = :studentId) " +
-            "AND a.appliedDate BETWEEN :startDate AND :endDate")
+            "AND (COALESCE(:startDate, a.appliedDate) <= a.appliedDate " +
+            "AND COALESCE(:endDate, a.appliedDate) >= a.appliedDate)")
     List<Application> findByStudentInTeamAndDateRange(@Param("studentId") Long studentId,
                                                       @Param("startDate") LocalDateTime startDate,
                                                       @Param("endDate") LocalDateTime endDate);
@@ -195,4 +196,5 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             @Param("endDate") Date endDate
     );
 
+    List<Application> getByStudent_UserId(long studentUserId);
 }

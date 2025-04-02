@@ -62,6 +62,9 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private JobGroupMappingRepo jobGroupMappingRepo;
 
+    @Autowired
+    private RatingRepo ratingRepo;
+
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
         if (addJobRequestDTO.getJobLocations() == null || addJobRequestDTO.getJobLocations().isEmpty()) {
@@ -232,7 +235,7 @@ public class JobServiceIMPL implements JobService {
                         .collect(Collectors.toList());
                 return new PaginatedResponseJobDTO(
                         jobDTOs,
-                        jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location, preferences)
+                        jobRepo.countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus.PENDING, location, preferences)
                 );
             } else {
                 throw new NotFoundException("No Jobs Found...!!");
@@ -273,6 +276,11 @@ public class JobServiceIMPL implements JobService {
                         JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
                         jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
                         jobDetailsResponseDTO.setApplicationStatus(application.getStatus().toString());
+                        jobDetailsResponseDTO.setRated(ratingRepo.existsByRaterRatedAndApplication(
+                                userId,
+                                job.getEmployer().getUserId(),
+                                application.getApplicationId()));
+                        jobDetailsResponseDTO.setApplicationId(application.getApplicationId());
                         return jobDetailsResponseDTO;
                     })
                     .collect(Collectors.toList());

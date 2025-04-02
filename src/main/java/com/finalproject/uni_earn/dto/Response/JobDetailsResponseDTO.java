@@ -28,4 +28,7 @@ public class JobDetailsResponseDTO {
     private int requiredWorkers;
     private List<Gender> requiredGender;
     private String applicationStatus; // For students: "PENDING", "ACCEPTED", etc.
+    private Long applicationId; // For students: ID of the application
+    private boolean isRated; // For students: true if the job is rated, false otherwise
+    private Long employer;
 }

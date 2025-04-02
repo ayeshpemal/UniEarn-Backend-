@@ -38,7 +38,7 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     Integer countAllByJobCategory(JobCategory jobCategory);
     Integer countAllByJobLocationsContaining(Location location);
-    Integer countAllByJobLocationsContainingAndJobCategoryIn(Location location, List<JobCategory> jobCategoryList);
+    Integer countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus jobStatus, Location location, List<JobCategory> jobCategory);
     Integer countAllByJobDescriptionContaining(String keyword);
 
     @Query(value = "UPDATE Jobs SET activeStatus = ?2 WHERE job_id = ?1",nativeQuery = true)
@@ -72,9 +72,9 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
     long countByEmployer(Employer employer);
 
-    List<Job> findByStartDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
+    List<Job> findByStartDateBeforeAndJobStatus(Date startDateBefore, JobStatus jobStatus);
 
-    List<Job> findByEndDateBeforeAndJobStatusNot(Date currentDate, JobStatus status);
+    List<Job> findByEndDateBeforeAndJobStatus(Date endDateBefore, JobStatus jobStatus);
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.JobSummeryDetails(" +
             "j.jobId, j.jobTitle, j.jobDescription, j.startDate, j.endDate, j.startTime, j.endTime,j.jobStatus) " +

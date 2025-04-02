@@ -12,10 +12,7 @@ import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
-import com.finalproject.uni_earn.repo.ApplicationRepo;
-import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.repo.StudentRepo;
-import com.finalproject.uni_earn.repo.TeamRepo;
+import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
 import jakarta.transaction.Transactional;
@@ -54,6 +51,8 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private RatingRepo ratingRepo;
 
     @Override
     public String applyAsStudent(Long studentId, Long jobId) {
@@ -132,7 +131,13 @@ public class ApplicationServiceIMPL implements ApplicationService {
             } else {
                 throw new InvalidValueException("Student can only confirm an accepted application.");
             }
-        } else {
+        } else if (user.getRole() == Role.ADMIN) {
+            if (newStatus == ApplicationStatus.REJECTED) {
+                application.setStatus(newStatus);
+            } else {
+                throw new InvalidValueException("Admin can only reject applications.");
+            }
+        }else {
             throw new InvalidValueException("Invalid user role.");
         }
 
@@ -246,7 +251,11 @@ public class ApplicationServiceIMPL implements ApplicationService {
                                             member.getUserName(), // name
                                             member.getLocation(), // location
                                             member.getRating(), // rating
-                                            member.getProfilePictureUrl() // avatar
+                                            member.getProfilePictureUrl(), // avatar
+                                            ratingRepo.existsByRaterRatedAndApplication(
+                                                    job.getEmployer().getUserId(),
+                                                    member.getUserId(),
+                                                    application.getApplicationId()) // Check if the student has rated the application
                                     ))
                                     .collect(Collectors.toList()) // members
                     );
@@ -346,7 +355,11 @@ public class ApplicationServiceIMPL implements ApplicationService {
                                             member.getUserName(), // name
                                             member.getLocation(), // location
                                             member.getRating(), // rating
-                                            member.getProfilePictureUrl() // avatar
+                                            member.getProfilePictureUrl(), // avatar
+                                            ratingRepo.existsByRaterRatedAndApplication(
+                                                    job.getEmployer().getUserId(),
+                                                    member.getUserId(),
+                                                    application.getApplicationId()) // Check if the student has rated the application
                                     ))
                                     .collect(Collectors.toList()) // members
                     );
@@ -354,7 +367,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
                 .collect(Collectors.toList());
 
         // ✅ Step 5: Return result in PaginatedStudentApplicationDTO format
-        return new PaginatedGroupApplicationDTO(dtos, totalApplicationCount);
+        return new PaginatedGroupApplicationDTO(dtos, totalApplicationCount, job.getJobStatus());
     }
 
     public PaginatedStudentApplicationDTO getPaginatedStudentApplicationsByJobId(Long jobId, int page, int pageSize) {
@@ -394,13 +407,17 @@ public class ApplicationServiceIMPL implements ApplicationService {
                             student.getLocation(),
                             student.getRating(),
                             application.getStatus(),
-                            student.getProfilePictureUrl()
+                            student.getProfilePictureUrl(),
+                            ratingRepo.existsByRaterRatedAndApplication(
+                                    job.getEmployer().getUserId(),
+                                    application.getStudent().getUserId(),
+                                    application.getApplicationId()) // Check if the student has rated the application
                     );
                 })
                 .collect(Collectors.toList());
 
         // Construct the paginated response
-        return new PaginatedStudentApplicationDTO(resultApplications, totalApplications);
+        return new PaginatedStudentApplicationDTO(resultApplications, totalApplications, job.getJobStatus());
     }
 
 

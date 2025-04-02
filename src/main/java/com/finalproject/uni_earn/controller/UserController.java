@@ -113,10 +113,10 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("users/{userId}/delete")
     public ResponseEntity<StandardResponse> DeleteUser(
             @PathVariable Long userId) {
-
         String message = userService.deleteUser(userId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "User deleted successfully", message),
@@ -124,6 +124,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/{userId}/restore")
     public ResponseEntity<StandardResponse> restoreUser(
             @PathVariable Long userId) {
@@ -134,6 +135,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
