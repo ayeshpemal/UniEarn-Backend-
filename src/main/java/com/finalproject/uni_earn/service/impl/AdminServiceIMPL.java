@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
 import com.finalproject.uni_earn.dto.UserDTO;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.NotFoundException;
@@ -89,6 +90,27 @@ public class AdminServiceIMPL implements AdminService {
             response.setTotalJobsPosted((int) jobCount);
         } catch (Exception e) {
             throw new RuntimeException("Error while counting jobs within date range.", e);
+        }
+
+        try {
+            long userCount = userRepository.countByCreatedAtBeforeAndIsDeletedAndRoleNot(endDate, false, Role.ADMIN);
+            response.setActiveUsers((int) userCount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while counting users within date range.", e);
+        }
+
+        try {
+            long applicationCount = applicationRepository.countByCreatedAtBetween(startDate, endDate);
+            response.setTotalApplications((int) applicationCount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while counting applications within date range.", e);
+        }
+
+        try {
+            long completedJobsCount = jobRepository.countByCreatedAtBetweenAndJobStatus(startDate, endDate, JobStatus.FINISH);
+            response.setCompletedJobs((int) completedJobsCount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while counting completed jobs within date range.", e);
         }
 
         try {

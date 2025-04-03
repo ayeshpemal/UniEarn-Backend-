@@ -197,4 +197,6 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     );
 
     List<Application> getByStudent_UserId(long studentUserId);
+
+    long countByCreatedAtBetween(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
 }
