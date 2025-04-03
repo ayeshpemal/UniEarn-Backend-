@@ -82,7 +82,7 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
             // Send real-time notification to the specific student
             messagingTemplate.convertAndSendToUser(
                     student.getUserName(),
-                    "/topic/notifications",
+                    "/topic/job-notifications",
                     notificationDTO
             );
 

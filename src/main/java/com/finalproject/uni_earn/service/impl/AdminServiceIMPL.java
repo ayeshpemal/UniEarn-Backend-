@@ -13,6 +13,7 @@ import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.exception.NotificationFailedException;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
+import com.finalproject.uni_earn.repo.EmployerRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.AdminService;
@@ -39,6 +40,7 @@ public class AdminServiceIMPL implements AdminService {
     private final ModelMapper modelMapper;
     private final JobService jobService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EmployerRepo employerRepo;
 
 
     @Transactional
@@ -67,7 +69,7 @@ public class AdminServiceIMPL implements AdminService {
             throw new NotFoundException("User is not an admin.");
         }
 
-        user.setRole(Role.STUDENT); // Defaulting back to a student, change if needed
+        user.setRole(Role.EMPLOYER); // Defaulting back to a student, change if needed
         user.setDeleted(true);
         userRepository.save(user);
         return "User with ID " + userId + " is no longer an admin.";

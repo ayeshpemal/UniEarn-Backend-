@@ -159,7 +159,7 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
             // Send real-time notification to the specific recipient
             messagingTemplate.convertAndSendToUser(
                     user.getUserName(),
-                    "/topic/notifications",
+                    "/topic/update-notifications",
                     notificationDTO
             );
 
