@@ -6,4 +6,5 @@ public interface UpdateNotificationService {
     void createNotification(Long applicationId);
     boolean markNotificationAsRead(Long notificationId);
     PaginatedNotificationResponseDTO getPaginatedUpdateNotification(Long userId, int page, int size);
+    void createReportAnalysisNotification(Long reportedUserId, long reportCount, double totalPenaltyScore);
 }

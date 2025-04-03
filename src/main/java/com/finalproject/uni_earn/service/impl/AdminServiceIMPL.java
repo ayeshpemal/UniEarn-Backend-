@@ -17,6 +17,7 @@ import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.AdminService;
 import com.finalproject.uni_earn.service.JobService;
+import com.finalproject.uni_earn.service.UpdateNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -280,4 +281,6 @@ public class AdminServiceIMPL implements AdminService {
             throw new NotificationFailedException("Failed to send notification to all students");
         }
     }
+
+
 }

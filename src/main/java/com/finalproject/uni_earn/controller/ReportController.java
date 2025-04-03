@@ -30,7 +30,7 @@ public class ReportController {
         return ResponseEntity.ok(new StandardResponse(201, "Success", report));
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/getall", params = {"page", "size"})
     public ResponseEntity<StandardResponse> getAllReports(@RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
         PaginatedReportDTO paginatedreportdto = reportService.getAllReports(page, size);
@@ -38,7 +38,7 @@ public class ReportController {
     }
 
     //to get the id of the reported user
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/getall-by-id", params = {"userId","page", "size"})
     public ResponseEntity<StandardResponse> getAllReportsByCount(@RequestParam(value = "userId") Long userId, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
         PaginatedReportDTO paginatedreportdto = reportService.getAllReportsById(userId,page, size);

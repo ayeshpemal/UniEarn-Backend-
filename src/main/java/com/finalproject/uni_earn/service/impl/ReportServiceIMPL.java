@@ -27,13 +27,15 @@ public class ReportServiceIMPL implements ReportService {
     final private UserRepo userRepository;
     final private ReportMapper reportMapper;
     final private ReportProcessService reportProcessService;
+    final private ReportAnalyticsServiceIMPL reportAnalyticsService;
 
     @Autowired
-    public ReportServiceIMPL(ReportRepo reportRepository, UserRepo userRepository, ReportMapper reportMapper, ReportProcessService reportProcessService) {
+    public ReportServiceIMPL(ReportRepo reportRepository, UserRepo userRepository, ReportMapper reportMapper, ReportProcessService reportProcessService, ReportAnalyticsServiceIMPL reportAnalyticsService) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.reportMapper = reportMapper;
         this.reportProcessService = reportProcessService;
+        this.reportAnalyticsService = reportAnalyticsService;
     }
 
 
@@ -66,6 +68,8 @@ public class ReportServiceIMPL implements ReportService {
                 penalty_Score
         );
         reportRepository.save(report);
+
+        reportAnalyticsService.analyzeUserReports(reportRequestDTO.getReportedUser());
         return "Report submitted successfully";
     }
 

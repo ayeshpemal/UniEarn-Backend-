@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.config.ReportConfig;
 import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedNotificationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
@@ -37,6 +38,9 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private ReportConfig reportConfig;
 
     @Override
     public void createNotification(Long applicationId) {
@@ -161,7 +165,6 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
             System.out.println("Notification sent to " + user.getUserName() + ": " + message);
         }
-
     }
 
     @Override
@@ -201,4 +204,46 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
         return new PaginatedNotificationResponseDTO(notificationDTOS, totalNotifications);
     }
 
+    @Override
+    public void createReportAnalysisNotification(Long reportedUserId, long reportCount, double totalPenaltyScore) {
+        User reportedUser = userRepo.findById(reportedUserId)
+                .orElseThrow(() -> new NotFoundException("Reported user not found"));
+
+        String message = getString(reportCount, totalPenaltyScore, reportedUser);
+
+        System.out.println("Message: " + message);
+        //Send real-time notification to the admins
+        messagingTemplate.convertAndSendToUser(
+                "admin",
+                "/topic/report-notifications",
+                new NotificationDTO(
+                        null,
+                        message,
+                        null,
+                        false,
+                        new Date()
+                )
+        );
+    }
+
+    private String getString(long reportCount, double totalPenaltyScore, User reportedUser) {
+        String message = null;
+
+        if(totalPenaltyScore >= reportConfig.getWarningThreshold() && totalPenaltyScore < reportConfig.getCriticalThreshold()) {
+            message = String.format(
+                    "User %s has received a warning due to %d reports and a total penalty score of %.2f.",
+                    reportedUser.getUserName(),
+                    reportCount,
+                    totalPenaltyScore
+            );
+        } else if (totalPenaltyScore >= reportConfig.getCriticalThreshold()) {
+            message = String.format(
+                    "User %s has received a warning due to %d reports and a total penalty score of %.2f. Immediate action is required.",
+                    reportedUser.getUserName(),
+                    reportCount,
+                    totalPenaltyScore
+            );
+        }
+        return message;
+    }
 }
