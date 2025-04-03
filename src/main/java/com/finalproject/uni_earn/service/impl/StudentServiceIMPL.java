@@ -103,7 +103,7 @@ public class StudentServiceIMPL implements StudentService {
             studentDTO.setFollow(isFollow);
 
             // Check if the student is not deleted
-            if (!student.isDeleted()) {
+            if (!student.isDeleted() && student.isVerified()) {
                 activeStudentList.add(studentDTO);
             }
         }

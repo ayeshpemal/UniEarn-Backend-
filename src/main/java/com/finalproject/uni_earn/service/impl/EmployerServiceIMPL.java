@@ -123,7 +123,7 @@ public class EmployerServiceIMPL implements EmployerService {
             employerDto.setFollow(isFollow);
 
             // Check if the student is not deleted
-            if(!employer.isDeleted()){
+            if(!employer.isDeleted() && employer.isVerified()){
                 activeEmployerList.add(employerDto);
             }
         }
