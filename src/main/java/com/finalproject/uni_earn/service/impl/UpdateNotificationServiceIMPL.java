@@ -5,11 +5,14 @@ import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedNotificationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.NotificationType;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.AdminNotificationRepo;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.UpdateNoRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,6 +44,9 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
     @Autowired
     private ReportConfig reportConfig;
+
+    @Autowired
+    private AdminNotificationRepo adminNotificationRepo;
 
     @Override
     public void createNotification(Long applicationId) {
@@ -211,18 +217,30 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
         String message = getString(reportCount, totalPenaltyScore, reportedUser);
 
-        System.out.println("Message: " + message);
+        // Store the notification in the database
+        AdminNotification notification = new AdminNotification();
+        notification.setMessage(message);
+        notification.setType(NotificationType.REPORT);
+        notification.setRead(false);
+        notification.setRecipient(userRepo.findById(reportedUserId)
+            .orElseThrow(() -> new NotFoundException("User not found")));
+        notification.setSentDate(new Date());
+        adminNotificationRepo.save(notification);
+
         //Send real-time notification to the admins
+
+        AdminNotification notificationDTO = new AdminNotification(
+                notification.getNotificationId(),
+                notification.getMessage(),
+                notification.getType(),
+                notification.getRecipient(),
+                notification.isRead(),
+                notification.getSentDate()
+        );
         messagingTemplate.convertAndSendToUser(
                 "admin",
                 "/topic/report-notifications",
-                new NotificationDTO(
-                        null,
-                        message,
-                        null,
-                        false,
-                        new Date()
-                )
+                notificationDTO
         );
     }
 

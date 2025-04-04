@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.request.UpdatePasswordDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.enums.NotificationType;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import jakarta.validation.Valid;
@@ -144,6 +145,19 @@ public class UserController {
         userService.updatePassword(userId, updatePasswordDTO.getOldPassword(), updatePasswordDTO.getNewPassword());
         return new  ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "Success", "Password updated successfully"),
+                HttpStatus.OK
+        );
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @GetMapping("/public-notifications")
+    public ResponseEntity<StandardResponse> getPublicAdminNotifications(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(value = "type") NotificationType type,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Success", userService.getPublicAdminNotifications(userId, type, page, size)),
                 HttpStatus.OK
         );
     }

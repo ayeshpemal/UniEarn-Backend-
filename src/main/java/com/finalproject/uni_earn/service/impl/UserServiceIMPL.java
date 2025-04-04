@@ -1,5 +1,7 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.AdminNotificationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedAdminNotificationDTO;
 import com.finalproject.uni_earn.dto.Response.LoginResponseDTO;
 import com.finalproject.uni_earn.dto.request.LoginRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
@@ -8,6 +10,7 @@ import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.*;
 import com.finalproject.uni_earn.exception.*;
+import com.finalproject.uni_earn.repo.AdminNotificationRepo;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.JobRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
@@ -18,6 +21,9 @@ import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,7 +58,8 @@ public class  UserServiceIMPL implements UserService {
     private JobService jobService;
     @Autowired
     private ApplicationRepo applicationRepo;
-
+    @Autowired
+    private AdminNotificationRepo adminNotificationRepo;
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
         if(userRepo.existsByUserName(userRequestDTO.getUserName())){
@@ -365,6 +372,43 @@ public class  UserServiceIMPL implements UserService {
         // Update the user's password
         user.setPassword(hashedPassword);
         userRepo.save(user);
+    }
+
+    @Override
+    public PaginatedAdminNotificationDTO getPublicAdminNotifications(Long userId, NotificationType type, int page, int size) {
+        // Validate input parameters
+        if (type == null || type == NotificationType.REPORT || type == NotificationType.ALL_ADMINS) {
+            throw new InvalidValueException("Unauthorized access to this notification type");
+        }
+        if (page < 0 || size <= 0) {
+            throw new InvalidValueException("Page number and size must be greater than zero");
+        }
+
+        PaginatedAdminNotificationDTO paginatedAdminNotificationDTO = new PaginatedAdminNotificationDTO();
+
+        if(type == NotificationType.USER_SPECIFIC){
+            if(userId == null){
+                throw new InvalidValueException("User ID cannot be null for USER_SPECIFIC notification type");
+            }
+            Page<AdminNotification> notifications = adminNotificationRepo.getByTypeAndRecipient_UserId(type, userId, PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "updatedAt")));
+            List<AdminNotification> adminNotifications = notifications.getContent();
+            List<AdminNotificationDTO> adminNotificationDTOs = adminNotifications.stream()
+                    .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
+                    .toList();
+            paginatedAdminNotificationDTO.setNotifications(adminNotificationDTOs);
+            paginatedAdminNotificationDTO.setTotalNotifications(adminNotificationRepo.countByTypeAndRecipient_UserId(type, userId));
+        } else {
+            Page<AdminNotification> notifications = adminNotificationRepo.getByType(type, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt")));
+            List<AdminNotification> adminNotifications = notifications.getContent();
+            List<AdminNotificationDTO> adminNotificationDTOs = adminNotifications.stream()
+                    .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
+                    .toList();
+            paginatedAdminNotificationDTO.setNotifications(adminNotificationDTOs);
+            paginatedAdminNotificationDTO.setTotalNotifications(adminNotificationRepo.countByType(type));
+        }
+
+
+        return paginatedAdminNotificationDTO;
     }
 
 
