@@ -20,6 +20,5 @@ public interface AdminService {
     String sendNotificationAllEmployers(String message);
     String sendNotificationAllStudents(String message);
     String sendNotificationAllAdmins(String message);
-    PaginatedAdminNotificationDTO getPrivateAdminNotifications(NotificationType type, int page, int size);
-
+    PaginatedAdminNotificationDTO getPrivateAdminNotifications(Long userId,NotificationType type, int page, int size);
 }

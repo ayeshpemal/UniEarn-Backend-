@@ -115,11 +115,12 @@ public class AdminController {
     //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping("notification/private")
     public ResponseEntity<StandardResponse> getPrivateAdminNotifications(
+            @RequestParam(required = false) Long userID,
             @RequestParam NotificationType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return new ResponseEntity<>(
-                new StandardResponse(200, "Private notifications fetched successfully.", adminService.getPrivateAdminNotifications(type, page, size)),
+                new StandardResponse(200, "Private notifications fetched successfully.", adminService.getPrivateAdminNotifications(userID, type, page, size)),
                 HttpStatus.OK
         );
     }

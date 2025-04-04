@@ -36,5 +36,7 @@ public interface UserService {
 
     PaginatedAdminNotificationDTO getPublicAdminNotifications(Long userId, NotificationType type, int page, int size);
 
+    boolean markAdminNotificationAsRead(Long notificationId);
+
 
 }

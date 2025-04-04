@@ -411,5 +411,17 @@ public class  UserServiceIMPL implements UserService {
         return paginatedAdminNotificationDTO;
     }
 
+    @Override
+    public boolean markAdminNotificationAsRead(Long notificationId) {
+        AdminNotification notification = adminNotificationRepo.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("Notification not found with ID: " + notificationId));
+        if (notification.isRead()) {
+            throw new InvalidValueException("Notification already marked as read");
+        }
+        notification.setRead(true);
+        adminNotificationRepo.save(notification);
+        return true;
+    }
+
 
 }

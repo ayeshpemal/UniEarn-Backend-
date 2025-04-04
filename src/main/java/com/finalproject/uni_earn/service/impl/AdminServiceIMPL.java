@@ -47,6 +47,7 @@ public class AdminServiceIMPL implements AdminService {
     private final SimpMessagingTemplate messagingTemplate;
     private final EmployerRepo employerRepo;
     private final AdminNotificationRepo adminNotificationRepo;
+    private final UserRepo userRepo;
 
 
     @Transactional
@@ -324,7 +325,7 @@ public class AdminServiceIMPL implements AdminService {
         try {
             messagingTemplate.convertAndSendToUser(
                     "employer", // Get the username of the user
-                    "/topic/admin-notifications", // Changed to match the new subscription
+                    "/topic/e-admin-notifications", // Changed to match the new subscription
                     notificationDTO
             );
             return "Notification sent to all employers successfully!";
@@ -368,7 +369,7 @@ public class AdminServiceIMPL implements AdminService {
         try {
             messagingTemplate.convertAndSendToUser(
                     "student", // Get the username of the user
-                    "/topic/admin-notifications", // Changed to match the new subscription
+                    "/topic/s-admin-notifications", // Changed to match the new subscription
                     notificationDTO
             );
             return "Notification sent to all students successfully!";
@@ -412,7 +413,7 @@ public class AdminServiceIMPL implements AdminService {
         try {
             messagingTemplate.convertAndSendToUser(
                     "admin", // Get the username of the user
-                    "/topic/admin-notifications", // Changed to match the new subscription
+                    "/topic/a-admin-notifications", // Changed to match the new subscription
                     notificationDTO
             );
             return "Notification sent to all admins successfully!";
@@ -422,23 +423,44 @@ public class AdminServiceIMPL implements AdminService {
     }
 
     @Override
-    public PaginatedAdminNotificationDTO getPrivateAdminNotifications(NotificationType type, int page, int size) {
+    public PaginatedAdminNotificationDTO getPrivateAdminNotifications(Long userId, NotificationType type, int page, int size) {
         if (page < 0 || size <= 0) {
             throw new InvalidValueException("Page number and size must be greater than zero");
         }
 
         PaginatedAdminNotificationDTO paginatedAdminNotificationDTO = new PaginatedAdminNotificationDTO();
 
-        Page<AdminNotification> notifications = adminNotificationRepo.getByType(type, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt")));
-        List<AdminNotification> adminNotifications = notifications.getContent();
-        List<AdminNotificationDTO> adminNotificationDTOs = adminNotifications.stream()
-                .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
-                .toList();
-        paginatedAdminNotificationDTO.setNotifications(adminNotificationDTOs);
-        paginatedAdminNotificationDTO.setTotalNotifications(adminNotificationRepo.countByType(type));
+        if(type == NotificationType.REPORT || type == NotificationType.USER_SPECIFIC){
+            List<AdminNotificationDTO> adminNotificationDTOs;
+            if(userId == null){
+                Page<AdminNotification> notifications = adminNotificationRepo.getByType(type, PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "updatedAt")));
+                List<AdminNotification> adminNotifications = notifications.getContent();
+                adminNotificationDTOs = adminNotifications.stream()
+                        .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
+                        .toList();
+            }else{
+                if(!userRepo.existsByUserId(userId)){
+                    throw new NotFoundException("User with ID " + userId + " not found");
+                }
+                Page<AdminNotification> notifications = adminNotificationRepo.getByTypeAndRecipient_UserId(type, userId, PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "updatedAt")));
+                List<AdminNotification> adminNotifications = notifications.getContent();
+                adminNotificationDTOs = adminNotifications.stream()
+                        .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
+                        .toList();
+            }
+
+            paginatedAdminNotificationDTO.setNotifications(adminNotificationDTOs);
+            paginatedAdminNotificationDTO.setTotalNotifications(adminNotificationRepo.countByTypeAndRecipient_UserId(type, userId));
+        } else {
+            Page<AdminNotification> notifications = adminNotificationRepo.getByType(type, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt")));
+            List<AdminNotification> adminNotifications = notifications.getContent();
+            List<AdminNotificationDTO> adminNotificationDTOs = adminNotifications.stream()
+                    .map(notification -> modelMapper.map(notification, AdminNotificationDTO.class))
+                    .toList();
+            paginatedAdminNotificationDTO.setNotifications(adminNotificationDTOs);
+            paginatedAdminNotificationDTO.setTotalNotifications(adminNotificationRepo.countByType(type));
+        }
 
         return paginatedAdminNotificationDTO;
     }
-
-
 }

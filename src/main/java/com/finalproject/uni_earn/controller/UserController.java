@@ -161,4 +161,21 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PutMapping("/notification/mark-as-read/{notificationId}")
+    public ResponseEntity<StandardResponse> markAdminNotificationAsRead(@PathVariable Long notificationId) {
+        boolean isMarked = userService.markAdminNotificationAsRead(notificationId);
+        if (isMarked) {
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", "Notification marked as read."),
+                    HttpStatus.OK
+            );
+        } else {
+            return new ResponseEntity<>(
+                    new StandardResponse(400, "Error", "Failed to mark notification as read."),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
 }
