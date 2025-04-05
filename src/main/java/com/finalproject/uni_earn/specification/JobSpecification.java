@@ -29,7 +29,9 @@ public class JobSpecification {
 
             // Filter by keyword in Job Description if provided
             if (keyword != null && !keyword.isEmpty()) {
-                predicate = cb.and(predicate, cb.like(root.get("jobDescription"), "%" + keyword + "%"));
+                predicate = cb.and(predicate,
+                        cb.like(cb.lower(root.get("jobDescription")), "%" + keyword.toLowerCase() + "%")
+                );
             }
 
             // Filter by JobStatus = PENDING

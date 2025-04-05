@@ -26,6 +26,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -229,7 +230,7 @@ public class JobServiceIMPL implements JobService {
         if (student != null) {
             Location location = student.getLocation();
             List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize));
+            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
             if (jobList.getSize() > 0) {
                 List<JobDTO> jobDTOs = jobList.getContent().stream()
                         .map(job -> modelMapper.map(job, JobDTO.class))
@@ -260,10 +261,10 @@ public class JobServiceIMPL implements JobService {
             dataCount = applicationRepo.countByStudent(student) + applicationRepo.countApplicationsByStudentInTeam(student.getUserId());
 
             // Fetch paginated applied individual jobs for students
-            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2));
+            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             // Get team applications
-            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2));
+            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             // Combine both lists, remove duplicates, and paginate
             Set<Application> allApplications = new HashSet<>(individualApplications.getContent());
@@ -292,7 +293,7 @@ public class JobServiceIMPL implements JobService {
             dataCount = jobRepo.countByEmployer(employer);
 
             // Fetch paginated posted jobs for employers
-            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
+            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             jobDetailsResponseDTOS = jobs.getContent().stream()
                     .map(job -> {
@@ -318,7 +319,7 @@ public class JobServiceIMPL implements JobService {
         if(spec==null)
             throw new InvalidParametersException("Invalid Parameters...!!");
 
-        Page<Job> jobList = jobRepo.findAll(spec,PageRequest.of(page, pageSize));
+        Page<Job> jobList = jobRepo.findAll(spec,PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
         if(jobList.getSize()>0){
             List<JobDTO> jobDTOs = jobList.getContent().stream()
                     .map(job -> modelMapper.map(job, JobDTO.class))

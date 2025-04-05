@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.StudentDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.ApplicationService;
@@ -79,6 +80,7 @@ public class EmployerServiceIMPL implements EmployerService {
         Page<Employer> employerPage = employerRepo.findAll(PageRequest.of(page, PAGE_SIZE));
         List<UserResponseDTO> employers =employerPage.getContent()
                 .stream()
+                .filter(employer -> employer.getRole().equals(Role.EMPLOYER))
                 .map(employer -> modelMapper.map(employer, UserResponseDTO.class))
                 .collect(Collectors.toList());
 
@@ -123,7 +125,7 @@ public class EmployerServiceIMPL implements EmployerService {
             employerDto.setFollow(isFollow);
 
             // Check if the student is not deleted
-            if(!employer.isDeleted()){
+            if(!employer.isDeleted() && employer.isVerified()){
                 activeEmployerList.add(employerDto);
             }
         }

@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.dto;
 
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.ReportState;
+import com.finalproject.uni_earn.entity.enums.ReportType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class ReportDTO {
     private Long reportId;
     private Long reporter;
     private Long reportedUser;
+    private ReportType reportType;
     private String feedback;
     private LocalDateTime reportDate;
     private ReportState status;

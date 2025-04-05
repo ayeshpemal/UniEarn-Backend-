@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -52,11 +53,18 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
     public String createFollowNotification(Employer employer, Job job) {
         List<Follow> followers = followRepo.findAllByEmployer(employer);
 
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+
         String message = String.format(
-                "A new %s job has been posted by %s: %s. Check it out!",
+                "A new %s job has been posted by %s: %s. Check it out!\n" +
+                        "Date: %s\n" +
+                        "Time: %s - %s",
                 job.getJobCategory(), // Assuming Job has a category field
                 employer.getCompanyName(),
-                job.getJobTitle()
+                job.getJobTitle(),
+                dateFormatter.format(job.getStartDate()),
+                job.getStartTime().toString(),
+                job.getEndTime().toString()
         );
 
         for (Follow follow : followers) {
@@ -82,7 +90,7 @@ public class JobNotificationServiceIMPL implements JobNotificationService {
             // Send real-time notification to the specific student
             messagingTemplate.convertAndSendToUser(
                     student.getUserName(),
-                    "/topic/notifications",
+                    "/topic/job-notifications",
                     notificationDTO
             );
 

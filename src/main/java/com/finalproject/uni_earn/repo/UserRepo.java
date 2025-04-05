@@ -71,4 +71,6 @@ public interface UserRepo extends JpaRepository<User, Long>{
     Optional<User> findByUserId(Long userId);
 
     List<User> findByVerifiedFalseAndCreatedAtBefore(LocalDateTime cutoffTime);
+
+    long countByCreatedAtBeforeAndIsDeletedAndRoleNot(LocalDateTime createdAtBefore, boolean deleted, Role role);
 }
