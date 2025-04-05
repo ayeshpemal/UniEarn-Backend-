@@ -94,7 +94,17 @@ public class  UserServiceIMPL implements UserService {
 
         // Send verification email
         String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
-        String emailBody = "Please click the following link to verify your email: " + verifyUrl;
+        String emailBody =
+                "Dear User,\n\n" +
+                        "Thank you for registering with UniEarn!\n" +
+                        "--------------------------------------------\n\n" +
+                        "Please click the link below to verify your email address:\n" +
+                        verifyUrl + "\n\n" +
+                        "--------------------------------------------\n" +
+                        //"This link will expire in 24 hours. If you didn't create an account, please ignore this email.\n\n" +
+                        "Best regards,\n" +
+                        "The UniEarn Team\n\n" +
+                        "Note: This is an automated message, please do not reply directly to this email.";
         emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
 
         return "User registered successfully with username: " + user.getUserName() + " Please check your email to verify your account.";

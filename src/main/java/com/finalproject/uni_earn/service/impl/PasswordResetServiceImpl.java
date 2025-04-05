@@ -48,7 +48,18 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         // Send reset email
         String resetUrl = "http://localhost:8100/api/auth/reset-password?token=" + token;
-        String emailBody = "Click the link to reset your password: " + resetUrl;
+        String emailBody =
+                "Dear " + user.getUserName() + ",\n\n" +
+                        "We received a request to reset your password for your UniEarn account.\n" +
+                        "--------------------------------------------\n\n" +
+                        "Please click the link below to reset your password:\n" +
+                        resetUrl + "\n\n" +
+                        "--------------------------------------------\n" +
+                        //"This link will expire in 15 minutes for security reasons.\n\n" +
+                        "If you didn't request a password reset, please ignore this email or contact support.\n\n" +
+                        "Best regards,\n" +
+                        "The UniEarn Team\n\n" +
+                        "Note: This is an automated message, please do not reply directly to this email.";
         emailService.sendEmail(user.getEmail(), "Password Reset Request", emailBody);
     }
 
