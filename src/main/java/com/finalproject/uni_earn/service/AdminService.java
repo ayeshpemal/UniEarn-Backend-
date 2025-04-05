@@ -21,4 +21,5 @@ public interface AdminService {
     String sendNotificationAllStudents(String message);
     String sendNotificationAllAdmins(String message);
     PaginatedAdminNotificationDTO getPrivateAdminNotifications(Long userId,NotificationType type, int page, int size);
+    void generateDummyUsers(UserService userService);
 }

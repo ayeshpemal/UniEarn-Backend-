@@ -7,12 +7,11 @@ import com.finalproject.uni_earn.dto.Paginated.PaginatedAdminNotificationDTO;
 import com.finalproject.uni_earn.dto.Response.AdminResponseDTO;
 import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
 import com.finalproject.uni_earn.dto.UserDTO;
+import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.entity.AdminNotification;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.User;
-import com.finalproject.uni_earn.entity.enums.JobStatus;
-import com.finalproject.uni_earn.entity.enums.NotificationType;
-import com.finalproject.uni_earn.entity.enums.Role;
+import com.finalproject.uni_earn.entity.enums.*;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
@@ -21,6 +20,7 @@ import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.AdminService;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
+import com.finalproject.uni_earn.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -462,5 +462,151 @@ public class AdminServiceIMPL implements AdminService {
         }
 
         return paginatedAdminNotificationDTO;
+    }
+
+    @Override
+    public void generateDummyUsers(UserService userService) {
+        // Create 4 employers
+        createDummyEmployers(userService);
+
+        // Create 7 students
+        createDummyStudents(userService);
+
+        System.out.println("Successfully created 11 dummy users!");
+    }
+
+    private void createDummyEmployers(UserService userService) {
+        // Company data for employers
+        List<String> companyNames = List.of(
+                "TechNova Solutions",
+                "GreenLeaf Enterprises",
+                "MediaFirst Creative",
+                "DataCore Analytics"
+        );
+
+        List<String> companyDetails = List.of(
+                "Leading provider of software solutions for small and medium businesses with focus on cloud integration.",
+                "Eco-friendly products manufacturer specializing in sustainable packaging and biodegradable materials.",
+                "Full-service digital marketing agency offering content creation, SEO, and social media management.",
+                "Data science consultancy providing big data solutions and predictive analytics for various industries."
+        );
+
+        List<List<String>> categoriesList = List.of(
+                List.of("WEB_DEVELOPER", "DATA_ENTRY"),
+                List.of("EVENT_BASED", "RETAIL"),
+                List.of("CONTENT_WRITING", "MARKETING"),
+                List.of("DATA_ENTRY", "TYPING")
+        );
+
+        List<Location> locations = List.of(
+                Location.COLOMBO,
+                Location.KANDY,
+                Location.GALLE,
+                Location.JAFFNA
+        );
+
+        for (int i = 0; i < companyNames.size(); i++) {
+            UserRequestDTO employer = new UserRequestDTO();
+            employer.setUserName("employer" + (i+1));
+            employer.setEmail("employer" + (i+1) + "@example.com");
+            employer.setPassword("Password@123");
+            employer.setRole(Role.EMPLOYER);
+            employer.setCompanyName(companyNames.get(i));
+            employer.setCompanyDetails(companyDetails.get(i));
+            employer.setCategories(categoriesList.get(i));
+            employer.setLocation(locations.get(i).toString());
+            employer.setContactNumbers(List.of("077" + (1000000 + i*111)));
+
+            try {
+                String result = userService.registerUser(employer);
+                System.out.println(result);
+            } catch (Exception e) {
+                System.err.println("Failed to create employer " + (i+1) + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private void createDummyStudents(UserService userService) {
+        List<String> displayNames = List.of(
+                "Amal Perera",
+                "Nisha Fernando",
+                "Ravi Gunawardena",
+                "Sameera Silva",
+                "Malini Jayasuriya",
+                "Kasun Rajapakse",
+                "Tharushi Mendis"
+        );
+
+        List<String> universities = List.of(
+                "University of Colombo",
+                "University of Moratuwa",
+                "University of Peradeniya",
+                "University of Sri Jayewardenepura",
+                "University of Kelaniya",
+                "University of Jaffna",
+                "Uva Wellassa University"
+        );
+
+        List<Gender> genders = List.of(
+                Gender.MALE,
+                Gender.FEMALE,
+                Gender.MALE,
+                Gender.MALE,
+                Gender.FEMALE,
+                Gender.MALE,
+                Gender.FEMALE
+        );
+
+        List<Location> locations = List.of(
+                Location.COLOMBO,
+                Location.GAMPAHA,
+                Location.KANDY,
+                Location.GALLE,
+                Location.MATARA,
+                Location.KALUTARA,
+                Location.KURUNEGALA
+        );
+
+        List<List<String>> skillsList = List.of(
+                List.of("Java", "Spring Boot", "React"),
+                List.of("Graphic Design", "UI/UX", "Adobe Suite"),
+                List.of("Data Analysis", "Python", "SQL"),
+                List.of("Flutter", "Firebase", "Android Development"),
+                List.of("Content Writing", "SEO", "Digital Marketing"),
+                List.of("Network Administration", "Linux", "Cloud Computing"),
+                List.of("Machine Learning", "TensorFlow", "Data Science")
+        );
+
+        List<List<String>> preferencesList = List.of(
+                List.of("WEB_DEVELOPER", "DATA_ENTRY"),
+                List.of("DESIGN", "RETAIL"),
+                List.of("DATA_ENTRY", "TUTORING"),
+                List.of("WEB_DEVELOPER", "TYPING"),
+                List.of("CONTENT_WRITING", "MARKETING"),
+                List.of("TUTORING", "OTHER"),
+                List.of("DATA_ENTRY", "TUTORING")
+        );
+
+        for (int i = 0; i < displayNames.size(); i++) {
+            UserRequestDTO student = new UserRequestDTO();
+            student.setUserName("student" + (i+1));
+            student.setEmail("student" + (i+1) + "@example.com");
+            student.setPassword("Password@123");
+            student.setRole(Role.STUDENT);
+            student.setDisplayName(displayNames.get(i));
+            student.setUniversity(universities.get(i));
+            student.setGender(genders.get(i).toString());
+            student.setSkills(skillsList.get(i));
+            student.setPreferences(preferencesList.get(i));
+            student.setLocation(locations.get(i).toString());
+            student.setContactNumbers(List.of("071" + (1000000 + i*111)));
+
+            try {
+                String result = userService.registerUser(student);
+                System.out.println(result);
+            } catch (Exception e) {
+                System.err.println("Failed to create student " + (i+1) + ": " + e.getMessage());
+            }
+        }
     }
 }

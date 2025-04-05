@@ -4,6 +4,7 @@ import com.finalproject.uni_earn.dto.Response.AdminStatsResponseDTO;
 import com.finalproject.uni_earn.dto.request.AdminStatsRequestDTO;
 import com.finalproject.uni_earn.entity.enums.NotificationType;
 import com.finalproject.uni_earn.service.AdminService;
+import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import java.time.LocalDateTime;
 public class AdminController {
     @Autowired
     private AdminService adminService;
+    @Autowired
+    private UserService userService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/make-admin/{userId}")
@@ -121,6 +124,16 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size) {
         return new ResponseEntity<>(
                 new StandardResponse(200, "Private notifications fetched successfully.", adminService.getPrivateAdminNotifications(userID, type, page, size)),
+                HttpStatus.OK
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/generate-dummy-users")
+    public ResponseEntity<StandardResponse> generateDummyUsers() {
+        adminService.generateDummyUsers(userService);
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Dummy users generated successfully.", null),
                 HttpStatus.OK
         );
     }
