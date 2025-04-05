@@ -32,7 +32,7 @@ public class AdminNotification extends Auditable {
     private User recipient;
 
     @Column(nullable = false)
-    private boolean isRead = false;
+    private Boolean isRead = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)

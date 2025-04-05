@@ -216,7 +216,7 @@ public class AdminServiceIMPL implements AdminService {
         AdminNotification notification = new AdminNotification();
         notification.setMessage(cleanedMessage);
         notification.setType(NotificationType.BROADCAST);
-        notification.setRead(true);
+        notification.setIsRead(true);
         notification.setRecipient(null);
         notification.setSentDate(new Date());
         adminNotificationRepo.save(notification);
@@ -259,7 +259,7 @@ public class AdminServiceIMPL implements AdminService {
         AdminNotification notification = new AdminNotification();
         notification.setMessage(cleanedMessage);
         notification.setType(NotificationType.USER_SPECIFIC);
-        notification.setRead(false);
+        notification.setIsRead(false);
         notification.setRecipient(userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with ID " + userId + " not found")));
         notification.setSentDate(new Date());
@@ -271,7 +271,7 @@ public class AdminServiceIMPL implements AdminService {
                 notification.getMessage(),
                 notification.getType(),
                 notification.getRecipient().getUserId(),
-                notification.isRead(),
+                notification.getIsRead(),
                 notification.getSentDate()
         );
 
@@ -307,7 +307,7 @@ public class AdminServiceIMPL implements AdminService {
         AdminNotification notification = new AdminNotification();
         notification.setMessage(cleanedMessage);
         notification.setType(NotificationType.ALL_EMPLOYERS);
-        notification.setRead(true);
+        notification.setIsRead(true);
         notification.setRecipient(null);
         notification.setSentDate(new Date());
         adminNotificationRepo.save(notification);
@@ -351,7 +351,7 @@ public class AdminServiceIMPL implements AdminService {
         AdminNotification notification = new AdminNotification();
         notification.setMessage(cleanedMessage);
         notification.setType(NotificationType.ALL_STUDENTS);
-        notification.setRead(true);
+        notification.setIsRead(true);
         notification.setRecipient(null);
         notification.setSentDate(new Date());
         adminNotificationRepo.save(notification);
@@ -395,7 +395,7 @@ public class AdminServiceIMPL implements AdminService {
         AdminNotification notification = new AdminNotification();
         notification.setMessage(cleanedMessage);
         notification.setType(NotificationType.ALL_ADMINS);
-        notification.setRead(true);
+        notification.setIsRead(true);
         notification.setRecipient(null);
         notification.setSentDate(new Date());
         adminNotificationRepo.save(notification);

@@ -221,7 +221,7 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
         AdminNotification notification = new AdminNotification();
         notification.setMessage(message);
         notification.setType(NotificationType.REPORT);
-        notification.setRead(true);
+        notification.setIsRead(true);
         notification.setRecipient(userRepo.findById(reportedUserId)
             .orElseThrow(() -> new NotFoundException("User not found")));
         notification.setSentDate(new Date());
@@ -234,7 +234,7 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                 notification.getMessage(),
                 notification.getType(),
                 notification.getRecipient(),
-                notification.isRead(),
+                notification.getIsRead(),
                 notification.getSentDate()
         );
         messagingTemplate.convertAndSendToUser(

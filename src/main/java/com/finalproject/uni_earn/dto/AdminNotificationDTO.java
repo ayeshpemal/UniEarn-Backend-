@@ -15,6 +15,6 @@ public class AdminNotificationDTO {
     private String message;
     private NotificationType type;
     private Long recipientId;
-    private boolean isRead;
+    private Boolean isRead;
     private Date sentDate;
 }

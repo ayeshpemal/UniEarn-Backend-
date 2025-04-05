@@ -415,10 +415,10 @@ public class  UserServiceIMPL implements UserService {
     public boolean markAdminNotificationAsRead(Long notificationId) {
         AdminNotification notification = adminNotificationRepo.findById(notificationId)
                 .orElseThrow(() -> new NotFoundException("Notification not found with ID: " + notificationId));
-        if (notification.isRead()) {
+        if (notification.getIsRead()) {
             throw new InvalidValueException("Notification already marked as read");
         }
-        notification.setRead(true);
+        notification.setIsRead(true);
         adminNotificationRepo.save(notification);
         return true;
     }

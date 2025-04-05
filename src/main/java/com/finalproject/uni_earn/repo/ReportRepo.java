@@ -27,8 +27,13 @@ public interface ReportRepo extends JpaRepository<Reports, Long> {
     @Query("SELECT SUM(r.penaltyScore) FROM Reports r " +
             "WHERE r.reportedUser.userId = :userId " +
             "AND r.reportDate > :after")
-    double sumPenaltyScoreByReportedUserIdAndReportDateAfter(
+    Double sumPenaltyScoreByReportedUserIdAndReportDateAfter(
             Long userId,
             LocalDateTime after
     );
+
+    @Query("SELECT SUM(r.penaltyScore) FROM Reports r WHERE r.reportedUser.userId = :reportedUserId")
+    Integer getSumByReportedUser_UserId(Long reportedUserId);
+
+    Integer countByReportedUser_UserId(Long reportedUserId);
 }
