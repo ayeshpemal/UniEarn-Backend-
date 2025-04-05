@@ -35,7 +35,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
 
         // Delete any existing token for the user
-        tokenRepository.deleteByUser_UserId(user.getUserId());
+        //tokenRepository.deleteByUser_UserId(user.getUserId());
 
         // Create a new token
         String token = UUID.randomUUID().toString();
