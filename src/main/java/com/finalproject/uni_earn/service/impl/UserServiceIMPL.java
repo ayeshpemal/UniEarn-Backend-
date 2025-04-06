@@ -117,7 +117,7 @@ public class  UserServiceIMPL implements UserService {
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.getUserName(), loginRequestDTO.getPassword())
             );
         }catch (BadCredentialsException e) {
-            throw new InvalidValueException("Invalid email or password");
+            throw new InvalidValueException("Invalid username or password");
         }
 
         User user = userRepo.findByUserNameAndIsDeletedFalse(loginRequestDTO.getUserName())
