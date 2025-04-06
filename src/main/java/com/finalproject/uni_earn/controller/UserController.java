@@ -52,7 +52,7 @@ public class UserController {
         );
     }
     
-    //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    //PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')") (don't remove comment)
     @PutMapping("/update/{userId}")
     public ResponseEntity<StandardResponse> updateUserDetails(
             @PathVariable Long userId,
