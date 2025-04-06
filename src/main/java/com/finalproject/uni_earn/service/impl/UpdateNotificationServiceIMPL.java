@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.config.ReportConfig;
+import com.finalproject.uni_earn.dto.AdminNotificationDTO;
 import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedNotificationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
@@ -237,10 +238,19 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                 notification.getIsRead(),
                 notification.getSentDate()
         );
+
+        AdminNotificationDTO adminNotificationDTO = new AdminNotificationDTO(
+                notification.getNotificationId(),
+                notification.getMessage(),
+                notification.getType(),
+                notification.getRecipient().getUserId(),
+                false,
+                notification.getSentDate()
+        );
         messagingTemplate.convertAndSendToUser(
                 "admin",
                 "/topic/report-notifications",
-                notificationDTO
+                adminNotificationDTO
         );
     }
 
