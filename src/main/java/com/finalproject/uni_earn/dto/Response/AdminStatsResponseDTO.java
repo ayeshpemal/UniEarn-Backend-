@@ -14,6 +14,9 @@ import java.util.Map;
 @Data
 public class AdminStatsResponseDTO {
     private int totalJobsPosted;
+    private int activeUsers;
+    private int totalApplications;
+    private int completedJobs;
     private Map<String, Integer> jobsByCategory;
     private List<JobDTO> mostAppliedJob;
     private List<JobDTO> leastAppliedJob;

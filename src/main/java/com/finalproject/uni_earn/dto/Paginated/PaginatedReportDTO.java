@@ -14,7 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class PaginatedReportDTO {
-//    this is for to return the report details to the admin as pages. uses in return type of getall in report controller
+//    this is for to return the report details to the admin as pages. uses in return type of get all in report controller
     private List<ReportDTO> ReportDTOList;
+    private Long totalPenaltyScore;
     private Long totalItems;
 }

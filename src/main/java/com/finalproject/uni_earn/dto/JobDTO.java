@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.dto;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.enums.Gender;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class JobDTO {
     private Date endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Employer employer;
-    private boolean activeStatus;
+    private EmployerDto employer;
+    private JobStatus jobStatus;
 
 }

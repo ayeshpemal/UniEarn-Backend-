@@ -1,6 +1,7 @@
 package com.finalproject.uni_earn.dto.Response;
 
 import com.finalproject.uni_earn.entity.enums.Gender;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,9 +23,12 @@ public class JobDetailsResponseDTO {
     private Date endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Boolean jobStatus;
+    private JobStatus jobStatus;
     private Double jobPayment;
     private int requiredWorkers;
     private List<Gender> requiredGender;
     private String applicationStatus; // For students: "PENDING", "ACCEPTED", etc.
+    private Long applicationId; // For students: ID of the application
+    private boolean isRated; // For students: true if the job is rated, false otherwise
+    private Long employer;
 }

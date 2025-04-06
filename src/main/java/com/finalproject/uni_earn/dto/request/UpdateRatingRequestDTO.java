@@ -11,7 +11,7 @@ public class UpdateRatingRequestDTO {
     private Long ratingId;
     private Long raterId;
     private Long ratedId;
-    private Long jobId;
+    private Long ApplicationId;
     private Integer newScore;
     private String newComment;
 }

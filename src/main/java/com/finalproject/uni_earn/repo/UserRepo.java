@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,14 +36,41 @@ public interface UserRepo extends JpaRepository<User, Long>{
     @Query("select u.role from User u where u.userId = :userId")
     Optional <String> findRoleByUserId(@Param("userId") Long userId);
 
-    // Top employer (most jobs posted)
-    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email as email, u.role as role FROM users u ORDER BY (SELECT COUNT(j.job_id) FROM jobs j WHERE j.employer_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
-    Optional<Tuple> findTopEmployer();
+    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email AS email, u.role AS role " +
+            "FROM users u " +
+            "ORDER BY (SELECT COUNT(j.job_id) FROM jobs j " +
+            "WHERE j.employer_id = u.user_id AND j.created_at BETWEEN :startDate AND :endDate) DESC " +
+            "LIMIT 1",
+            nativeQuery = true)
+    Optional<Tuple> findTopEmployerByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    // Most active student (most applications submitted)
-    @Query(value = "SELECT u.user_id AS userId, u.user_name AS userName, u.email as email, u.role as role FROM users u ORDER BY (SELECT COUNT(a.application_id) FROM application a WHERE a.student_id = u.user_id) DESC LIMIT 1", nativeQuery = true)
-    Optional<Tuple> findMostActiveStudent();
 
+    @Query(value = """
+    SELECT u.user_id AS userId, u.user_name AS userName, u.email AS email, u.role AS role 
+    FROM users u 
+    ORDER BY (
+        (SELECT COUNT(a.application_id) 
+         FROM application a 
+         WHERE a.student_id = u.user_id 
+         AND a.applied_date BETWEEN :startDate AND :endDate)
+        + 
+        (SELECT COUNT(a2.application_id) 
+         FROM application a2 
+         WHERE a2.team_id IN 
+            (SELECT tm.team_id FROM team_members tm WHERE tm.student_id = u.user_id) 
+         AND a2.applied_date BETWEEN :startDate AND :endDate)
+    ) DESC
+    LIMIT 1
+    """, nativeQuery = true)
+    Optional<Tuple> findMostActiveStudentByDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     List<User> findByRole(Role role);
+
+    Optional<User> findByEmailAndRole(String defaultAdminEmail, Role role);
+
+    Optional<User> findByUserId(Long userId);
+
+    List<User> findByVerifiedFalseAndCreatedAtBefore(LocalDateTime cutoffTime);
+
+    long countByCreatedAtBeforeAndIsDeletedAndRoleNot(LocalDateTime createdAtBefore, boolean deleted, Role role);
 }

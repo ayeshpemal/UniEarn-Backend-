@@ -27,5 +27,4 @@ public class AddJobRequestDTO {
     private int requiredWorkers;
     private List<Gender> requiredGender;
     private Long employer;
-    private boolean status;
 }

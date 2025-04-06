@@ -1,10 +1,7 @@
 package com.finalproject.uni_earn.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Cascade;
 
 import java.util.HashMap;
@@ -26,10 +23,12 @@ public class Team extends Auditable {
     @Column(nullable = false, unique = true)
     private String teamName;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "leader_id", nullable = false)
     private Student leader;
 
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "team_members",
@@ -44,6 +43,7 @@ public class Team extends Auditable {
     @Column(name = "confirmed")
     private Map<Student, Boolean> memberConfirmations = new HashMap<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "team")
     private Set<Application> applications;
 

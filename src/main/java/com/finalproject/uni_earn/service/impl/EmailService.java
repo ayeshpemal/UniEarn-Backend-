@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.entity.EmailRequest;
 import com.finalproject.uni_earn.exception.EmailNotSendException;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,8 @@ public class EmailService {
     private String verificationUrl;
 
     private final JavaMailSender mailSender;
+
+    private static final String RECEIVER_EMAIL = "pemalsandanuwan@gmail.com";
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -29,6 +32,26 @@ public class EmailService {
         } catch (Exception e) {
             e.printStackTrace();
             throw new EmailNotSendException("Failed to send email to " + email);
+        }
+    }
+
+    public void sendUserEmail(EmailRequest request) {
+        try{
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(request.getEmail()); // User's email
+            mailMessage.setTo(RECEIVER_EMAIL); // Your email
+            mailMessage.setSubject(request.getSubject());
+
+            String content = "From: " + request.getFirstName() + " " + request.getLastName() +
+                    "\nEmail: " + request.getEmail() +
+                    "\nPhone: " + request.getPhone() +
+                    "\n\nMessage:\n" + request.getMessage();
+
+            mailMessage.setText(content);
+            mailSender.send(mailMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new EmailNotSendException("Failed to send email");
         }
     }
 }

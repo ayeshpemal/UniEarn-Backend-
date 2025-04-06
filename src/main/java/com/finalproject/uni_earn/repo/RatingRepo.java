@@ -17,22 +17,23 @@ import java.util.Optional;
 @Repository
 public interface RatingRepo extends JpaRepository<Ratings, Long> {
 
-
     @Query("SELECT COUNT(r) > 0 FROM Ratings r " +
             "WHERE r.rater.userId = :raterId " +
             "AND r.rated.userId = :ratedId " +
-            "AND r.job.jobId = :jobId ")
-    boolean existsByRaterRatedAndJob(
+            "AND r.application.applicationId = :applicationId")
+    boolean existsByRaterRatedAndApplication(
             @Param("raterId") Long raterId,
             @Param("ratedId") Long ratedId,
-            @Param("jobId") Long jobId
+            @Param("applicationId") Long applicationId
     );
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.UserRatingDetailsResponseDTO(" +
-            "r.ratingId,r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
-            "r.type, r.createdAt) " +
+            "r.ratingId, r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
+            "r.type, r.category, r.createdAt, t.id, t.teamName) " +
             "FROM Ratings r " +
-            "JOIN r.job j " +
+            "JOIN r.application a " +
+            "JOIN a.job j " +
+            "LEFT JOIN a.team t " +
             "WHERE r.rated.userId = :userId " +
             "ORDER BY r.createdAt DESC")
     Page<UserRatingDetailsResponseDTO> findAllRatingsReceivedByUser(
@@ -41,10 +42,12 @@ public interface RatingRepo extends JpaRepository<Ratings, Long> {
     );
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.UserRatingDetailsResponseDTO(" +
-            "r.ratingId,r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
-            "r.type, r.createdAt) " +
+            "r.ratingId, r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
+            "r.type, r.category, r.createdAt, t.id, t.teamName) " +
             "FROM Ratings r " +
-            "JOIN r.job j " +
+            "JOIN r.application a " +
+            "JOIN a.job j " +
+            "LEFT JOIN a.team t " +
             "WHERE r.rater.userId = :userId " +
             "ORDER BY r.createdAt DESC")
     Page<UserRatingDetailsResponseDTO> findAllRatingsGivenByUser(
@@ -53,21 +56,23 @@ public interface RatingRepo extends JpaRepository<Ratings, Long> {
     );
 
     @Query("SELECT new com.finalproject.uni_earn.dto.Response.UserRatingDetailsResponseDTO(" +
-            "r.ratingId,r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
-            "r.type, r.createdAt) " +
+            "r.ratingId, r.rater.userName, r.rated.userName, j.jobTitle, r.score, r.comment, " +
+            "r.type, r.category, r.createdAt, t.id, t.teamName) " +
             "FROM Ratings r " +
-            "JOIN r.job j " +
+            "JOIN r.application a " +
+            "JOIN a.job j " +
+            "LEFT JOIN a.team t " +
             "WHERE r.rater.userId = :userId " +
-            "AND r.job.jobId = :jobId " +
+            "AND a.applicationId = :applicationId " +
             "AND r.rated.userId = :ratedId")
-    Optional<UserRatingDetailsResponseDTO> findRatingByRaterAndJobAndRated(
+    Optional<UserRatingDetailsResponseDTO> findRatingByRaterAndApplicationAndRated(
             @Param("userId") Long userId,
-            @Param("jobId") Long jobId,
+            @Param("applicationId") Long applicationId,
             @Param("ratedId") Long ratedId
     );
 
     @Query("SELECT r.createdAt FROM Ratings r " +
-            "WHERE r.ratingId = :ratingId " )
+            "WHERE r.ratingId = :ratingId")
     Optional<LocalDateTime> findCreatedAtByRatingId(
             @Param("ratingId") Long ratingId
     );
@@ -77,9 +82,8 @@ public interface RatingRepo extends JpaRepository<Ratings, Long> {
 
     boolean existsByRatingId(Long ratingId);
 
+    List<Ratings> findAllByRated_UserId(long userId);
 
-
-
-
-
+    @Query("SELECT AVG(r.score) FROM Ratings r WHERE r.rated.userId = :userId")
+    Optional<Double> findAverageRatingForUser(@Param("userId") Long userId);
 }

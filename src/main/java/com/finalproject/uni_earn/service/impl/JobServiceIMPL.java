@@ -9,7 +9,9 @@ import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
 import com.finalproject.uni_earn.entity.Student;
+import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
+import com.finalproject.uni_earn.entity.enums.JobStatus;
 import com.finalproject.uni_earn.entity.enums.Location;
 import com.finalproject.uni_earn.exception.InvalidParametersException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
@@ -24,6 +26,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +64,9 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private JobGroupMappingRepo jobGroupMappingRepo;
 
+    @Autowired
+    private RatingRepo ratingRepo;
+
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
         if (addJobRequestDTO.getJobLocations() == null || addJobRequestDTO.getJobLocations().isEmpty()) {
@@ -82,7 +88,7 @@ public class JobServiceIMPL implements JobService {
             job.setEndTime(addJobRequestDTO.getEndTime());
             job.setEmployer(employer);
             job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
-            job.setActiveStatus(true);
+            job.setJobStatus(JobStatus.PENDING);
 
             jobRepo.save(job);
 
@@ -110,7 +116,7 @@ public class JobServiceIMPL implements JobService {
                 job.setEndTime(addJobRequestDTO.getEndTime());
                 job.setEmployer(employer);
                 job.setJobLocations(List.of(locationDTO.getLocation()));
-                job.setActiveStatus(true);
+                job.setJobStatus(JobStatus.PENDING);
 
                 Job savedJob = jobRepo.save(job);
 
@@ -154,7 +160,7 @@ public class JobServiceIMPL implements JobService {
         job.setEndTime(updateJobRequestDTO.getEndTime());
         job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
         job.setJobLocations(new ArrayList<>(List.of(updateJobRequestDTO.getJobLocations().get(0).getLocation())));
-        job.setActiveStatus(true);
+        job.setJobStatus(JobStatus.PENDING);
         jobRepo.save(job);
 
         return updateJobRequestDTO.getJobTitle() + " is updated...";
@@ -224,14 +230,14 @@ public class JobServiceIMPL implements JobService {
         if (student != null) {
             Location location = student.getLocation();
             List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize));
+            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
             if (jobList.getSize() > 0) {
                 List<JobDTO> jobDTOs = jobList.getContent().stream()
                         .map(job -> modelMapper.map(job, JobDTO.class))
                         .collect(Collectors.toList());
                 return new PaginatedResponseJobDTO(
                         jobDTOs,
-                        jobRepo.countAllByJobLocationsContainingAndJobCategoryIn(location, preferences)
+                        jobRepo.countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus.PENDING, location, preferences)
                 );
             } else {
                 throw new NotFoundException("No Jobs Found...!!");
@@ -255,10 +261,10 @@ public class JobServiceIMPL implements JobService {
             dataCount = applicationRepo.countByStudent(student) + applicationRepo.countApplicationsByStudentInTeam(student.getUserId());
 
             // Fetch paginated applied individual jobs for students
-            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2));
+            Page<Application> individualApplications = applicationRepo.getAllByStudent(student, PageRequest.of(page, pageSize/2,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             // Get team applications
-            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2));
+            Page<Application> teamApplications = applicationRepo.findApplicationsByStudentInTeam(student.getUserId(), PageRequest.of(page, pageSize/2,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             // Combine both lists, remove duplicates, and paginate
             Set<Application> allApplications = new HashSet<>(individualApplications.getContent());
@@ -272,6 +278,11 @@ public class JobServiceIMPL implements JobService {
                         JobDetailsResponseDTO jobDetailsResponseDTO = modelMapper.map(job, JobDetailsResponseDTO.class);
                         jobDetailsResponseDTO.setJobLocation(job.getJobLocations().get(0).toString());
                         jobDetailsResponseDTO.setApplicationStatus(application.getStatus().toString());
+                        jobDetailsResponseDTO.setRated(ratingRepo.existsByRaterRatedAndApplication(
+                                userId,
+                                job.getEmployer().getUserId(),
+                                application.getApplicationId()));
+                        jobDetailsResponseDTO.setApplicationId(application.getApplicationId());
                         return jobDetailsResponseDTO;
                     })
                     .collect(Collectors.toList());
@@ -282,7 +293,7 @@ public class JobServiceIMPL implements JobService {
             dataCount = jobRepo.countByEmployer(employer);
 
             // Fetch paginated posted jobs for employers
-            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize));
+            Page<Job> jobs = jobRepo.findAllByEmployer(employer, PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
 
             jobDetailsResponseDTOS = jobs.getContent().stream()
                     .map(job -> {
@@ -303,12 +314,12 @@ public class JobServiceIMPL implements JobService {
 
 
     @Override
-    public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Integer page) {
-        Specification<Job> spec = JobSpecification.filterJobs(location, categories, keyword);
+    public PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDate, Integer page) {
+        Specification<Job> spec = JobSpecification.filterJobs(location, categories, keyword, startDate);
         if(spec==null)
             throw new InvalidParametersException("Invalid Parameters...!!");
 
-        Page<Job> jobList = jobRepo.findAll(spec,PageRequest.of(page, pageSize));
+        Page<Job> jobList = jobRepo.findAll(spec,PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
         if(jobList.getSize()>0){
             List<JobDTO> jobDTOs = jobList.getContent().stream()
                     .map(job -> modelMapper.map(job, JobDTO.class))
@@ -323,19 +334,27 @@ public class JobServiceIMPL implements JobService {
         }
     }
 
-    public String setStatus(Long jobId, boolean status){
+    public String setStatus(Long jobId, JobStatus status){
         if (!jobRepo.existsById(jobId)) {
             throw new NotFoundException("No Job Found with ID: " + jobId);
         }
-        try {
-            Job job = jobRepo.findById(jobId).
-                    orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
-            job.setActiveStatus(status);
-            jobRepo.save(job);
-            return "Set status: "+status;
-        }catch (RuntimeException e){
-            throw new RuntimeException("Task failed...!!");
+
+        Job job = jobRepo.findById(jobId).
+                orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
+        if(status == JobStatus.CANCEL){
+            List<Application> applications = applicationRepo.getByJob_JobId(job.getJobId());
+            for (Application application : applications) {
+                if(application.getStatus().equals(ApplicationStatus.CONFIRMED)){
+                    throw new InvalidParametersException("Job already confirmed...Cannot cancel");
+                }
+                application.setStatus(ApplicationStatus.REJECTED);
+                applicationRepo.save(application);
+            }
         }
+        job.setJobStatus(status);
+        jobRepo.save(job);
+        return "Set status: "+status;
+
 
     }
 }

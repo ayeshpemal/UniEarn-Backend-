@@ -7,11 +7,11 @@ import com.finalproject.uni_earn.entity.Reports;
 import com.finalproject.uni_earn.entity.enums.ReportState;
 
 public interface ReportService {
-    public Reports submitReport(ReportRequestDTO reportRequestDTO);
+    String submitReport(ReportRequestDTO reportRequestDTO);
 
-    public ReportDTO resolveReport(Long reportId, ReportState status);
+    ReportDTO resolveReport(Long reportId, ReportState status);
 
     PaginatedReportDTO getAllReports(int page , int size);
 
-    PaginatedReportDTO getAllReportsById(int id,int page, int size);
+    PaginatedReportDTO getAllReportsById(Long userId,int page, int size);
 }

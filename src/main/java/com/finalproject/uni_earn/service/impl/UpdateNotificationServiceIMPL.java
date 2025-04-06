@@ -1,18 +1,23 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.config.ReportConfig;
 import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedNotificationResponseDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.NotificationType;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.NotFoundException;
+import com.finalproject.uni_earn.repo.AdminNotificationRepo;
 import com.finalproject.uni_earn.repo.ApplicationRepo;
 import com.finalproject.uni_earn.repo.UpdateNoRepo;
 import com.finalproject.uni_earn.repo.UserRepo;
+import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +41,12 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private ReportConfig reportConfig;
+
+    @Autowired
+    private AdminNotificationRepo adminNotificationRepo;
 
     @Override
     public void createNotification(Long applicationId) {
@@ -64,8 +75,12 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                             application.getTeam().getLeader().getUserName(),
                             job.getJobTitle()
                     );
-                    recipient = new ArrayList<>(application.getTeam().getMembers()); // Notify team members
-                    // Notify team leader
+                    for (Student member : application.getTeam().getMembers()) {
+                        if(!member.equals(application.getTeam().getLeader())) {
+                            recipient.add(member);
+                        }
+                    }
+                    break;
                 } else {
                     throw new IllegalArgumentException("Application does not belong to a team");
                 }
@@ -146,17 +161,16 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
                     notification.getIsRead(),
                     notification.getSentDate()
             );
-
+            System.out.println("Member: " + user.getUserName());
             // Send real-time notification to the specific recipient
             messagingTemplate.convertAndSendToUser(
                     user.getUserName(),
-                    "/topic/notifications",
+                    "/topic/update-notifications",
                     notificationDTO
             );
 
             System.out.println("Notification sent to " + user.getUserName() + ": " + message);
         }
-
     }
 
     @Override
@@ -179,7 +193,9 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
 
         Long totalNotifications = notificationRepo.countByRecipient(user);
 
-        Page<UpdateNotification> notifications = notificationRepo.findAllByRecipient(user, PageRequest.of(page, size));
+        Page<UpdateNotification> notifications = notificationRepo.findAllByRecipient(
+                user, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
         List<NotificationDTO> notificationDTOS = notifications.getContent().stream()
                 .map(notification -> {
                     return new NotificationDTO(
@@ -194,4 +210,58 @@ public class UpdateNotificationServiceIMPL implements UpdateNotificationService 
         return new PaginatedNotificationResponseDTO(notificationDTOS, totalNotifications);
     }
 
+    @Override
+    public void createReportAnalysisNotification(Long reportedUserId, long reportCount, double totalPenaltyScore) {
+        User reportedUser = userRepo.findById(reportedUserId)
+                .orElseThrow(() -> new NotFoundException("Reported user not found"));
+
+        String message = getString(reportCount, totalPenaltyScore, reportedUser);
+
+        // Store the notification in the database
+        AdminNotification notification = new AdminNotification();
+        notification.setMessage(message);
+        notification.setType(NotificationType.REPORT);
+        notification.setIsRead(true);
+        notification.setRecipient(userRepo.findById(reportedUserId)
+            .orElseThrow(() -> new NotFoundException("User not found")));
+        notification.setSentDate(new Date());
+        adminNotificationRepo.save(notification);
+
+        //Send real-time notification to the admins
+
+        AdminNotification notificationDTO = new AdminNotification(
+                notification.getNotificationId(),
+                notification.getMessage(),
+                notification.getType(),
+                notification.getRecipient(),
+                notification.getIsRead(),
+                notification.getSentDate()
+        );
+        messagingTemplate.convertAndSendToUser(
+                "admin",
+                "/topic/report-notifications",
+                notificationDTO
+        );
+    }
+
+    private String getString(long reportCount, double totalPenaltyScore, User reportedUser) {
+        String message = null;
+
+        if(totalPenaltyScore >= reportConfig.getWarningThreshold() && totalPenaltyScore < reportConfig.getCriticalThreshold()) {
+            message = String.format(
+                    "User %s has received a warning due to %d reports and a total penalty score of %.2f.",
+                    reportedUser.getUserName(),
+                    reportCount,
+                    totalPenaltyScore
+            );
+        } else if (totalPenaltyScore >= reportConfig.getCriticalThreshold()) {
+            message = String.format(
+                    "User %s has received a warning due to %d reports and a total penalty score of %.2f. Immediate action is required.",
+                    reportedUser.getUserName(),
+                    reportCount,
+                    totalPenaltyScore
+            );
+        }
+        return message;
+    }
 }

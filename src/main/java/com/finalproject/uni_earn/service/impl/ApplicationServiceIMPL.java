@@ -1,10 +1,10 @@
 package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.ApplicationDTO;
-import com.finalproject.uni_earn.dto.Response.GroupApplicationDTO;
-import com.finalproject.uni_earn.dto.Response.GroupMemberDTO;
-import com.finalproject.uni_earn.dto.Response.StudentApplicationDTO;
-import com.finalproject.uni_earn.dto.Response.StudentApplicationResponseDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedGroupApplicationDTO;
+import com.finalproject.uni_earn.dto.Paginated.PaginatedStudentApplicationDTO;
+import com.finalproject.uni_earn.dto.Response.*;
+import com.finalproject.uni_earn.dto.request.StudentSummaryRequestDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
 import com.finalproject.uni_earn.entity.enums.JobCategory;
@@ -12,15 +12,15 @@ import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.AlreadyExistException;
 import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
-import com.finalproject.uni_earn.repo.ApplicationRepo;
-import com.finalproject.uni_earn.repo.JobRepo;
-import com.finalproject.uni_earn.repo.StudentRepo;
-import com.finalproject.uni_earn.repo.TeamRepo;
+import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.ApplicationService;
 import com.finalproject.uni_earn.service.UpdateNotificationService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
@@ -51,6 +51,8 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private RatingRepo ratingRepo;
 
     @Override
     public String applyAsStudent(Long studentId, Long jobId) {
@@ -101,7 +103,6 @@ public class ApplicationServiceIMPL implements ApplicationService {
             throw new RuntimeException("Team size does not match required workers.");
         }
 
-
         Application application = new Application();
         application.setJob(job);
         application.setTeam(team);
@@ -130,7 +131,13 @@ public class ApplicationServiceIMPL implements ApplicationService {
             } else {
                 throw new InvalidValueException("Student can only confirm an accepted application.");
             }
-        } else {
+        } else if (user.getRole() == Role.ADMIN) {
+            if (newStatus == ApplicationStatus.REJECTED) {
+                application.setStatus(newStatus);
+            } else {
+                throw new InvalidValueException("Admin can only reject applications.");
+            }
+        }else {
             throw new InvalidValueException("Invalid user role.");
         }
 
@@ -170,14 +177,14 @@ public class ApplicationServiceIMPL implements ApplicationService {
     }
 
     @Override
-    public Map<String, Object> getStudentApplicationsSummary(Long userId) {
+    public Map<String, Object> getStudentApplicationsSummary(StudentSummaryRequestDTO requestDTO) {
         
-        Student student = studentRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + userId));
+        Student student = studentRepository.findById(requestDTO.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Student not found with ID: " + requestDTO.getStudentId()));
 
 
-        List<Application> individualapplications = applicationRepository.findByStudent(student);
-        List<Application> teamApplications = applicationRepository.findApplicationsByStudentInTeam(userId, null).getContent();
+        List<Application> individualapplications = applicationRepository.findByStudentAndCreatedAtBetween(student, requestDTO.getStartDate(), requestDTO.getEndDate());
+        List<Application> teamApplications = applicationRepository.findByStudentInTeamAndDateRange(requestDTO.getStudentId(),requestDTO.getStartDate(),requestDTO.getEndDate());
         
         List<Application> applications = new ArrayList<>();
         applications.addAll(individualapplications);
@@ -206,6 +213,7 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("totalApplications", totalApplications);
+        response.put("inactive", statusCounts.getOrDefault(ApplicationStatus.INACTIVE,0L));
         response.put("pending", statusCounts.getOrDefault(ApplicationStatus.PENDING, 0L));
         response.put("accepted", statusCounts.getOrDefault(ApplicationStatus.ACCEPTED, 0L));
         response.put("rejected", statusCounts.getOrDefault(ApplicationStatus.REJECTED, 0L));
@@ -218,8 +226,16 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
     @Override
     public List<GroupApplicationDTO> getGroupApplicationsByJobId(Long jobId) {
+        // Check if the job requires a team
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found with ID: " + jobId));
+        if (job.getRequiredWorkers() == 1) {
+            throw new InvalidValueException("This job does not require a team.");
+        }
         // Fetch all pending group applications for the job
         List<Application> pendingGroupApplications = applicationRepository.findPendingGroupApplicationsByJobId(jobId);
+
+        //List<Application> groupApplications = applicationRepository.
 
         // Transform the data into the required DTO structure
         return pendingGroupApplications.stream()
@@ -235,13 +251,19 @@ public class ApplicationServiceIMPL implements ApplicationService {
                                             member.getUserName(), // name
                                             member.getLocation(), // location
                                             member.getRating(), // rating
-                                            member.getProfilePictureUrl() // avatar
+                                            member.getProfilePictureUrl(), // avatar
+                                            ratingRepo.existsByRaterRatedAndApplication(
+                                                    job.getEmployer().getUserId(),
+                                                    member.getUserId(),
+                                                    application.getApplicationId()) // Check if the student has rated the application
                                     ))
                                     .collect(Collectors.toList()) // members
                     );
                 })
                 .collect(Collectors.toList());
     }
+
+
     @Override
     public List<StudentApplicationDTO> getPendingStudentsByJobId(Long jobId) {
         List<Application> pendingApplications = applicationRepository.findPendingStudentApplicationsByJobId(jobId);
@@ -290,5 +312,114 @@ public class ApplicationServiceIMPL implements ApplicationService {
 
         return responseDTO;
     }
+
+    public PaginatedGroupApplicationDTO getPaginatedGroupApplicationsByJobId(Long jobId, int page, int pageSize) {
+        // Check if the job requires a team
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found with ID: " + jobId));
+        if (job.getRequiredWorkers() == 1) {
+            throw new InvalidValueException("This job does not require a team.");
+        }
+
+        // ✅ Fetch total application count for the job (without pagination)
+        int totalApplicationCount = applicationRepository.countByJobId(jobId);
+
+        // Fetch paginated applications for the job
+        Page<Application> pagedApplications = applicationRepository.findByJob_JobId(jobId, PageRequest.of(page, pageSize));
+
+        // ✅ Step 1: Check if there is a "CONFIRMED" application
+        Optional<Application> confirmedApplication = pagedApplications.getContent().stream()
+                .filter(app -> app.getStatus() == ApplicationStatus.CONFIRMED)
+                .findFirst();
+
+        List<Application> filteredApplications;
+
+        // ✅ Step 2: If "CONFIRMED" application exists, return only that one
+        // ✅ Step 3: If no "CONFIRMED" application, return "PENDING" and "ACCEPTED" applications
+        filteredApplications = confirmedApplication.map(List::of).orElseGet(() -> pagedApplications.getContent().stream()
+                .filter(app -> app.getStatus() == ApplicationStatus.PENDING || app.getStatus() == ApplicationStatus.ACCEPTED)
+                .collect(Collectors.toList()));
+
+        // ✅ Step 4: Convert to DTOs
+        List<NewGroupApplicationDTO> dtos = filteredApplications.stream()
+                .map(application -> {
+                    Team team = application.getTeam();
+                    return new NewGroupApplicationDTO(
+                            application.getApplicationId(), // applicationId
+                            team.getId(), // groupId
+                            team.getTeamName(), // groupName
+                            application.getStatus(), // applicationStatus
+                            team.getMembers().stream()
+                                    .map(member -> new GroupMemberDTO(
+                                            member.getUserId(), // id
+                                            member.getUserName(), // name
+                                            member.getLocation(), // location
+                                            member.getRating(), // rating
+                                            member.getProfilePictureUrl(), // avatar
+                                            ratingRepo.existsByRaterRatedAndApplication(
+                                                    job.getEmployer().getUserId(),
+                                                    member.getUserId(),
+                                                    application.getApplicationId()) // Check if the student has rated the application
+                                    ))
+                                    .collect(Collectors.toList()) // members
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // ✅ Step 5: Return result in PaginatedStudentApplicationDTO format
+        return new PaginatedGroupApplicationDTO(dtos, totalApplicationCount, job.getJobStatus());
+    }
+
+    public PaginatedStudentApplicationDTO getPaginatedStudentApplicationsByJobId(Long jobId, int page, int pageSize) {
+        // Check if the job requires a team
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new NotFoundException("Job not found with ID: " + jobId));
+        if (job.getRequiredWorkers() != 1) {
+            throw new InvalidValueException("This job requires a team.");
+        }
+        // Fetch total application count for the given job
+        int totalApplications = applicationRepository.countByJobId(jobId);
+
+        // Fetch all applications for the job with pagination
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Application> pagedApplications = applicationRepository.findByJob_JobId(jobId, pageable);
+
+        // ✅ Step 1: Check if there is a "CONFIRMED" application
+        Optional<Application> confirmedApplication = pagedApplications.getContent().stream()
+                .filter(app -> app.getStatus() == ApplicationStatus.CONFIRMED)
+                .findFirst();
+
+        List<Application> filteredApplications;
+
+        // ✅ Step 2: If "CONFIRMED" application exists, return only that one
+        // ✅ Step 3: If no "CONFIRMED" application, return "PENDING" and "ACCEPTED" applications
+        filteredApplications = confirmedApplication.map(List::of).orElseGet(() -> pagedApplications.getContent().stream()
+                .filter(app -> app.getStatus() == ApplicationStatus.PENDING || app.getStatus() == ApplicationStatus.ACCEPTED)
+                .collect(Collectors.toList()));
+
+        List<NewStudentApplicationDTO> resultApplications = filteredApplications.stream()
+                .map(application -> {
+                    Student student = application.getStudent();
+                    return new NewStudentApplicationDTO(
+                            application.getApplicationId(),
+                            student.getUserId(),
+                            student.getUserName(),
+                            student.getLocation(),
+                            student.getRating(),
+                            application.getStatus(),
+                            student.getProfilePictureUrl(),
+                            ratingRepo.existsByRaterRatedAndApplication(
+                                    job.getEmployer().getUserId(),
+                                    application.getStudent().getUserId(),
+                                    application.getApplicationId()) // Check if the student has rated the application
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // Construct the paginated response
+        return new PaginatedStudentApplicationDTO(resultApplications, totalApplications, job.getJobStatus());
+    }
+
+
 }
 

@@ -76,4 +76,25 @@ public class AppWideExceptionHandler {
                 HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<StandardResponse> handleUnauthorizedAction(UnauthorizedActionException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(401, ex.getMessage(), null),
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UnauthurizedRatingException.class)
+    public ResponseEntity<StandardResponse> handleUnauthurizedRating(UnauthurizedRatingException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(401, ex.getMessage(), null),
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(OtherExceptions.class)
+    public ResponseEntity<StandardResponse> handleOtherExceptions(OtherExceptions ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+    }
+
 }

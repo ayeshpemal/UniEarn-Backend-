@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.request.UpdatePasswordDTO;
 import com.finalproject.uni_earn.dto.request.UserRequestDTO;
 import com.finalproject.uni_earn.dto.request.UserUpdateRequestDTO;
 import com.finalproject.uni_earn.entity.User;
+import com.finalproject.uni_earn.entity.enums.NotificationType;
 import com.finalproject.uni_earn.service.UserService;
 import com.finalproject.uni_earn.util.StandardResponse;
 import jakarta.validation.Valid;
@@ -41,6 +42,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/get-user-by-id/{userId}")
     public ResponseEntity<StandardResponse> getUserById(@PathVariable Long userId){
         UserResponseDTO userResponseDTO = userService.getUser(userId);
@@ -112,10 +114,10 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("users/{userId}/delete")
     public ResponseEntity<StandardResponse> DeleteUser(
             @PathVariable Long userId) {
-
         String message = userService.deleteUser(userId);
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(200, "User deleted successfully", message),
@@ -123,6 +125,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/{userId}/restore")
     public ResponseEntity<StandardResponse> restoreUser(
             @PathVariable Long userId) {
@@ -133,6 +136,7 @@ public class UserController {
         );
     }
 
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
@@ -143,5 +147,35 @@ public class UserController {
                 new StandardResponse(200, "Success", "Password updated successfully"),
                 HttpStatus.OK
         );
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @GetMapping("/public-notifications")
+    public ResponseEntity<StandardResponse> getPublicAdminNotifications(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(value = "type") NotificationType type,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Success", userService.getPublicAdminNotifications(userId, type, page, size)),
+                HttpStatus.OK
+        );
+    }
+
+    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PutMapping("/notification/mark-as-read/{notificationId}")
+    public ResponseEntity<StandardResponse> markAdminNotificationAsRead(@PathVariable Long notificationId) {
+        boolean isMarked = userService.markAdminNotificationAsRead(notificationId);
+        if (isMarked) {
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", "Notification marked as read."),
+                    HttpStatus.OK
+            );
+        } else {
+            return new ResponseEntity<>(
+                    new StandardResponse(400, "Error", "Failed to mark notification as read."),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 }
