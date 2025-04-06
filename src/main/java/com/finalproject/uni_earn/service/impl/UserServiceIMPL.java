@@ -286,11 +286,10 @@ public class  UserServiceIMPL implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         String token = null;
         if(!user.isVerified()){
-            if(user.getVerificationToken() != null) {
-                token = user.getVerificationToken();
-            }else {
-                throw new InvalidValueException("No verification token found");
-            }
+            // Generate verification token
+            token = TokenUtil.generateToken();
+            user.setVerificationToken(token);
+            userRepo.save(user);
         }else{
             throw new InvalidValueException("User is already verified");
         }
