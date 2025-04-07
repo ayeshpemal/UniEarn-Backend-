@@ -26,8 +26,6 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     @Query("SELECT s FROM Student s WHERE (:searchTerm IS NULL OR LOWER(s.displayName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND s.isDeleted = false")
     Page<Student> findByDisplayNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, Pageable pageable);
 
-    Long countByDisplayNameContainingIgnoreCase(String searchTerm);
-
     @Query("SELECT s.preferences FROM Student s WHERE s.userId = :studentId")
     List<JobCategory> findPreferencesByStudentId(Long studentId);
 
