@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class EmployerAnalysisController {
     * this can use when there is no filters like date or status or category
     * */
 
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/jobs/all/{employerId}")
     public ResponseEntity<StandardResponse> getAllJobSummeryForEmployer(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -57,7 +59,7 @@ public class EmployerAnalysisController {
     * this is for getting all the job summaries for the employer filtered by date range,
     * this can use when there is a date range filter
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/jobs/date-range/{employerId}")
     public ResponseEntity<StandardResponse> getJobsByEmployerAndDateRange(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -86,7 +88,7 @@ public class EmployerAnalysisController {
     * this is for getting all the job summaries for the employer filtered by job status,
     * this can use when there is a job status filter
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/jobs/status/{employerId}")
     public ResponseEntity<StandardResponse> getJobsByEmployerAndStatus(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -109,6 +111,7 @@ public class EmployerAnalysisController {
     * this is for getting all the job summaries for the employer filtered by both job status and date range,
     * this can use when there is a job status and date range filter
     * */
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/jobs/status-date-range/{employerId}")
     public ResponseEntity<StandardResponse> getJobsByEmployerStatusAndDateRange(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -138,7 +141,7 @@ public class EmployerAnalysisController {
     * this is for getting the jobs with most applications by the employer,
     * this can use when the employer wants to see the jobs with most applications
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/applications/most/{employerId}")
     public ResponseEntity<StandardResponse> getJobsWithMostApplicationsByEmployerId(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -160,7 +163,7 @@ public class EmployerAnalysisController {
     * this is for getting the jobs with least applications by the employer,
     * this can use when the employer wants to see the jobs with least applications
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/applications/least/{employerId}")
     public ResponseEntity<StandardResponse> getJobsWithLeastApplicationsByEmployerId(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -182,7 +185,7 @@ public class EmployerAnalysisController {
     * this is for getting the most popular job categories by the employer,
     * this can use when the employer wants to see the most popular job categories
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/categories/popular/{employerId}")
     public ResponseEntity<StandardResponse> getMostPopularJobCategoriesByEmployerId(
             @PathVariable @NotNull @Min(0) Long employerId,
@@ -204,7 +207,7 @@ public class EmployerAnalysisController {
     * last function asked
     *
     * */
-
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/brief-summary/{employerId}")
     public ResponseEntity<StandardResponse> getBriefSummary(
             @PathVariable @NotNull @Min(0) Long employerId,

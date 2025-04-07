@@ -34,7 +34,7 @@ public class ApplicationController {
     @Autowired
     UserRepo userRepository;
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/student")
     public ResponseEntity<StandardResponse> applyAsStudent(@RequestParam Long studentId, @RequestParam Long jobId) {
         String message = applicationService.applyAsStudent(studentId,jobId);
@@ -43,7 +43,7 @@ public class ApplicationController {
                 HttpStatus.CREATED);
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/apply/team")
     public ResponseEntity<StandardResponse> applyAsTeam(@RequestParam Long teamId, @RequestParam Long jobId) {
         String message = applicationService.applyAsTeam(teamId, jobId);
@@ -52,7 +52,7 @@ public class ApplicationController {
                 HttpStatus.CREATED);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/{applicationId}/status")
     public ResponseEntity<StandardResponse> updateApplicationStatus(
             @PathVariable Long applicationId,
@@ -75,7 +75,7 @@ public class ApplicationController {
         }
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/viewApplicationDetails/{applicationId}")
     public ResponseEntity<StandardResponse> viewApplicationDetails(@PathVariable Long applicationId) {
         // Call the service to fetch application details
@@ -85,7 +85,7 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @DeleteMapping("/deleteApplication/{applicationId}")
     public ResponseEntity<StandardResponse> deleteApplication(@PathVariable Long applicationId) {
         applicationService.deleteApplication(applicationId);
@@ -94,7 +94,7 @@ public class ApplicationController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @PostMapping("/student/summary")
     public ResponseEntity<StandardResponse> getStudentApplicationsSummary(@RequestBody StudentSummaryRequestDTO requestDTO) {
 
@@ -104,7 +104,7 @@ public class ApplicationController {
         return ResponseEntity.ok(new StandardResponse(200, "Success", summary));
     }
 
-    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("pending-group/job/{jobId}")
     public ResponseEntity<StandardResponse> getGroupApplicationsByJobId(@PathVariable Long jobId) {
         List<GroupApplicationDTO> groupApplications = applicationService.getGroupApplicationsByJobId(jobId);
@@ -112,7 +112,7 @@ public class ApplicationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("pending-student/job/{jobId}")
     public ResponseEntity<StandardResponse> getPendingStudentsByJobId(@PathVariable Long jobId) {
         List<StudentApplicationDTO> studentApplications = applicationService.getPendingStudentsByJobId(jobId);
@@ -120,7 +120,7 @@ public class ApplicationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/has-applied")
     public ResponseEntity<StandardResponse> hasStudentApplied(
             @RequestParam Long studentId, @RequestParam Long jobId) {
@@ -132,7 +132,7 @@ public class ApplicationController {
         );
     }
 
-    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/group-applications/job/{jobId}")
     public ResponseEntity<StandardResponse> getPaginatedGroupApplicationsByJobId(
             @PathVariable Long jobId,
@@ -146,7 +146,7 @@ public class ApplicationController {
         );
     }
 
-    //@PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/student-applications/job/{jobId}")
     public ResponseEntity<StandardResponse> getPaginatedStudentApplicationsByJobId(
             @PathVariable Long jobId,
