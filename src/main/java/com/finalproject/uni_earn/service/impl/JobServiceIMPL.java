@@ -2,6 +2,7 @@ package com.finalproject.uni_earn.service.impl;
 
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.LocationDTO;
+import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -66,6 +68,12 @@ public class JobServiceIMPL implements JobService {
 
     @Autowired
     private RatingRepo ratingRepo;
+
+    @Autowired
+    private UpdateNoRepo notificationRepo;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
@@ -342,11 +350,45 @@ public class JobServiceIMPL implements JobService {
         Job job = jobRepo.findById(jobId).
                 orElseThrow(() -> new NotFoundException("No Job Found with ID: " + jobId));
         if(status == JobStatus.CANCEL){
+            String message = String.format(
+                    "Job %s has been cancelled by %s",
+                    job.getJobTitle(),
+                    job.getEmployer().getCompanyName()
+            );
             List<Application> applications = applicationRepo.getByJob_JobId(job.getJobId());
             for (Application application : applications) {
-                if(application.getStatus().equals(ApplicationStatus.CONFIRMED)){
-                    throw new InvalidParametersException("Job already confirmed...Cannot cancel");
+                List<User> recipient = new ArrayList<>();
+
+                if (application.getTeam() != null) {
+                    recipient.addAll(application.getTeam().getMembers());
+                }else{
+                    recipient.add(application.getStudent());
                 }
+                for (User user : recipient) {
+                    UpdateNotification notification = new UpdateNotification();
+                    notification.setMessage(message);
+                    notification.setRecipient(user);
+                    notification.setApplication(application);
+                    notification.setSentDate(new Date());
+                    notification.setIsRead(false);
+                    notificationRepo.save(notification);
+
+                    NotificationDTO notificationDTO = new NotificationDTO(
+                            notification.getId(),
+                            message,
+                            job.getJobId(),
+                            notification.getIsRead(),
+                            notification.getSentDate()
+                    );
+                    System.out.println("Member: " + user.getUserName());
+                    // Send real-time notification to the specific recipient
+                    messagingTemplate.convertAndSendToUser(
+                            user.getUserName(),
+                            "/topic/update-notifications",
+                            notificationDTO
+                    );
+                }
+
                 application.setStatus(ApplicationStatus.REJECTED);
                 applicationRepo.save(application);
             }
@@ -354,7 +396,5 @@ public class JobServiceIMPL implements JobService {
         job.setJobStatus(status);
         jobRepo.save(job);
         return "Set status: "+status;
-
-
     }
 }
