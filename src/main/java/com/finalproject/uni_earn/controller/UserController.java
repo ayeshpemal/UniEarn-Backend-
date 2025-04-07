@@ -42,7 +42,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/get-user-by-id/{userId}")
     public ResponseEntity<StandardResponse> getUserById(@PathVariable Long userId){
         UserResponseDTO userResponseDTO = userService.getUser(userId);
@@ -65,7 +65,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/{userId}/profile-picture")
     public ResponseEntity<StandardResponse> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
         try {
@@ -82,7 +82,7 @@ public class UserController {
         }
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/{userId}/profile-picture")
     public ResponseEntity<StandardResponse> getProfilePicture(@PathVariable Long userId) {
         try {
@@ -114,7 +114,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("users/{userId}/delete")
     public ResponseEntity<StandardResponse> DeleteUser(
             @PathVariable Long userId) {
@@ -125,7 +125,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/{userId}/restore")
     public ResponseEntity<StandardResponse> restoreUser(
             @PathVariable Long userId) {
@@ -136,7 +136,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<StandardResponse> updatePassword(
             @PathVariable Long userId,
@@ -149,7 +149,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @GetMapping("/public-notifications")
     public ResponseEntity<StandardResponse> getPublicAdminNotifications(
             @RequestParam(required = false) Long userId,
@@ -162,7 +162,7 @@ public class UserController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     @PutMapping("/notification/mark-as-read/{notificationId}")
     public ResponseEntity<StandardResponse> markAdminNotificationAsRead(@PathVariable Long notificationId) {
         boolean isMarked = userService.markAdminNotificationAsRead(notificationId);

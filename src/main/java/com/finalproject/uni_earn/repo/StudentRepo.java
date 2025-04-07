@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,10 +23,15 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     @Query("SELECT s FROM Student s JOIN s.followers f WHERE f.id = :studentId")
     Page<Student> findFollowingByStudentId(Long studentId, Pageable pageable);
 
-    Page<Student> findByDisplayNameContainingIgnoreCase(String searchTerm, Pageable pageable);
+    @Query("SELECT s FROM Student s WHERE (:searchTerm IS NULL OR LOWER(s.displayName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND s.isDeleted = false")
+    Page<Student> findByDisplayNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     Long countByDisplayNameContainingIgnoreCase(String searchTerm);
 
     @Query("SELECT s.preferences FROM Student s WHERE s.userId = :studentId")
     List<JobCategory> findPreferencesByStudentId(Long studentId);
+
+    @Query("SELECT COUNT(s) FROM Student s WHERE (:searchTerm IS NULL OR LOWER(s.displayName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND s.isDeleted = false")
+    Long countByDisplayNameContainingIgnoreCase(@Param("searchTerm") String searchTerm);
+
 }

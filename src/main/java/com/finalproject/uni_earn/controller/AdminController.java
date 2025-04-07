@@ -115,7 +115,7 @@ public class AdminController {
         );
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("notification/private")
     public ResponseEntity<StandardResponse> getPrivateAdminNotifications(
             @RequestParam(required = false) Long userID,
