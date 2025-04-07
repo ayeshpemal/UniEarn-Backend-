@@ -30,7 +30,7 @@ public class EmployerController {
         return ResponseEntity.ok(new StandardResponse(200, "Success", responseDTO));
     }
 
-    @PreAuthorize("hasRole('STUDENT') or  hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('STUDENT') or  hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<StandardResponse> searchEmployers(@RequestParam String query, @RequestParam(defaultValue = "0") int page) {
         PaginatedEmployerResponseDTO responseDTO = employerService.searchEmployers(query, page);
