@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -87,6 +88,7 @@ public class StudentServiceIMPL implements StudentService {
 
         // Get the list of students from the response DTO
         List<StudentDTO> studentDTOList = responseDTO.getStudents();
+        List<StudentDTO> activeStudentList = new ArrayList<>();
 
         // Iterate over the student list to check the follow status
         for (StudentDTO studentDTO : studentDTOList) {
@@ -99,10 +101,15 @@ public class StudentServiceIMPL implements StudentService {
 
             // Set the follow status in the DTO
             studentDTO.setFollow(isFollow);
+
+            // Check if the student is not deleted
+            if (!student.isDeleted() && student.isVerified()) {
+                activeStudentList.add(studentDTO);
+            }
         }
 
-        // Set the updated list of students back to the response DTO
-        responseDTO.setStudents(studentDTOList);
+        // Set the updated list of active students back to the response DTO
+        responseDTO.setStudents(activeStudentList);
 
         return responseDTO;
     }

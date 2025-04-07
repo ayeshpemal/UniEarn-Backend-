@@ -218,7 +218,5 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     );
 
 
-
-
-
+    long countByCreatedAtBetweenAndJobStatus(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore, JobStatus jobStatus);
 }

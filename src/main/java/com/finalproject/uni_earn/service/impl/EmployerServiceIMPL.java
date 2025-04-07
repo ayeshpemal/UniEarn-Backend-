@@ -7,6 +7,7 @@ import com.finalproject.uni_earn.dto.Response.UserResponseDTO;
 import com.finalproject.uni_earn.dto.StudentDTO;
 import com.finalproject.uni_earn.entity.*;
 import com.finalproject.uni_earn.entity.enums.ApplicationStatus;
+import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.service.ApplicationService;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -78,6 +80,7 @@ public class EmployerServiceIMPL implements EmployerService {
         Page<Employer> employerPage = employerRepo.findAll(PageRequest.of(page, PAGE_SIZE));
         List<UserResponseDTO> employers =employerPage.getContent()
                 .stream()
+                .filter(employer -> employer.getRole().equals(Role.EMPLOYER))
                 .map(employer -> modelMapper.map(employer, UserResponseDTO.class))
                 .collect(Collectors.toList());
 
@@ -110,7 +113,7 @@ public class EmployerServiceIMPL implements EmployerService {
 
         // Get the list of employers from the response DTO
         List<EmployerDto> employerList = responseDTO.getEmployers();
-
+        List<EmployerDto> activeEmployerList = new ArrayList<>();
         // Iterate over the employer list to check the follow status
         for (EmployerDto employerDto : employerList) {
             Employer employer = employerRepo.findById(employerDto.getUserId())
@@ -120,10 +123,15 @@ public class EmployerServiceIMPL implements EmployerService {
 
             // Set the follow status in the DTO
             employerDto.setFollow(isFollow);
+
+            // Check if the student is not deleted
+            if(!employer.isDeleted() && employer.isVerified()){
+                activeEmployerList.add(employerDto);
+            }
         }
 
-        // Set the updated list of employers back to the response DTO
-        responseDTO.setEmployers(employerList);
+        // Set the updated list of active employers back to the response DTO
+        responseDTO.setEmployers(activeEmployerList);
 
         return responseDTO;
     }

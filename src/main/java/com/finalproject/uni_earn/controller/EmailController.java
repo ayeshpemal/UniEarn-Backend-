@@ -19,7 +19,6 @@ public class EmailController {
     private final EmailService emailService;
 
     // Send email to the user
-    @PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @PostMapping("/send")
     public ResponseEntity<StandardResponse> sendEmail(@Valid @RequestBody EmailRequest request) {
         emailService.sendUserEmail(request);

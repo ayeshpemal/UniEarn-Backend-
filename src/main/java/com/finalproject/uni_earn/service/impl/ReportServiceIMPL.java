@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.config.ReportConfig;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedReportDTO;
 import com.finalproject.uni_earn.dto.ReportDTO;
 import com.finalproject.uni_earn.dto.request.ReportRequestDTO;
@@ -15,8 +16,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,13 +30,17 @@ public class ReportServiceIMPL implements ReportService {
     final private UserRepo userRepository;
     final private ReportMapper reportMapper;
     final private ReportProcessService reportProcessService;
+    final private ReportAnalyticsServiceIMPL reportAnalyticsService;
+    final private ReportConfig reportConfig;
 
     @Autowired
-    public ReportServiceIMPL(ReportRepo reportRepository, UserRepo userRepository, ReportMapper reportMapper, ReportProcessService reportProcessService) {
+    public ReportServiceIMPL(ReportRepo reportRepository, UserRepo userRepository, ReportMapper reportMapper, ReportProcessService reportProcessService, ReportAnalyticsServiceIMPL reportAnalyticsService, ReportConfig reportConfig) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.reportMapper = reportMapper;
         this.reportProcessService = reportProcessService;
+        this.reportAnalyticsService = reportAnalyticsService;
+        this.reportConfig = reportConfig;
     }
 
 
@@ -66,6 +73,8 @@ public class ReportServiceIMPL implements ReportService {
                 penalty_Score
         );
         reportRepository.save(report);
+
+        reportAnalyticsService.analyzeUserReports(reportRequestDTO.getReportedUser());
         return "Report submitted successfully";
     }
 
@@ -86,6 +95,7 @@ public class ReportServiceIMPL implements ReportService {
                 updatedReport.getReportId(),
                 updatedReport.getReporter().getUserId(),
                 updatedReport.getReportedUser().getUserId(),
+                updatedReport.getReportType(),
                 updatedReport.getFeedback(),
                 updatedReport.getReportDate(),
                 updatedReport.getStatus()
@@ -94,18 +104,19 @@ public class ReportServiceIMPL implements ReportService {
 
     @Override
     public PaginatedReportDTO getAllReports(int page, int size) {
-        Page<Reports> reports = reportRepository.findAll(PageRequest.of(page, size));
+        Page<Reports> reports = reportRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt")));
         if (reports.getSize() > 0) {
             List<ReportDTO> reported = reports.stream()
                     .map(report -> new ReportDTO(
                     report.getReportId(),
                     report.getReporter().getUserId(),
                     report.getReportedUser().getUserId(),
+                    report.getReportType(),
                     report.getFeedback(),
                     report.getReportDate(),
                     report.getStatus()
             )).collect(Collectors.toList());
-            return new PaginatedReportDTO(reported,reportRepository.countAllBy());
+            return new PaginatedReportDTO(reported,null,reportRepository.countAllBy());
         }
         return null;
     }
@@ -117,18 +128,24 @@ public class ReportServiceIMPL implements ReportService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Reported user not found");
         }
-        Page<Reports> reports = reportRepository.findAllByReportedUser_UserId(userId,PageRequest.of(page, size));
+
+       int totalPenaltyScore = reportRepository.getSumByReportedUser_UserId(userId) == null ? 0 : reportRepository.getSumByReportedUser_UserId(userId);
+        // Calculate the total penalty score for the reported user
+
+        Page<Reports> reports = reportRepository.findAllByReportedUser_UserId(userId,PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt")));
+
         if (reports.getSize() > 0) {
             List<ReportDTO> reported = reports.stream()
                     .map(report -> new ReportDTO(
                             report.getReportId(),
                             report.getReporter().getUserId(),
                             report.getReportedUser().getUserId(),
+                            report.getReportType(),
                             report.getFeedback(),
                             report.getReportDate(),
                             report.getStatus()
                     )).collect(Collectors.toList());
-            return new PaginatedReportDTO(reported,reportRepository.countAllBy());
+            return new PaginatedReportDTO(reported, (long) totalPenaltyScore,(long) reportRepository.countByReportedUser_UserId(userId));
         }
         return null;
     }
