@@ -27,7 +27,7 @@ public interface JobService {
     PaginatedResponseJobDTO filterJobByCategory(JobCategory jobCategory, Integer page);
     PaginatedResponseJobDTO SearchJobByLocation(Location location, Integer page);
     PaginatedResponseJobDTO searchJobByKeyword(String keyWord, Integer page);
-    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDate, Integer page);
+    PaginatedResponseJobDTO searchJobs(Location location, List<JobCategory> categories, String keyword, Date startDateFrom, Date startDateTo, Integer page);
 
     //Common
     JobDTO viewJobDetails(long jobId);

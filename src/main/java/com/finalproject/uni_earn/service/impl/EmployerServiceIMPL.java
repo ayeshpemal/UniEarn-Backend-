@@ -91,13 +91,13 @@ public class EmployerServiceIMPL implements EmployerService {
 
     @Override
     public PaginatedEmployerResponseDTO searchEmployers(String query, int page) {
-        Page<Employer> employerPage = employerRepo.findByCompanyNameContainingIgnoreCase(query, PageRequest.of(page, PAGE_SIZE));
+        Page<Employer> employerPage = employerRepo.findEmployers(query, PageRequest.of(page, PAGE_SIZE));
         List<EmployerDto> employers = employerPage.getContent()
                 .stream()
                 .map(employer -> modelMapper.map(employer, EmployerDto.class))
                 .collect(Collectors.toList());
 
-        long totalEmployers = employerRepo.countByCompanyNameContainingIgnoreCase(query);
+        long totalEmployers = employerRepo.countEmployers(query);
 
         return new PaginatedEmployerResponseDTO(employers, totalEmployers);
     }
