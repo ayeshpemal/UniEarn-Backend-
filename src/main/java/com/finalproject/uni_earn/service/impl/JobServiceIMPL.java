@@ -5,6 +5,7 @@ import com.finalproject.uni_earn.dto.LocationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
+import com.finalproject.uni_earn.dto.request.RecommendationRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
 import com.finalproject.uni_earn.entity.Employer;
 import com.finalproject.uni_earn.entity.Job;
@@ -19,6 +20,7 @@ import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.entity.*;
+import com.finalproject.uni_earn.service.JobEventPublisher;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.JobNotificationService;
 import com.finalproject.uni_earn.specification.JobSpecification;
@@ -67,6 +69,22 @@ public class JobServiceIMPL implements JobService {
     @Autowired
     private RatingRepo ratingRepo;
 
+    @Autowired
+    private JobEventPublisher jobEventPublisher;
+
+// function for converting job to recommendation request
+    private RecommendationRequestDTO createRecommendationRequest(Job job) {
+        RecommendationRequestDTO requestDTO = new RecommendationRequestDTO();
+        requestDTO.setJobID(job.getJobId());
+        requestDTO.setTitle(job.getJobTitle());
+        requestDTO.setJobDescription(job.getJobDescription());
+        requestDTO.setCategory(job.getJobCategory().toString());
+        requestDTO.setStatus(job.getJobStatus().toString());
+        requestDTO.setStartAt(job.getStartDate().toString());
+        requestDTO.setCompany(job.getEmployer().getCompanyName()); // Assuming Employer has companyName
+        return requestDTO;
+    }
+
     @Override
     public String addJob(AddJobRequestDTO addJobRequestDTO) {
         if (addJobRequestDTO.getJobLocations() == null || addJobRequestDTO.getJobLocations().isEmpty()) {
@@ -90,7 +108,9 @@ public class JobServiceIMPL implements JobService {
             job.setJobLocations(List.of(addJobRequestDTO.getJobLocations().get(0).getLocation()));
             job.setJobStatus(JobStatus.PENDING);
 
-            jobRepo.save(job);
+            Job savedJob = jobRepo.save(job);
+//            Create a recommendation request for the saved job
+            jobEventPublisher.publishJobCreatedEvent(createRecommendationRequest(savedJob));
 
             // Create follow notification after a new job is posted
             notificationService.createFollowNotification(employer, job); // Notify students about the new job
@@ -119,7 +139,8 @@ public class JobServiceIMPL implements JobService {
                 job.setJobStatus(JobStatus.PENDING);
 
                 Job savedJob = jobRepo.save(job);
-
+                // Create a recommendation request for the saved job
+                jobEventPublisher.publishJobCreatedEvent(createRecommendationRequest(savedJob));
                 // Create follow notification after a new job is posted
                 notificationService.createFollowNotification(employer, job); // Notify students about the new job
 
@@ -138,6 +159,7 @@ public class JobServiceIMPL implements JobService {
     public String deleteJob(Long jobId) {
         if (jobRepo.existsByJobId(jobId)) {
             jobRepo.deleteById(jobId);
+            jobEventPublisher.publishJobDeletedEvent(jobId);
             return "Job deleted";
         } else {
             throw new NotFoundException("No Job Found In That ID...!!");
@@ -161,7 +183,8 @@ public class JobServiceIMPL implements JobService {
         job.setEmployer(employerRepo.getReferenceById(updateJobRequestDTO.getEmployer()));
         job.setJobLocations(new ArrayList<>(List.of(updateJobRequestDTO.getJobLocations().get(0).getLocation())));
         job.setJobStatus(JobStatus.PENDING);
-        jobRepo.save(job);
+        Job updatedJob = jobRepo.save(job);
+        jobEventPublisher.publishJobUpdatedEvent(createRecommendationRequest(updatedJob));
 
         return updateJobRequestDTO.getJobTitle() + " is updated...";
     }
@@ -352,7 +375,8 @@ public class JobServiceIMPL implements JobService {
             }
         }
         job.setJobStatus(status);
-        jobRepo.save(job);
+        Job updatedJob = jobRepo.save(job);
+        jobEventPublisher.publishJobUpdatedEvent(createRecommendationRequest(updatedJob));
         return "Set status: "+status;
 
 

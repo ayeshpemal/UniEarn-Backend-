@@ -25,4 +25,7 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     Page<Student> findByDisplayNameContainingIgnoreCase(String searchTerm, Pageable pageable);
 
     Long countByDisplayNameContainingIgnoreCase(String searchTerm);
+
+    @Query("SELECT s.preferences FROM Student s WHERE s.userId = :studentId")
+    List<JobCategory> findPreferencesByStudentId(Long studentId);
 }

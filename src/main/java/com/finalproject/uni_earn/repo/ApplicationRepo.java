@@ -1,5 +1,6 @@
 package com.finalproject.uni_earn.repo;
 
+import com.finalproject.uni_earn.dto.FinishedJobDTO;
 import com.finalproject.uni_earn.dto.Response.JobCategoryStatisticsDTO;
 import com.finalproject.uni_earn.dto.Response.JobStaticsDTO;
 import com.finalproject.uni_earn.entity.Application;
@@ -199,4 +200,16 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     List<Application> getByStudent_UserId(long studentUserId);
 
     long countByCreatedAtBetween(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
+
+    @Query("SELECT new com.finalproject.uni_earn.dto.FinishedJobDTO(" +
+            "j.jobTitle, j.jobDescription, j.employer.companyName) " +
+            "FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE a.student.userId = :studentId " +
+            "AND j.jobStatus = 'FINISH' " +
+            "AND a.status = 'CONFIRMED' " +
+            "ORDER BY a.appliedDate DESC " +
+            "LIMIT 2")
+    List<FinishedJobDTO> findLastTwoFinishedJobsByStudent(@Param("studentId") Long studentId);
+
 }
