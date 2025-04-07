@@ -12,7 +12,8 @@ import java.util.List;
 
 public class JobSpecification {
 
-    public static Specification<Job> filterJobs(Location location, List<JobCategory> categories, String keyword, Date startDate) {
+    public static Specification<Job> filterJobs(Location location, List<JobCategory> categories, String keyword,
+                                                Date startDateFrom, Date startDateTo) {
         return (Root<Job> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction(); // Default to TRUE (no filters applied)
 
@@ -37,11 +38,26 @@ public class JobSpecification {
             // Filter by JobStatus = PENDING
             predicate = cb.and(predicate, cb.equal(root.get("jobStatus"), JobStatus.PENDING));
 
-            // Filter by Start Date if provided
-            if (startDate != null) {
+            // Filter by Start Date range if provided - comparing only the date part
+            if (startDateFrom != null || startDateTo != null) {
                 Expression<Date> jobStartDate = cb.function("DATE", Date.class, root.get("startDate"));
-                Expression<Date> inputDate = cb.function("DATE", Date.class, cb.literal(startDate));
-                predicate = cb.and(predicate, cb.equal(jobStartDate, inputDate));
+
+                if (startDateFrom != null && startDateTo != null) {
+                    // Both dates provided - filter for range
+                    Expression<Date> fromDate = cb.function("DATE", Date.class, cb.literal(startDateFrom));
+                    Expression<Date> toDate = cb.function("DATE", Date.class, cb.literal(startDateTo));
+                    predicate = cb.and(predicate,
+                            cb.greaterThanOrEqualTo(jobStartDate, fromDate),
+                            cb.lessThanOrEqualTo(jobStartDate, toDate));
+                } else if (startDateFrom != null) {
+                    // Only start date provided
+                    Expression<Date> fromDate = cb.function("DATE", Date.class, cb.literal(startDateFrom));
+                    predicate = cb.and(predicate, cb.greaterThanOrEqualTo(jobStartDate, fromDate));
+                } else {
+                    // Only end date provided
+                    Expression<Date> toDate = cb.function("DATE", Date.class, cb.literal(startDateTo));
+                    predicate = cb.and(predicate, cb.lessThanOrEqualTo(jobStartDate, toDate));
+                }
             }
 
             return predicate;
