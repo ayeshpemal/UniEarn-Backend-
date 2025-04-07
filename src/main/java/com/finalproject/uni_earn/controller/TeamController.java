@@ -18,7 +18,7 @@ public class TeamController {
     @Autowired
     private TeamService teamService;
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/create")
     public ResponseEntity<StandardResponse> createTeam(@RequestBody TeamRequestDTO teamRequest) {
         Long teamId = teamService.createTeam(teamRequest);
@@ -27,7 +27,7 @@ public class TeamController {
                 HttpStatus.CREATED);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('EMPLOYER') or hasRole('ADMIN')")
     @GetMapping("/{teamId}")
     public ResponseEntity<StandardResponse> getTeam(@PathVariable Long teamId) {
         TeamDTO team = teamService.getTeam(teamId);
@@ -36,7 +36,7 @@ public class TeamController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{teamId}/add-member/{studentId}")
     public ResponseEntity<StandardResponse> addMember(@PathVariable Long teamId, @PathVariable Long studentId) {
         String message = teamService.addMember(teamId, studentId);
@@ -45,7 +45,7 @@ public class TeamController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/{teamId}/remove-member/{studentId}")
     public ResponseEntity<StandardResponse> removeMember(@PathVariable Long teamId, @PathVariable Long studentId) {
         String message = teamService.removeMember(teamId, studentId);
@@ -54,7 +54,7 @@ public class TeamController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @DeleteMapping("/{teamId}")
     public ResponseEntity<StandardResponse> deleteTeam(@PathVariable Long teamId) {
         String message = teamService.deleteTeam(teamId);
@@ -63,7 +63,7 @@ public class TeamController {
                 HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @PutMapping("/{studentId}/confirm/{teamId}")
     public ResponseEntity<StandardResponse> confirmMembership(
             @PathVariable Long teamId,

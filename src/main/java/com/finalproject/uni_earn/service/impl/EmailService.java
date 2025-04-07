@@ -37,18 +37,43 @@ public class EmailService {
 
     public void sendUserEmail(EmailRequest request) {
         try{
-            SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setFrom(request.getEmail()); // User's email
-            mailMessage.setTo(RECEIVER_EMAIL); // Your email
-            mailMessage.setSubject(request.getSubject());
+            //Send email to system
+            SimpleMailMessage mailMessageToSystem = new SimpleMailMessage();
+            mailMessageToSystem.setFrom(request.getEmail()); // User's email
+            mailMessageToSystem.setTo(RECEIVER_EMAIL); // Your email
+            mailMessageToSystem.setSubject(request.getSubject());
 
-            String content = "From: " + request.getFirstName() + " " + request.getLastName() +
-                    "\nEmail: " + request.getEmail() +
-                    "\nPhone: " + request.getPhone() +
-                    "\n\nMessage:\n" + request.getMessage();
+            String content =
+                    "From: " + request.getFirstName() + " " + request.getLastName() + "\n" +
+                            "Email: " + request.getEmail() + "\n" +
+                            "Phone: " + request.getPhone() + "\n\n" +
+                            "Message:\n" +
+                            "--------------------\n" +
+                            request.getMessage() + "\n" +
+                            "--------------------";
 
-            mailMessage.setText(content);
-            mailSender.send(mailMessage);
+            mailMessageToSystem.setText(content);
+            mailSender.send(mailMessageToSystem);
+
+            // Send email to user
+            SimpleMailMessage mailMessageToUser = new SimpleMailMessage();
+            mailMessageToUser.setFrom(RECEIVER_EMAIL); // Your email
+            mailMessageToUser.setTo(request.getEmail()); // User's email
+            mailMessageToUser.setSubject("Confirmation: " + request.getSubject());
+            mailMessageToUser.setText(
+                    "Dear " + request.getFirstName() + ",\n\n" +
+                            "Thank you for contacting us. We have received your message and will get back to you shortly.\n\n" +
+                            "Your message details:\n" +
+                            "--------------------\n" +
+                            "Subject: " + request.getSubject() + "\n" +
+                            "Message: " + request.getMessage() + "\n\n" +
+                            "If you have any other questions, please don't hesitate to contact us.\n\n" +
+                            "Best regards,\n" +
+                            "The UniEarn Team\n" +
+                            "--------------------\n" +
+                            "This is an automated message, please do not reply directly to this email."
+            );
+            mailSender.send(mailMessageToUser);
         } catch (Exception e) {
             e.printStackTrace();
             throw new EmailNotSendException("Failed to send email");

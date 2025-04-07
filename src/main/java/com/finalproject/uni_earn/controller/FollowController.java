@@ -30,7 +30,7 @@ public class FollowController {
         this.followService = followService;
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{employerId}/follow")
     public ResponseEntity<StandardResponse> followEmployer(
             @RequestParam Long studentId,
@@ -39,7 +39,7 @@ public class FollowController {
         return ResponseEntity.ok(new StandardResponse(200, "Success", responseMessage));
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("unfollow")
     public ResponseEntity<StandardResponse> unfollowEmployer(
             @RequestParam Long studentId,
@@ -48,7 +48,7 @@ public class FollowController {
         return ResponseEntity.ok(new StandardResponse(200, "Success", responseMessage));
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/{studentId}/followingemployers")
     public ResponseEntity<StandardResponse> getFollowingEmployers(
             @PathVariable Long studentId,
@@ -60,7 +60,7 @@ public class FollowController {
         );
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     // Endpoint for following another student
     @PostMapping("/{studentId}/followstudents/{targetStudentId}")
     public ResponseEntity<StandardResponse> followStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
@@ -71,7 +71,7 @@ public class FollowController {
         );
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     // Endpoint for unfollowing another student
     @DeleteMapping("/{studentId}/unfollowstudents/{targetStudentId}")
     public ResponseEntity<StandardResponse> unfollowStudent(@PathVariable Long studentId, @PathVariable Long targetStudentId) {
@@ -82,7 +82,7 @@ public class FollowController {
         );
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     // Endpoint for getting all students that the current student is following with pagination
     @GetMapping("/{studentId}/followingstudents")
     public ResponseEntity<StandardResponse> getFollowingStudents(
