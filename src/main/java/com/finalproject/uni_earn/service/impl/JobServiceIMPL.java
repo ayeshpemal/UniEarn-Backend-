@@ -1,10 +1,13 @@
 package com.finalproject.uni_earn.service.impl;
 
+import com.finalproject.uni_earn.dto.FinishedJobDTO;
 import com.finalproject.uni_earn.dto.JobDTO;
 import com.finalproject.uni_earn.dto.LocationDTO;
 import com.finalproject.uni_earn.dto.NotificationDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedJobDetailsResponseDTO;
 import com.finalproject.uni_earn.dto.Paginated.PaginatedResponseJobDTO;
+import com.finalproject.uni_earn.dto.Response.DefaultRecommendationResponseDTO;
+import com.finalproject.uni_earn.dto.Response.RecommendationResultDTO;
 import com.finalproject.uni_earn.dto.request.AddJobRequestDTO;
 import com.finalproject.uni_earn.dto.request.RecommendationRequestDTO;
 import com.finalproject.uni_earn.dto.request.UpdateJobRequestDTO;
@@ -21,6 +24,7 @@ import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.repo.*;
 import com.finalproject.uni_earn.dto.Response.JobDetailsResponseDTO;
 import com.finalproject.uni_earn.entity.*;
+import com.finalproject.uni_earn.service.ApiClients.ApiClients;
 import com.finalproject.uni_earn.service.JobEventPublisher;
 import com.finalproject.uni_earn.service.JobService;
 import com.finalproject.uni_earn.service.JobNotificationService;
@@ -79,6 +83,9 @@ public class JobServiceIMPL implements JobService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private ApiClients apiClients;
 
 // function for converting job to recommendation request
     private RecommendationRequestDTO createRecommendationRequest(Job job) {
@@ -254,29 +261,133 @@ public class JobServiceIMPL implements JobService {
             throw new NotFoundException("No Jobs Founds...!!");
         }
     }
-
     @Override
     public PaginatedResponseJobDTO studentJobs(Long studentId, Integer page) {
         Student student = studentRepo.getStudentByUserId(studentId);
-        if (student != null) {
-            Location location = student.getLocation();
-            List<JobCategory> preferences = student.getPreferences();
-            Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(location, preferences, PENDING, PageRequest.of(page, pageSize,Sort.by(Sort.Direction.DESC, "updatedAt")));
-            if (jobList.getSize() > 0) {
-                List<JobDTO> jobDTOs = jobList.getContent().stream()
-                        .map(job -> modelMapper.map(job, JobDTO.class))
-                        .collect(Collectors.toList());
-                return new PaginatedResponseJobDTO(
-                        jobDTOs,
-                        jobRepo.countByJobStatusAndJobLocationsContainingAndJobCategoryIn(JobStatus.PENDING, location, preferences)
-                );
-            } else {
-                throw new NotFoundException("No Jobs Found...!!");
-            }
-        } else {
+        if (student == null) {
             throw new NotFoundException("No Student Found In That ID...!!");
         }
+
+        Location studentLocation = student.getLocation();
+        List<JobCategory> preferences = student.getPreferences();
+
+        // Try content-based filtering first
+        try {
+            // Get student's last two completed jobs
+            List<FinishedJobDTO> lastTwoJobs = applicationRepo.findLastTwoFinishedJobsByStudent(studentId);
+
+            // Only proceed if student has job history
+            if (lastTwoJobs != null && !lastTwoJobs.isEmpty()) {
+                // Create prompt with student preferences and job history
+                String prompt = createStudentDetailsPrompt(lastTwoJobs, preferences);
+
+                // Call Python service for recommendations
+                DefaultRecommendationResponseDTO response = apiClients.recommend_jobs(prompt);
+
+                // Process response if successful
+                if (response.isSuccess() && response.getData() != null) {
+                    try {
+                        // Parse recommendation data
+                        @SuppressWarnings("unchecked")
+                        List<RecommendationResultDTO> recommendations = (List<RecommendationResultDTO>) response.getData();
+
+                        if (recommendations != null && !recommendations.isEmpty()) {
+                            // Get job IDs from recommendations
+                            List<Long> jobIds = recommendations.stream()
+                                    .map(rec -> (long) rec.getJobId())
+                                    .collect(Collectors.toList());
+
+                            // Create similarity score map for sorting
+                            Map<Long, Double> similarityScores = recommendations.stream()
+                                    .collect(Collectors.toMap(
+                                            rec -> (long) rec.getJobId(),
+                                            RecommendationResultDTO::getSimilarityScore
+                                    ));
+
+                            // Find jobs and filter by location and status
+                            List<Job> filteredJobs = jobRepo.findAllById(jobIds).stream()
+                                    .filter(job -> job.getJobLocations().contains(studentLocation) &&
+                                            job.getJobStatus() == PENDING)
+                                    .sorted((j1, j2) -> Double.compare(
+                                            similarityScores.getOrDefault(j2.getJobId(), 0.0),
+                                            similarityScores.getOrDefault(j1.getJobId(), 0.0)))
+                                    .collect(Collectors.toList());
+
+                            if (!filteredJobs.isEmpty()) {
+                                // Apply pagination
+                                int start = page * pageSize;
+                                int end = Math.min(start + pageSize, filteredJobs.size());
+
+                                if (start < filteredJobs.size()) {
+                                    List<Job> paginatedJobs = filteredJobs.subList(start, end);
+
+                                    List<JobDTO> jobDTOs = paginatedJobs.stream()
+                                            .map(job -> modelMapper.map(job, JobDTO.class))
+                                            .collect(Collectors.toList());
+
+                                    return new PaginatedResponseJobDTO(jobDTOs, filteredJobs.size());
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Log error and continue to fallback
+                        System.err.println("Error processing recommendations: " + e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log error and continue to fallback
+            System.err.println("Error in content-based filtering: " + e.getMessage());
+        }
+
+        // Fallback to standard filtering method
+        Page<Job> jobList = jobRepo.findAllByJobLocationsContainingAndJobCategoryInAndJobStatus(
+                studentLocation, preferences, PENDING,
+                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "updatedAt")));
+
+        if (jobList.getSize() <= 0) {
+            throw new NotFoundException("No Jobs Found...!!");
+        }
+
+        List<JobDTO> jobDTOs = jobList.getContent().stream()
+                .map(job -> modelMapper.map(job, JobDTO.class))
+                .collect(Collectors.toList());
+
+        return new PaginatedResponseJobDTO(
+                jobDTOs,
+                jobRepo.countByJobStatusAndJobLocationsContainingAndJobCategoryIn(
+                        JobStatus.PENDING, studentLocation, preferences)
+        );
     }
+
+    // Helper method to create prompt for Python service
+    private String createStudentDetailsPrompt(List<FinishedJobDTO> lastTwoJobs, List<JobCategory> preferences) {
+        StringBuilder prompt = new StringBuilder("my preferences are: ");
+
+        // Add preferences
+        for (int i = 0; i < preferences.size(); i++) {
+            if (i > 0) {
+                prompt.append(", ");
+            }
+            prompt.append(preferences.get(i).toString());
+        }
+
+        prompt.append("; i have completed jobs with: ");
+
+        // Add completed jobs
+        for (int i = 0; i < lastTwoJobs.size(); i++) {
+            FinishedJobDTO job = lastTwoJobs.get(i);
+            if (i > 0) {
+                prompt.append(", ");
+            }
+            prompt.append("Title: ").append(job.getJobTitle())
+                    .append(", Description: ").append(job.getJobDescription())
+                    .append(", Employer: ").append(job.getEmployerName());
+        }
+
+        return prompt.toString();
+    }
+
 
 
     @Override

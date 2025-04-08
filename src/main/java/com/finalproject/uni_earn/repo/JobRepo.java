@@ -219,4 +219,25 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
 
 
     long countByCreatedAtBetweenAndJobStatus(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore, JobStatus jobStatus);
+
+    @Query("SELECT j FROM Job j " +
+            "WHERE j.jobId IN :ids " +
+            "AND :location MEMBER OF j.jobLocations " +
+            "AND j.jobCategory IN :categories " +
+            "AND j.jobStatus = :status")
+    List<Job> findRecommendedJobs(@Param("ids") List<Long> ids,
+                                  @Param("location") Location location,
+                                  @Param("categories") List<JobCategory> categories,
+                                  @Param("status") JobStatus status);
+
+    @Query("SELECT j FROM Job j " +
+            "WHERE j.jobId IN :ids " +
+            "AND :location MEMBER OF j.jobLocations " +
+            "AND j.jobCategory IN :categories " +
+            "AND j.jobStatus = :status")
+    List<Job> findJobsByIdsAndFilters(@Param("ids") List<Long> ids,
+                                      @Param("location") Location location,
+                                      @Param("categories") List<JobCategory> categories,
+                                      @Param("status") JobStatus status);
+
 }

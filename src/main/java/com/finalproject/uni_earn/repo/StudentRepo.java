@@ -20,7 +20,7 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     List<Student> findAllByPreferencesContaining(JobCategory jobCategory);
     Student getStudentByUserId(Long studentId);
 
-    @Query("SELECT s FROM Student s JOIN s.followers f WHERE f.id = :studentId")
+    @Query("SELECT s FROM Student s JOIN s.followers f WHERE f.userId = :studentId")
     Page<Student> findFollowingByStudentId(Long studentId, Pageable pageable);
 
     @Query("SELECT s FROM Student s WHERE (:searchTerm IS NULL OR LOWER(s.displayName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND s.isDeleted = false")
