@@ -170,8 +170,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
             "FROM Application a JOIN a.job j " +
             "WHERE j.employer.userId = :employerId " +
-            "AND j.startDate >= :startDate " +
-            "AND j.endDate <= :endDate " +
+            "AND j.createdAt >= :startDate " +
+            "AND j.createdAt <= :endDate " +
             "GROUP BY j.jobId, j.jobTitle " +
             "ORDER BY COUNT(a) DESC " +
             "LIMIT 3")
@@ -185,8 +185,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
     @Query("SELECT j.jobId, j.jobTitle, COUNT(a) as appCount " +
             "FROM Application a JOIN a.job j " +
             "WHERE j.employer.userId = :employerId " +
-            "AND j.startDate >= :startDate " +
-            "AND j.endDate <= :endDate " +
+            "AND j.createdAt >= :startDate " +
+            "AND j.createdAt <= :endDate " +
             "GROUP BY j.jobId, j.jobTitle " +
             "ORDER BY COUNT(a) ASC " +
             "LIMIT 3")
