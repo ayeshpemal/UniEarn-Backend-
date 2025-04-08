@@ -22,6 +22,7 @@ public class JobEventPublisherIMPL implements JobEventPublisher {
 
     @Override
     public void publishJobCreatedEvent(RecommendationRequestDTO requestDTO) {
+        System.out.println(requestDTO.getStartAt());
         rabbitTemplate.convertAndSend(exchange, "job.created", requestDTO);
         logger.info("Job created event sent for job: {}", requestDTO.getJobID());
     }

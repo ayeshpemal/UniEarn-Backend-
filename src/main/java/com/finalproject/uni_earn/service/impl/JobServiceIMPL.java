@@ -96,6 +96,7 @@ public class JobServiceIMPL implements JobService {
         requestDTO.setCategory(job.getJobCategory().toString());
         requestDTO.setStatus(job.getJobStatus().toString());
         requestDTO.setStartAt(job.getStartDate().toString());
+        System.out.println(requestDTO.getStartAt());
         requestDTO.setCompany(job.getEmployer().getCompanyName()); // Assuming Employer has companyName
         return requestDTO;
     }
@@ -281,8 +282,11 @@ public class JobServiceIMPL implements JobService {
                 // Create prompt with student preferences and job history
                 String prompt = createStudentDetailsPrompt(lastTwoJobs, preferences);
 
+                System.out.println("this happened");
                 // Call Python service for recommendations
                 DefaultRecommendationResponseDTO response = apiClients.recommend_jobs(prompt);
+
+                System.out.println("this happened - 2");
 
                 // Process response if successful
                 if (response.isSuccess() && response.getData() != null) {
@@ -384,7 +388,7 @@ public class JobServiceIMPL implements JobService {
                     .append(", Description: ").append(job.getJobDescription())
                     .append(", Employer: ").append(job.getEmployerName());
         }
-
+        System.out.println(prompt);
         return prompt.toString();
     }
 
