@@ -171,6 +171,7 @@ public class AdminServiceIMPL implements AdminService {
             Optional<UserDTO> topEmployer = userRepository.findTopEmployerByDate(startDate, endDate)
                     .map(tuple -> new UserDTO(
                             tuple.get("userId", Long.class),
+                            "",
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
                             tuple.get("role", String.class),
@@ -185,6 +186,7 @@ public class AdminServiceIMPL implements AdminService {
             Optional<UserDTO> mostActiveStudent = userRepository.findMostActiveStudentByDate(startDate, endDate)
                     .map(tuple -> new UserDTO(
                             tuple.get("userId", Long.class),
+                            "",
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
                             tuple.get("role", String.class),
@@ -478,31 +480,44 @@ public class AdminServiceIMPL implements AdminService {
     private void createDummyEmployers(UserService userService) {
         // Company data for employers
         List<String> companyNames = List.of(
-                "TechNova Solutions",
-                "GreenLeaf Enterprises",
-                "MediaFirst Creative",
-                "DataCore Analytics"
+                "QuickServe Retail",
+                "SalesPro Enterprises",
+                "RetailMart Solutions",
+                "EduTutor Academy",
+                "GourmetCater Services",
+                "GourmetCater Services",
+                "FastFood Express"
+
         );
 
         List<String> companyDetails = List.of(
-                "Leading provider of software solutions for small and medium businesses with focus on cloud integration.",
-                "Eco-friendly products manufacturer specializing in sustainable packaging and biodegradable materials.",
-                "Full-service digital marketing agency offering content creation, SEO, and social media management.",
-                "Data science consultancy providing big data solutions and predictive analytics for various industries."
+                "Leading retail chain with multiple checkout counters requiring efficient cashiers for customer transactions.",
+                "Sales-focused company providing promotional staff and salespeople for various retail and event locations.",
+                "Large retail organization with multiple store locations specializing in consumer goods and electronics.",
+                "Educational tutoring company connecting qualified tutors with students for various academic subjects.",
+                "Full-service catering company specializing in events, corporate functions, and private parties.",
+                "Full-service catering company specializing in events, corporate functions, and private parties.",
+                "Quick-service restaurant chain specializing in fast food with multiple locations across the country."
         );
 
         List<List<String>> categoriesList = List.of(
-                List.of("WEB_DEVELOPER", "DATA_ENTRY"),
-                List.of("EVENT_BASED", "RETAIL"),
-                List.of("CONTENT_WRITING", "MARKETING"),
-                List.of("DATA_ENTRY", "TYPING")
+                List.of("CASHIER", "RETAIL"),
+                List.of("SALESMEN", "EVENT_BASED"),
+                List.of("RETAIL", "STORE_HELPER"),
+                List.of("TUTORING", "DATA_ENTRY"),
+                List.of("CATERING", "FOOD_AND_BEVERAGE"),
+                List.of("CATERING", "FOOD_AND_BEVERAGE"),
+                List.of("FOOD_AND_BEVERAGE", "KITCHEN_HELPER")
         );
 
         List<Location> locations = List.of(
                 Location.COLOMBO,
                 Location.KANDY,
                 Location.GALLE,
-                Location.JAFFNA
+                Location.JAFFNA,
+                Location.MATARA,
+                Location.GAMPAHA,
+                Location.KALUTARA
         );
 
         for (int i = 0; i < companyNames.size(); i++) {
@@ -534,7 +549,8 @@ public class AdminServiceIMPL implements AdminService {
                 "Sameera Silva",
                 "Malini Jayasuriya",
                 "Kasun Rajapakse",
-                "Tharushi Mendis"
+                "Tharushi Mendis",
+                "Dilani Kumari"
         );
 
         List<String> universities = List.of(
@@ -544,7 +560,8 @@ public class AdminServiceIMPL implements AdminService {
                 "University of Sri Jayewardenepura",
                 "University of Kelaniya",
                 "University of Jaffna",
-                "Uva Wellassa University"
+                "Uva Wellassa University",
+                "Wayamba University"
         );
 
         List<Gender> genders = List.of(
@@ -554,6 +571,7 @@ public class AdminServiceIMPL implements AdminService {
                 Gender.MALE,
                 Gender.FEMALE,
                 Gender.MALE,
+                Gender.FEMALE,
                 Gender.FEMALE
         );
 
@@ -564,7 +582,8 @@ public class AdminServiceIMPL implements AdminService {
                 Location.GALLE,
                 Location.MATARA,
                 Location.KALUTARA,
-                Location.KURUNEGALA
+                Location.KURUNEGALA,
+                Location.JAFFNA
         );
 
         List<List<String>> skillsList = List.of(
@@ -574,7 +593,8 @@ public class AdminServiceIMPL implements AdminService {
                 List.of("Flutter", "Firebase", "Android Development"),
                 List.of("Content Writing", "SEO", "Digital Marketing"),
                 List.of("Network Administration", "Linux", "Cloud Computing"),
-                List.of("Machine Learning", "TensorFlow", "Data Science")
+                List.of("Machine Learning", "TensorFlow", "Data Science"),
+                List.of("Typing", "Data Entry", "Microsoft Office")
         );
 
         List<List<String>> preferencesList = List.of(
@@ -584,7 +604,9 @@ public class AdminServiceIMPL implements AdminService {
                 List.of("WEB_DEVELOPER", "TYPING"),
                 List.of("CONTENT_WRITING", "MARKETING"),
                 List.of("TUTORING", "OTHER"),
-                List.of("DATA_ENTRY", "TUTORING")
+                List.of("DATA_ENTRY", "TUTORING"),
+                List.of("WEB_DEVELOPER", "DATA_ENTRY")
+
         );
 
         for (int i = 0; i < displayNames.size(); i++) {
