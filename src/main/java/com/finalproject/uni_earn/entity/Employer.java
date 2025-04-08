@@ -31,6 +31,10 @@ public class Employer extends User{
     @Column(name="location",nullable = false)
     private Location location;
 
+    @Column(name = "contact_numbers")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> contactNumbers;
+
     @Column(name = "rating")
     @Min(0)
     @Max(5)
@@ -48,5 +52,8 @@ public class Employer extends User{
     @OneToMany(mappedBy = "employer")
     private Set<Job> jobs;
 
+    public Long getEmployerId() {
+        return getUserId();
+    }
 }
 

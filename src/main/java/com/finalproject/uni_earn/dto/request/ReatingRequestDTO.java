@@ -5,11 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//@AllArgsConstructor
-//@NoArgsConstructor
-//@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class ReatingRequestDTO {
 
-    //    private Application application;
+    private Long raterId;
+    private Long ratedId;
+    private Long applicationId;
+    private Integer score;
+    private String comment;
 
 }

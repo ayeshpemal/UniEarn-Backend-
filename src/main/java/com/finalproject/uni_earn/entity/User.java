@@ -15,7 +15,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class User {
+public class User extends Auditable{
     @Id
     @Column(name = "user_id", updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,8 @@ public class User {
     @Column(name = "user_name", unique = true, nullable = false)
     @Size(min = 3, max = 50)
     private String userName;
+
+    private String profilePictureUrl; // Stores the S3 URL of the profile picture
 
     @Column(name = "email", unique = true, nullable = false)
     @Email
@@ -40,4 +42,8 @@ public class User {
     private boolean verified = false; // Email verification status
 
     private String verificationToken; // Token for email verification
+
+    private boolean isDeleted = false; // Soft delete status
+
+    private boolean flagged = false; // Flagged status
 }

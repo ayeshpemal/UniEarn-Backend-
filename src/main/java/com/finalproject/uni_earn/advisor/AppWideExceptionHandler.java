@@ -1,8 +1,9 @@
 package com.finalproject.uni_earn.advisor;
 
+import com.finalproject.uni_earn.exception.*;
 import com.finalproject.uni_earn.exception.DuplicateEmailException;
 import com.finalproject.uni_earn.exception.DuplicateUserNameException;
-import com.finalproject.uni_earn.exception.InvalidRoleException;
+import com.finalproject.uni_earn.exception.InvalidValueException;
 import com.finalproject.uni_earn.exception.NotFoundException;
 import com.finalproject.uni_earn.util.StandardResponse;
 import org.springframework.http.HttpStatus;
@@ -33,10 +34,67 @@ public class AppWideExceptionHandler {
                 HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(InvalidRoleException.class)
-    public ResponseEntity<StandardResponse> handleInvalidRole(InvalidRoleException ex) {
+    @ExceptionHandler(InvalidValueException.class)
+    public ResponseEntity<StandardResponse> handleInvalidValue(InvalidValueException ex) {
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(400, ex.getMessage(), null),
                 HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(AlreadyExistException.class)
+    public ResponseEntity<StandardResponse> handleAlreadyExist(AlreadyExistException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+    }
+				
+    @ExceptionHandler(InvalidParametersException.class)
+    public ResponseEntity<StandardResponse> handleInvalidParameters(InvalidParametersException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(400, ex.getMessage(), null),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailNotSendException.class)
+    public ResponseEntity<StandardResponse> handleEmailNotSend(EmailNotSendException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500, ex.getMessage(), null),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NotificationFailedException.class)
+    public ResponseEntity<StandardResponse> handleNotificationFailed(NotificationFailedException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500, ex.getMessage(), null),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UserNotVerifiedException.class)
+    public ResponseEntity<StandardResponse> handleUserNotVerified(UserNotVerifiedException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(403, ex.getMessage(), null),
+                HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<StandardResponse> handleUnauthorizedAction(UnauthorizedActionException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(401, ex.getMessage(), null),
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UnauthurizedRatingException.class)
+    public ResponseEntity<StandardResponse> handleUnauthurizedRating(UnauthurizedRatingException ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(401, ex.getMessage(), null),
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(OtherExceptions.class)
+    public ResponseEntity<StandardResponse> handleOtherExceptions(OtherExceptions ex) {
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(409, ex.getMessage(), null),
+                HttpStatus.CONFLICT);
+    }
+
 }
