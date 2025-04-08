@@ -20,6 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -167,24 +170,31 @@ public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
 
         verifyEmployerExists(employerId);
 
+
+        Instant instant = startDate.toInstant();
+        LocalDateTime startDate_ = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+        Instant instant_ = endDate.toInstant();
+        LocalDateTime endDate_ = LocalDateTime.ofInstant(instant_, ZoneId.systemDefault());
+
         EmployerBriefSummaryDTO summary = new EmployerBriefSummaryDTO();
 
         //  Get total job count
-        summary.setTotalJobCount(jobRepo.countByEmployer_UserIdAndDateRange(employerId, startDate, endDate));
+        summary.setTotalJobCount(jobRepo.countByEmployer_UserIdAndDateRange(employerId, startDate_, endDate_));
 
         /*
         * Get counts by job status
         For each status type, get the count of jobs with that status*/
-        summary.setPendingJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.PENDING, startDate, endDate));
-        summary.setOngoingJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.ON_GOING, startDate, endDate));
-        summary.setFinishedJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.FINISH, startDate, endDate));
-        summary.setCanceledJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.CANCEL, startDate, endDate));
+        summary.setPendingJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.PENDING, startDate_, endDate_));
+        summary.setOngoingJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.ON_GOING, startDate_, endDate_));
+        summary.setFinishedJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.FINISH, startDate_, endDate_));
+        summary.setCanceledJobCount(jobRepo.countByEmployerIdAndStatusAndDateRange(employerId, JobStatus.CANCEL, startDate_, endDate_));
 
         /*
         Get counts by category
          This returns category and count pairs that we convert to a map
         * */
-        List<Object[]> categoryStats = jobRepo.countByEmployerIdGroupByCategoryAndDateRange(employerId, startDate, endDate);
+        List<Object[]> categoryStats = jobRepo.countByEmployerIdGroupByCategoryAndDateRange(employerId, startDate_, endDate_);
         Map<JobCategory, Long> categoryCounts = new HashMap<>();
         for (Object[] stat : categoryStats) {
             categoryCounts.put((JobCategory) stat[0], (Long) stat[1]);
@@ -195,7 +205,7 @@ public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
         *  Get counts by location
         This returns location and count pairs that we convert to a map
         * */
-        List<Object[]> locationStats = jobRepo.countByEmployerIdGroupByLocationAndDateRange(employerId, startDate, endDate);
+        List<Object[]> locationStats = jobRepo.countByEmployerIdGroupByLocationAndDateRange(employerId, startDate_, endDate_);
         Map<Location, Long> locationCounts = new HashMap<>();
         for (Object[] stat : locationStats) {
             locationCounts.put((Location) stat[0], (Long) stat[1]);
@@ -203,7 +213,7 @@ public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
         summary.setJobCountByLocation(locationCounts);
 
 //        the top 3 jobs with the most applications
-        List<Object[]> mostAppliedJobsData = applicationRepo.findJobsWithMostApplicationsByEmployerIdAndDateRange(employerId, startDate, endDate);
+        List<Object[]> mostAppliedJobsData = applicationRepo.findJobsWithMostApplicationsByEmployerIdAndDateRange(employerId, startDate_, endDate_);
         List<JobApplicationCountDTO> mostAppliedJobs = new ArrayList<>();
         for (Object[] jobData : mostAppliedJobsData) {
             mostAppliedJobs.add(new JobApplicationCountDTO(
@@ -215,7 +225,7 @@ public class EmployerAnalysisServiceIMPL implements EmployerAnalysisService {
         summary.setMostAppliedJobs(mostAppliedJobs);
 
         // the top 3 jobs with the least applications
-        List<Object[]> leastAppliedJobsData = applicationRepo.findJobsWithLeastApplicationsByEmployerIdAndDateRange(employerId, startDate, endDate);
+        List<Object[]> leastAppliedJobsData = applicationRepo.findJobsWithLeastApplicationsByEmployerIdAndDateRange(employerId, startDate_, endDate_);
         List<JobApplicationCountDTO> leastAppliedJobs = new ArrayList<>();
         for (Object[] jobData : leastAppliedJobsData) {
             leastAppliedJobs.add(new JobApplicationCountDTO(
