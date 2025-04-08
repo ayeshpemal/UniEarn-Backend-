@@ -171,6 +171,7 @@ public class AdminServiceIMPL implements AdminService {
             Optional<UserDTO> topEmployer = userRepository.findTopEmployerByDate(startDate, endDate)
                     .map(tuple -> new UserDTO(
                             tuple.get("userId", Long.class),
+                            "",
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
                             tuple.get("role", String.class),
@@ -185,6 +186,7 @@ public class AdminServiceIMPL implements AdminService {
             Optional<UserDTO> mostActiveStudent = userRepository.findMostActiveStudentByDate(startDate, endDate)
                     .map(tuple -> new UserDTO(
                             tuple.get("userId", Long.class),
+                            "",
                             tuple.get("userName", String.class),
                             tuple.get("email", String.class),
                             tuple.get("role", String.class),
