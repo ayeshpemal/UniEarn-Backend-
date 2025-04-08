@@ -177,8 +177,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "LIMIT 3")
     List<Object[]> findJobsWithMostApplicationsByEmployerIdAndDateRange(
             @Param("employerId") Long employerId,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     // Get top 3 jobs with least applications for an employer within date range
@@ -192,8 +192,8 @@ public interface ApplicationRepo extends JpaRepository<Application, Long> {
             "LIMIT 3")
     List<Object[]> findJobsWithLeastApplicationsByEmployerIdAndDateRange(
             @Param("employerId") Long employerId,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     List<Application> getByStudent_UserId(long studentUserId);

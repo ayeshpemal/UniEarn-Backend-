@@ -175,8 +175,8 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
             "AND j.createdAt <= :endDate")
     Long countByEmployer_UserIdAndDateRange(
             @Param("employerId") Long employerId,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     // Count jobs by employer, status, and date range
@@ -188,8 +188,8 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
     Long countByEmployerIdAndStatusAndDateRange(
             @Param("employerId") Long employerId,
             @Param("status") JobStatus status,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     // Count jobs by category for an employer with date range
@@ -200,8 +200,8 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
             "GROUP BY j.jobCategory")
     List<Object[]> countByEmployerIdGroupByCategoryAndDateRange(
             @Param("employerId") Long employerId,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     // Count jobs by location for an employer with date range
@@ -213,8 +213,8 @@ public interface JobRepo extends JpaRepository<Job,Long>, JpaSpecificationExecut
             "GROUP BY l")
     List<Object[]> countByEmployerIdGroupByLocationAndDateRange(
             @Param("employerId") Long employerId,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
 
