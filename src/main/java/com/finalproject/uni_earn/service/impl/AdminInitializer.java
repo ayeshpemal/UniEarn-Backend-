@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.service.impl;
 import com.finalproject.uni_earn.entity.User;
 import com.finalproject.uni_earn.entity.enums.Role;
 import com.finalproject.uni_earn.repo.UserRepo;
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,12 +16,13 @@ import java.util.Optional;
 public class AdminInitializer {
     private final UserRepo userRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final Dotenv dotenv = Dotenv.load();
 
     @PostConstruct
     public void createDefaultAdmin() {
-        String defaultAdminUsername = "admin";
+        String defaultAdminUsername = dotenv.get("ADMIN_USERNAME");
         String defaultAdminEmail = "admin@uniearn.com";
-        String defaultAdminPassword = "Admin@123";
+        String defaultAdminPassword = dotenv.get("ADMIN_PASSWORD");
 
         Optional<User> existingAdmin = userRepository.findByEmailAndRole(defaultAdminEmail, Role.ADMIN);
 

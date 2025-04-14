@@ -3,6 +3,7 @@ package com.finalproject.uni_earn.config;
 import com.finalproject.uni_earn.service.impl.JwtServiceIMPL;
 import com.finalproject.uni_earn.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -29,10 +30,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired
     private JwtServiceIMPL jwtService;
 
+    @Value("${frontend.ip}")
+    private String frontendIp;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000") // Explicitly list your frontend origin
+                .setAllowedOrigins("http://" + frontendIp + ":3000") // Explicitly list your frontend origin
                 .withSockJS(); // Enable SockJS fallback
     }
 

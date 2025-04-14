@@ -11,9 +11,12 @@ public class Application {
 
 		// Load .env file
 		Dotenv dotenv = Dotenv.load();
-		// Optional: Configure Spring to use these variables (if needed)
-		System.setProperty("MAIL_USERNAME", dotenv.get("MAIL_USERNAME"));
-		System.setProperty("MAIL_PASSWORD", dotenv.get("MAIL_PASSWORD"));
+
+		// Set all environment variables from .env
+		dotenv.entries().forEach(entry -> {
+			System.setProperty(entry.getKey(), entry.getValue());
+		});
+
 
 		SpringApplication.run(Application.class, args);
 	}

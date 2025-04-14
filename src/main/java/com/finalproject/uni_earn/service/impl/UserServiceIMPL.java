@@ -21,6 +21,7 @@ import com.finalproject.uni_earn.util.PasswordValidator;
 import com.finalproject.uni_earn.util.TokenUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -60,6 +61,11 @@ public class  UserServiceIMPL implements UserService {
     private ApplicationRepo applicationRepo;
     @Autowired
     private AdminNotificationRepo adminNotificationRepo;
+    @Value("${frontend.ip}")
+    private String frontendIp;
+    @Value("${backend.ip}")
+    private String backendIp;
+
     @Override
     public String registerUser(UserRequestDTO userRequestDTO) {
         if(userRepo.existsByUserName(userRequestDTO.getUserName())){
@@ -93,7 +99,7 @@ public class  UserServiceIMPL implements UserService {
         userRepo.save(user);
 
         // Send verification email
-        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String verifyUrl = "http://" + backendIp + ":8100/api/user/verify?token=" + token;
         String emailBody =
                 "Dear User,\n\n" +
                         "Thank you for registering with UniEarn!\n" +
@@ -271,10 +277,10 @@ public class  UserServiceIMPL implements UserService {
         userRepo.save(user);
         String url = null;
         if(user.getRole() == Role.STUDENT) {
-            url = "http://localhost:3000/verify?userId=" + user.getUserId();
+            url = "http://" + frontendIp + ":3000/verify?userId=" + user.getUserId();
         }
         if (user.getRole() == Role.EMPLOYER){
-            url = "http://localhost:3000/sign-in";
+            url = "http://" + frontendIp + ":3000/sign-in";
         }
         return url;
     }
@@ -294,7 +300,7 @@ public class  UserServiceIMPL implements UserService {
             throw new InvalidValueException("User is already verified");
         }
 
-        String verifyUrl = "http://localhost:8100/api/user/verify?token=" + token;
+        String verifyUrl = "http://" + backendIp + ":8100/api/user/verify?token=" + token;
         String emailBody = "Please click the following link to verify your email: " + verifyUrl;
         emailService.sendEmail(user.getEmail(), "Verify Your Email", emailBody);
         return "Please check your email to verify your account.";

@@ -9,6 +9,7 @@ import com.finalproject.uni_earn.repo.UserRepo;
 import com.finalproject.uni_earn.service.PasswordResetService;
 import com.finalproject.uni_earn.util.PasswordValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,11 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Value("${frontend.ip}")
+    private String frontendIp;
+    @Value("${backend.ip}")
+    private String backendIp;
+
     @Override
     public void createPasswordResetTokenForUser(String email) {
         User user = userRepo.findByEmail(email)
@@ -47,7 +53,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         tokenRepository.save(resetToken);
 
         // Send reset email
-        String resetUrl = "http://localhost:8100/api/auth/reset-password?token=" + token;
+        String resetUrl = "http:/" + backendIp + ":8100/api/auth/reset-password?token=" + token;
         String emailBody =
                 "Dear " + user.getUserName() + ",\n\n" +
                         "We received a request to reset your password for your UniEarn account.\n" +
@@ -71,7 +77,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new InvalidValueException("Token has expired");
         }
-        return "http://localhost:3000/reset-password?token=" + token;
+        return "http://" + frontendIp + ":3000/reset-password?token=" + token;
     }
 
     @Override
